@@ -1,0 +1,1645 @@
+app:
+  description: 'Rule-based beneficiary legal entity name verification
+
+    with AI-generated user warnings for REVIEW cases.'
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: Beneficiary Legal Entity Verification V2
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:1.0.3@cc37544750d72ca3782bdaa81ab0e2facbf5bb74105a169a7ff974a27c6a5f29
+    version: null
+kind: app
+version: 0.7.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        knowledge_file_size_limit: 15
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: code
+      id: 1786418696006-source-1786418729517-target
+      source: '1786418696006'
+      sourceHandle: source
+      target: '1786418729517'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786418729517--1786420138295-target
+      selected: false
+      source: '1786418729517'
+      sourceHandle: source
+      target: '1786420138295'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786420138295--1786420298962-target
+      source: '1786420138295'
+      sourceHandle: source
+      target: '1786420298962'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786420298962--1786420410096-target
+      source: '1786420298962'
+      sourceHandle: source
+      target: '1786420410096'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786420410096--1786437687922-target
+      source: '1786420410096'
+      sourceHandle: source
+      target: '1786437687922'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: 1786437687922--1786437733421-target
+      source: '1786437687922'
+      sourceHandle: source
+      target: '1786437733421'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1786437733421-true-1786438595926-target
+      source: '1786437733421'
+      sourceHandle: 'true'
+      target: '1786438595926'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1786437733421-d9da26db-d0ca-41a5-bddc-5b70cf14185b-1786439414501-target
+      source: '1786437733421'
+      sourceHandle: d9da26db-d0ca-41a5-bddc-5b70cf14185b
+      target: '1786439414501'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1786437733421-false-1786439735565-target
+      source: '1786437733421'
+      sourceHandle: 'false'
+      target: '1786439735565'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1786439735565--1786441161904-target
+      source: '1786439735565'
+      sourceHandle: source
+      target: '1786441161904'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786441161904-source-1786421027184-target
+      source: '1786441161904'
+      sourceHandle: source
+      target: '1786421027184'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786439414501-source-1786421027184-target
+      source: '1786439414501'
+      sourceHandle: source
+      target: '1786421027184'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786438595926-source-1786421027184-target
+      source: '1786438595926'
+      sourceHandle: source
+      target: '1786421027184'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: 1786421027184-source-1786421797177-target
+      source: '1786421027184'
+      sourceHandle: source
+      target: '1786421797177'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: START
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: request_id
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: request_id
+        - default: ''
+          hint: ''
+          label: invoice_beneficiary_name
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: invoice_beneficiary_name
+        - default: ''
+          hint: ''
+          label: payment_beneficiary_name
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: payment_beneficiary_name
+        - default: ''
+          hint: ''
+          label: invoice_account_number
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: invoice_account_number
+        - default: ''
+          hint: ''
+          label: payment_account_number
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: payment_account_number
+      height: 212
+      id: '1786418696006'
+      position:
+        x: 0
+        y: 0
+      positionAbsolute:
+        x: 0
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "import re\nimport unicodedata\n\n\nREPLACEMENTS = [\n    # C.T.C.P\
+          \ / CTCP / Công ty CP\n    (\n        r\"\\bC\\s*\\.?\\s*T\\s*\\.?\\s*C\\\
+          s*\\.?\\s*P\\b\",\n        \"CONG TY CO PHAN\"\n    ),\n    (\n        r\"\
+          \\bCTCP\\b\",\n        \"CONG TY CO PHAN\"\n    ),\n    (\n        r\"\\\
+          bCONG TY CP\\b\",\n        \"CONG TY CO PHAN\"\n    ),\n\n    # English\
+          \ joint-stock forms\n    (\n        r\"\\bJOINT STOCK COMPANY\\b\",\n  \
+          \      \"CONG TY CO PHAN\"\n    ),\n    (\n        r\"\\bJOINT STOCK CO\\\
+          b\",\n        \"CONG TY CO PHAN\"\n    ),\n    (\n        r\"\\bJSC\\b\"\
+          ,\n        \"CONG TY CO PHAN\"\n    ),\n\n    # C.TY / CTY\n    (\n    \
+          \    r\"\\bC\\s*\\.?\\s*TY\\b\",\n        \"CONG TY\"\n    ),\n    (\n \
+          \       r\"\\bCTY\\b\",\n        \"CONG TY\"\n    ),\n\n    # Trách nhiệm\
+          \ hữu hạn\n    (\n        r\"\\bCONG TY TRACH NHIEM HUU HAN \"\n       \
+          \ r\"MOT THANH VIEN\\b\",\n        \"CONG TY TNHH MOT THANH VIEN\"\n   \
+          \ ),\n    (\n        r\"\\bCONG TY TRACH NHIEM HUU HAN\\b\",\n        \"\
+          CONG TY TNHH\"\n    ),\n    (\n        r\"\\bT\\s*\\.?\\s*N\\s*\\.?\\s*H\\\
+          s*\\.?\\s*H\\b\",\n        \"TNHH\"\n    ),\n\n    # Một thành viên\n  \
+          \  (\n        r\"\\bTNHH MTV\\b\",\n        \"TNHH MOT THANH VIEN\"\n  \
+          \  ),\n    (\n        r\"\\bTNHH 1 TV\\b\",\n        \"TNHH MOT THANH VIEN\"\
+          \n    ),\n\n    # English limited-company forms\n    (\n        r\"\\bCOMPANY\
+          \ LIMITED\\b\",\n        \"CONG TY TNHH\"\n    ),\n    (\n        r\"\\\
+          bLIMITED LIABILITY COMPANY\\b\",\n        \"CONG TY TNHH\"\n    ),\n   \
+          \ (\n        r\"\\bCO LTD\\b\",\n        \"CONG TY TNHH\"\n    ),\n    (\n\
+          \        r\"\\bLTD\\b\",\n        \"CONG TY TNHH\"\n    ),\n\n    # Other\
+          \ legal forms\n    (\n        r\"\\bDNTN\\b\",\n        \"DOANH NGHIEP TU\
+          \ NHAN\"\n    ),\n    (\n        r\"\\bHTX\\b\",\n        \"HOP TAC XA\"\
+          \n    ),\n\n    # Symbol\n    (\n        r\"\\s*&\\s*\",\n        \" VA\
+          \ \"\n    )\n]\n\n\nLEGAL_PREFIXES = [\n    \"CONG TY TNHH MOT THANH VIEN\"\
+          ,\n    \"CONG TY CO PHAN\",\n    \"CONG TY TNHH\",\n    \"DOANH NGHIEP TU\
+          \ NHAN\",\n    \"HOP TAC XA\",\n    \"CONG TY\"\n]\n\n\ndef remove_accents(text):\n\
+          \    text = unicodedata.normalize(\n        \"NFD\",\n        text\n   \
+          \ )\n\n    text = \"\".join(\n        character\n        for character in\
+          \ text\n        if unicodedata.category(character) != \"Mn\"\n    )\n\n\
+          \    # Bảo đảm xử lý Đ/đ\n    return text.replace(\n        \"Đ\",\n   \
+          \     \"D\"\n    ).replace(\n        \"đ\",\n        \"d\"\n    )\n\n\n\
+          def normalize_name(text):\n    if not text:\n        return \"\"\n\n   \
+          \ text = str(text).upper().strip()\n    text = remove_accents(text)\n\n\
+          \    # Chuẩn hóa dấu câu thông thường.\n    # Chưa xóa dấu chấm vì cần xử\
+          \ lý C.TY, T.N.H.H trước.\n    text = re.sub(\n        r\"[,;:/\\\\\\-_()\\\
+          [\\]{}\\\"'`]+\",\n        \" \",\n        text\n    )\n\n    for pattern,\
+          \ replacement in REPLACEMENTS:\n        text = re.sub(\n            pattern,\n\
+          \            replacement,\n            text\n        )\n\n    # Xóa dấu\
+          \ chấm còn lại sau khi xử lý abbreviation\n    text = re.sub(\n        r\"\
+          \\.+\",\n        \" \",\n        text\n    )\n\n    text = re.sub(\n   \
+          \     r\"\\s+\",\n        \" \",\n        text\n    ).strip()\n\n    return\
+          \ text\n\n\ndef extract_core_name(normalized_name):\n    \"\"\"\n    Chỉ\
+          \ loại tiền tố pháp lý ở đầu tên.\n    Không xóa từ ngành nghề.\n    \"\"\
+          \"\n    if not normalized_name:\n        return \"\"\n\n    core_name =\
+          \ normalized_name\n\n    for legal_prefix in LEGAL_PREFIXES:\n        core_name\
+          \ = re.sub(\n            rf\"^\\s*{re.escape(legal_prefix)}\\s+\",\n   \
+          \         \"\",\n            core_name\n        )\n\n    return re.sub(\n\
+          \        r\"\\s+\",\n        \" \",\n        core_name\n    ).strip()\n\n\
+          \ndef tokenize(text):\n    if not text:\n        return []\n\n    return\
+          \ [\n        token\n        for token in text.split()\n        if token\n\
+          \    ]\n\n\ndef main(\n    invoice_name: str,\n    payment_name: str\n)\
+          \ -> dict:\n\n    invoice_normalized = normalize_name(\n        invoice_name\n\
+          \    )\n\n    payment_normalized = normalize_name(\n        payment_name\n\
+          \    )\n\n    invoice_core_name = extract_core_name(\n        invoice_normalized\n\
+          \    )\n\n    payment_core_name = extract_core_name(\n        payment_normalized\n\
+          \    )\n\n    invoice_core_tokens = tokenize(\n        invoice_core_name\n\
+          \    )\n\n    payment_core_tokens = tokenize(\n        payment_core_name\n\
+          \    )\n\n    return {\n        \"invoice_normalized\":\n            invoice_normalized,\n\
+          \n        \"payment_normalized\":\n            payment_normalized,\n\n \
+          \       \"invoice_core_name\":\n            invoice_core_name,\n\n     \
+          \   \"payment_core_name\":\n            payment_core_name,\n\n        \"\
+          invoice_core_tokens\":\n            invoice_core_tokens,\n\n        \"payment_core_tokens\"\
+          :\n            payment_core_tokens,\n\n        \"invoice_name_token_count\"\
+          :\n            len(invoice_core_tokens),\n\n        \"payment_name_token_count\"\
+          :\n            len(payment_core_tokens)\n    }"
+        code_language: python3
+        outputs:
+          invoice_core_name:
+            children: null
+            type: string
+          invoice_core_tokens:
+            children: null
+            type: array[string]
+          invoice_name_token_count:
+            children: null
+            type: number
+          invoice_normalized:
+            children: null
+            type: string
+          payment_core_name:
+            children: null
+            type: string
+          payment_core_tokens:
+            children: null
+            type: array[string]
+          payment_name_token_count:
+            children: null
+            type: number
+          payment_normalized:
+            children: null
+            type: string
+        selected: false
+        title: Normalize Names
+        type: code
+        variables:
+        - value_selector:
+          - '1786418696006'
+          - invoice_beneficiary_name
+          value_type: string
+          variable: invoice_name
+        - value_selector:
+          - '1786418696006'
+          - payment_beneficiary_name
+          value_type: string
+          variable: payment_name
+      height: 52
+      id: '1786418729517'
+      position:
+        x: 342
+        y: 115.33333333333331
+      positionAbsolute:
+        x: 342
+        y: 115.33333333333331
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "import re\n\n\nLEGAL_PATTERNS = [\n    (\n        \"TNHH_MOT_THANH_VIEN\"\
+          ,\n        \"TNHH\",\n        [\n            r\"\\bCONG TY TNHH MOT THANH\
+          \ VIEN\\b\",\n            r\"\\bTNHH MOT THANH VIEN\\b\"\n        ]\n  \
+          \  ),\n    (\n        \"CO_PHAN\",\n        \"CO_PHAN\",\n        [\n  \
+          \          r\"\\bCONG TY CO PHAN\\b\",\n            r\"\\bCO PHAN\\b\"\n\
+          \        ]\n    ),\n    (\n        \"TNHH\",\n        \"TNHH\",\n      \
+          \  [\n            r\"\\bCONG TY TNHH\\b\",\n            r\"\\bTNHH\\b\"\n\
+          \        ]\n    ),\n    (\n        \"DOANH_NGHIEP_TU_NHAN\",\n        \"\
+          DOANH_NGHIEP_TU_NHAN\",\n        [\n            r\"\\bDOANH NGHIEP TU NHAN\\\
+          b\"\n        ]\n    ),\n    (\n        \"HOP_TAC_XA\",\n        \"HOP_TAC_XA\"\
+          ,\n        [\n            r\"\\bHOP TAC XA\\b\"\n        ]\n    )\n]\n\n\
+          \ndef extract_legal_type(name):\n    if not name:\n        return {\n  \
+          \          \"legal_type\": \"UNKNOWN\",\n            \"legal_family\": \"\
+          UNKNOWN\"\n        }\n\n    for legal_type, legal_family, patterns in LEGAL_PATTERNS:\n\
+          \        for pattern in patterns:\n            if re.search(pattern, name):\n\
+          \                return {\n                    \"legal_type\": legal_type,\n\
+          \                    \"legal_family\": legal_family\n                }\n\
+          \n    return {\n        \"legal_type\": \"UNKNOWN\",\n        \"legal_family\"\
+          : \"UNKNOWN\"\n    }\n\n\ndef main(\n    invoice_normalized: str,\n    payment_normalized:\
+          \ str\n) -> dict:\n\n    invoice = extract_legal_type(\n        invoice_normalized\n\
+          \    )\n\n    payment = extract_legal_type(\n        payment_normalized\n\
+          \    )\n\n    both_known = (\n        invoice[\"legal_family\"] != \"UNKNOWN\"\
+          \n        and payment[\"legal_family\"] != \"UNKNOWN\"\n    )\n\n    legal_type_match\
+          \ = (\n        both_known\n        and invoice[\"legal_family\"]\n     \
+          \   == payment[\"legal_family\"]\n    )\n\n    legal_type_conflict = (\n\
+          \        both_known\n        and invoice[\"legal_family\"]\n        != payment[\"\
+          legal_family\"]\n    )\n\n    return {\n        \"invoice_legal_type\":\n\
+          \            invoice[\"legal_type\"],\n\n        \"payment_legal_type\"\
+          :\n            payment[\"legal_type\"],\n\n        \"invoice_legal_family\"\
+          :\n            invoice[\"legal_family\"],\n\n        \"payment_legal_family\"\
+          :\n            payment[\"legal_family\"],\n\n        \"legal_type_match\"\
+          :\n            legal_type_match,\n\n        \"legal_type_conflict\":\n \
+          \           legal_type_conflict\n    }"
+        code_language: python3
+        outputs:
+          invoice_legal_family:
+            children: null
+            type: string
+          invoice_legal_type:
+            children: null
+            type: string
+          legal_type_conflict:
+            children: null
+            type: boolean
+          legal_type_match:
+            children: null
+            type: boolean
+          payment_legal_family:
+            children: null
+            type: string
+          payment_legal_type:
+            children: null
+            type: string
+        selected: false
+        title: Extract Legal Type
+        type: code
+        variables:
+        - value_selector:
+          - '1786418729517'
+          - invoice_normalized
+          value_type: string
+          variable: invoice_normalized
+        - value_selector:
+          - '1786418729517'
+          - payment_normalized
+          value_type: string
+          variable: payment_normalized
+      height: 52
+      id: '1786420138295'
+      position:
+        x: 684
+        y: 123.99999999999997
+      positionAbsolute:
+        x: 684
+        y: 123.99999999999997
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "from difflib import SequenceMatcher\n\n\ndef to_token_set(tokens, fallback_text):\n\
+          \    if isinstance(tokens, list):\n        return {\n            str(token).strip()\n\
+          \            for token in tokens\n            if str(token).strip()\n  \
+          \      }\n\n    if fallback_text:\n        return {\n            token\n\
+          \            for token in fallback_text.split()\n            if token\n\
+          \        }\n\n    return set()\n\n\ndef sequence_score(first_text, second_text):\n\
+          \    first_text = first_text or \"\"\n    second_text = second_text or \"\
+          \"\n\n    if not first_text or not second_text:\n        return 0.0\n\n\
+          \    return SequenceMatcher(\n        None,\n        first_text,\n     \
+          \   second_text\n    ).ratio()\n\n\ndef jaccard_score(first_tokens, second_tokens):\n\
+          \    if not first_tokens or not second_tokens:\n        return 0.0\n\n \
+          \   union_tokens = first_tokens.union(\n        second_tokens\n    )\n\n\
+          \    if not union_tokens:\n        return 0.0\n\n    return (\n        len(first_tokens.intersection(second_tokens))\n\
+          \        / len(union_tokens)\n    )\n\n\ndef containment_score(first_tokens,\
+          \ second_tokens):\n    if not first_tokens or not second_tokens:\n     \
+          \   return 0.0\n\n    smaller_size = min(\n        len(first_tokens),\n\
+          \        len(second_tokens)\n    )\n\n    if smaller_size == 0:\n      \
+          \  return 0.0\n\n    intersection_size = len(\n        first_tokens.intersection(second_tokens)\n\
+          \    )\n\n    return intersection_size / smaller_size\n\n\ndef main(\n \
+          \   invoice_normalized: str,\n    payment_normalized: str,\n    invoice_core_name:\
+          \ str,\n    payment_core_name: str,\n    invoice_core_tokens: list,\n  \
+          \  payment_core_tokens: list\n) -> dict:\n\n    invoice_normalized = (\n\
+          \        invoice_normalized or \"\"\n    ).strip()\n\n    payment_normalized\
+          \ = (\n        payment_normalized or \"\"\n    ).strip()\n\n    invoice_core_name\
+          \ = (\n        invoice_core_name or \"\"\n    ).strip()\n\n    payment_core_name\
+          \ = (\n        payment_core_name or \"\"\n    ).strip()\n\n    full_invoice_tokens\
+          \ = set(\n        invoice_normalized.split()\n    )\n\n    full_payment_tokens\
+          \ = set(\n        payment_normalized.split()\n    )\n\n    invoice_core_set\
+          \ = to_token_set(\n        invoice_core_tokens,\n        invoice_core_name\n\
+          \    )\n\n    payment_core_set = to_token_set(\n        payment_core_tokens,\n\
+          \        payment_core_name\n    )\n\n    full_sequence = sequence_score(\n\
+          \        invoice_normalized,\n        payment_normalized\n    )\n\n    full_token\
+          \ = jaccard_score(\n        full_invoice_tokens,\n        full_payment_tokens\n\
+          \    )\n\n    core_sequence = sequence_score(\n        invoice_core_name,\n\
+          \        payment_core_name\n    )\n\n    core_token = jaccard_score(\n \
+          \       invoice_core_set,\n        payment_core_set\n    )\n\n    core_containment\
+          \ = containment_score(\n        invoice_core_set,\n        payment_core_set\n\
+          \    )\n\n    full_name_exact_match = (\n        bool(invoice_normalized)\n\
+          \        and invoice_normalized\n        == payment_normalized\n    )\n\n\
+          \    core_name_exact_match = (\n        bool(invoice_core_name)\n      \
+          \  and invoice_core_name\n        == payment_core_name\n    )\n\n    same_core_token_set\
+          \ = (\n        bool(invoice_core_set)\n        and invoice_core_set\n  \
+          \      == payment_core_set\n    )\n\n    core_word_order_only = (\n    \
+          \    same_core_token_set\n        and not core_name_exact_match\n    )\n\
+          \n    shortest_token_count = min(\n        len(invoice_core_set),\n    \
+          \    len(payment_core_set)\n    )\n\n    shortest_core_length = min(\n \
+          \       len(invoice_core_name),\n        len(payment_core_name)\n    )\n\
+          \n    short_name_detected = (\n        shortest_token_count <= 1\n     \
+          \   or shortest_core_length <= 4\n    )\n\n    weighted_score = (\n    \
+          \    full_sequence * 0.15\n        + full_token * 0.15\n        + core_sequence\
+          \ * 0.25\n        + core_token * 0.30\n        + core_containment * 0.15\n\
+          \    )\n\n    return {\n        \"sequence_similarity\":\n            round(full_sequence,\
+          \ 4),\n\n        \"token_similarity\":\n            round(full_token, 4),\n\
+          \n        \"core_sequence_similarity\":\n            round(core_sequence,\
+          \ 4),\n\n        \"core_token_similarity\":\n            round(core_token,\
+          \ 4),\n\n        \"core_containment_score\":\n            round(core_containment,\
+          \ 4),\n\n        \"name_similarity\":\n            round(weighted_score,\
+          \ 4),\n\n        \"full_name_exact_match\":\n            full_name_exact_match,\n\
+          \n        \"core_name_exact_match\":\n            core_name_exact_match,\n\
+          \n        \"same_core_token_set\":\n            same_core_token_set,\n\n\
+          \        \"core_word_order_only\":\n            core_word_order_only,\n\n\
+          \        \"short_name_detected\":\n            short_name_detected\n   \
+          \ }"
+        code_language: python3
+        outputs:
+          core_containment_score:
+            children: null
+            type: number
+          core_name_exact_match:
+            children: null
+            type: boolean
+          core_sequence_similarity:
+            children: null
+            type: number
+          core_token_similarity:
+            children: null
+            type: number
+          core_word_order_only:
+            children: null
+            type: boolean
+          full_name_exact_match:
+            children: null
+            type: boolean
+          name_similarity:
+            children: null
+            type: number
+          same_core_token_set:
+            children: null
+            type: boolean
+          sequence_similarity:
+            children: null
+            type: number
+          short_name_detected:
+            children: null
+            type: boolean
+          token_similarity:
+            children: null
+            type: number
+        selected: false
+        title: Calculate Similarity
+        type: code
+        variables:
+        - value_selector:
+          - '1786418729517'
+          - invoice_normalized
+          value_type: string
+          variable: invoice_normalized
+        - value_selector:
+          - '1786418729517'
+          - payment_normalized
+          value_type: string
+          variable: payment_normalized
+        - value_selector:
+          - '1786418729517'
+          - invoice_core_name
+          value_type: string
+          variable: invoice_core_name
+        - value_selector:
+          - '1786418729517'
+          - payment_core_name
+          value_type: string
+          variable: payment_core_name
+        - value_selector:
+          - '1786418729517'
+          - invoice_core_tokens
+          value_type: array[string]
+          variable: invoice_core_tokens
+        - value_selector:
+          - '1786418729517'
+          - payment_core_tokens
+          value_type: array[string]
+          variable: payment_core_tokens
+      height: 52
+      id: '1786420298962'
+      position:
+        x: 1026
+        y: 132.66666666666663
+      positionAbsolute:
+        x: 1026
+        y: 132.66666666666663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "def count_tokens(text):\n    if not text:\n        return 0\n\n   \
+          \ return len([\n        token\n        for token in text.split()\n     \
+          \   if token\n    ])\n\n\ndef build_result(\n    decision,\n    action,\n\
+          \    risk_level,\n    reason_code,\n    ai_eligible=False,\n    review_mode=\"\
+          NONE\"\n):\n    return {\n        \"decision\": decision,\n        \"action\"\
+          : action,\n        \"risk_level\": risk_level,\n        \"reason_code\"\
+          : reason_code,\n        \"ai_eligible\": ai_eligible,\n        \"review_mode\"\
+          : review_mode\n    }\n\n\ndef main(invoice_normalized: str, payment_normalized:\
+          \ str, invoice_legal_type: str, payment_legal_type: str, legal_type_conflict,\
+          \ name_similarity: float, invoice_core_name: str, payment_core_name: str,\
+          \ core_sequence_similarity: float, core_token_similarity: float, core_containment_score:\
+          \ float, full_name_exact_match, core_name_exact_match, same_core_token_set,\
+          \ core_word_order_only, short_name_detected, legal_type_match) -> dict:\n\
+          \n    invoice_normalized = (\n        invoice_normalized or \"\"\n    ).strip()\n\
+          \n    payment_normalized = (\n        payment_normalized or \"\"\n    ).strip()\n\
+          \n    invoice_core_name = (\n        invoice_core_name or \"\"\n    ).strip()\n\
+          \n    payment_core_name = (\n        payment_core_name or \"\"\n    ).strip()\n\
+          \n    invoice_legal_type = (\n        invoice_legal_type or \"UNKNOWN\"\n\
+          \    )\n\n    payment_legal_type = (\n        payment_legal_type or \"UNKNOWN\"\
+          \n    )\n\n    name_similarity = float(\n        name_similarity or 0.0\n\
+          \    )\n\n    core_sequence_similarity = float(\n        core_sequence_similarity\
+          \ or 0.0\n    )\n\n    core_token_similarity = float(\n        core_token_similarity\
+          \ or 0.0\n    )\n\n    core_containment_score = float(\n        core_containment_score\
+          \ or 0.0\n    )\n\n    minimum_core_token_count = min(\n        count_tokens(invoice_core_name),\n\
+          \        count_tokens(payment_core_name)\n    )\n\n    # Rule 1: Thiếu tên\n\
+          \    if (\n        not invoice_normalized\n        or not payment_normalized\n\
+          \    ):\n        return build_result(\n            decision=\"REVIEW\",\n\
+          \            action=\"WARN\",\n            risk_level=\"MEDIUM\",\n    \
+          \        reason_code=\"INSUFFICIENT_DATA\",\n            ai_eligible=False,\n\
+          \            review_mode=\"DETERMINISTIC_WARNING\"\n        )\n\n    # Rule\
+          \ 2: Xung đột loại hình pháp nhân\n    if legal_type_conflict:\n       \
+          \ return build_result(\n            decision=\"NOT_MATCH\",\n          \
+          \  action=\"BLOCK\",\n            risk_level=\"HIGH\",\n            reason_code=\"\
+          LEGAL_ENTITY_TYPE_CONFLICT\"\n        )\n\n    # Rule 3: Tên giống hệt sau\
+          \ normalize\n    # Xử lý: dấu, hoa-thường, punctuation, abbreviation.\n\
+          \    if full_name_exact_match:\n        return build_result(\n         \
+          \   decision=\"MATCH\",\n            action=\"ALLOW\",\n            risk_level=\"\
+          LOW\",\n            reason_code=\"NORMALIZED_NAME_EXACT_MATCH\"\n      \
+          \  )\n\n    # Rule 4: Core name giống hệt và legal type giống nhau.\n  \
+          \  # Yêu cầu ít nhất 2 token để tránh auto-match \"ABC\".\n    if (\n  \
+          \      legal_type_match\n        and core_name_exact_match\n        and\
+          \ minimum_core_token_count >= 2\n        and not short_name_detected\n \
+          \   ):\n        return build_result(\n            decision=\"MATCH\",\n\
+          \            action=\"ALLOW\",\n            risk_level=\"LOW\",\n      \
+          \      reason_code=\"LEGAL_TYPE_AND_CORE_NAME_EXACT_MATCH\"\n        )\n\
+          \n    # Rule 5: Cùng bộ từ, chỉ khác thứ tự.\n    if (\n        legal_type_match\n\
+          \        and same_core_token_set\n        and minimum_core_token_count >=\
+          \ 2\n        and not short_name_detected\n    ):\n        return build_result(\n\
+          \            decision=\"MATCH\",\n            action=\"ALLOW\",\n      \
+          \      risk_level=\"LOW\",\n            reason_code=\"LEGAL_TYPE_AND_CORE_TOKEN_SET_MATCH\"\
+          \n        )\n\n    # Rule 6: Core rất giống và legal type đã xác định.\n\
+          \    # Threshold vẫn cần hiệu chỉnh bằng Golden Dataset.\n    if (\n   \
+          \     legal_type_match\n        and core_sequence_similarity >= 0.96\n \
+          \       and core_token_similarity >= 0.90\n        and core_containment_score\
+          \ >= 0.90\n        and minimum_core_token_count >= 3\n        and not short_name_detected\n\
+          \    ):\n        return build_result(\n            decision=\"MATCH\",\n\
+          \            action=\"ALLOW\",\n            risk_level=\"LOW\",\n      \
+          \      reason_code=\"HIGH_CORE_NAME_SIMILARITY\"\n        )\n\n    # Rule\
+          \ 7: Tên ngắn/rút gọn.\n    # Không gọi AI vì có thể cảnh báo bằng template.\n\
+          \    if (\n        short_name_detected\n        and core_containment_score\
+          \ >= 1.0\n    ):\n        return build_result(\n            decision=\"\
+          REVIEW\",\n            action=\"WARN\",\n            risk_level=\"MEDIUM\"\
+          ,\n            reason_code=\"PARTIAL_CORE_NAME_MATCH\",\n            ai_eligible=False,\n\
+          \            review_mode=\"DETERMINISTIC_WARNING\"\n        )\n\n    # Rule\
+          \ 8: Core name trùng mạnh nhưng thiếu legal type.\n    if (\n        (\n\
+          \            invoice_legal_type == \"UNKNOWN\"\n            or payment_legal_type\
+          \ == \"UNKNOWN\"\n        )\n        and core_name_exact_match\n       \
+          \ and minimum_core_token_count >= 2\n        and not short_name_detected\n\
+          \    ):\n        return build_result(\n            decision=\"REVIEW\",\n\
+          \            action=\"WARN\",\n            risk_level=\"MEDIUM\",\n    \
+          \        reason_code=\"LEGAL_TYPE_MISSING_CORE_NAME_MATCH\",\n         \
+          \   ai_eligible=False,\n            review_mode=\"DETERMINISTIC_WARNING\"\
+          \n        )\n\n    # Rule 9: Mơ hồ thực sự mới gọi AI.\n    if (\n     \
+          \   name_similarity >= 0.82\n        or core_sequence_similarity >= 0.82\n\
+          \        or core_token_similarity >= 0.75\n    ):\n        return build_result(\n\
+          \            decision=\"REVIEW\",\n            action=\"WARN\",\n      \
+          \      risk_level=\"MEDIUM\",\n            reason_code=\"NAME_SIMILAR_BUT_NOT_CONCLUSIVE\"\
+          ,\n            ai_eligible=True,\n            review_mode=\"AI_WARNING\"\
+          \n        )\n\n    # Rule 10: Khác biệt lớn\n    return build_result(\n\
+          \        decision=\"NOT_MATCH\",\n        action=\"BLOCK\",\n        risk_level=\"\
+          HIGH\",\n        reason_code=\"LOW_NAME_SIMILARITY\"\n    )"
+        code_language: python3
+        outputs:
+          action:
+            children: null
+            type: string
+          ai_eligible:
+            children: null
+            type: boolean
+          decision:
+            children: null
+            type: string
+          reason_code:
+            children: null
+            type: string
+          review_mode:
+            children: null
+            type: string
+          risk_level:
+            children: null
+            type: string
+        selected: false
+        title: Decision Engine
+        type: code
+        variables:
+        - value_selector:
+          - '1786418729517'
+          - invoice_normalized
+          value_type: string
+          variable: invoice_normalized
+        - value_selector:
+          - '1786418729517'
+          - payment_normalized
+          value_type: string
+          variable: payment_normalized
+        - value_selector:
+          - '1786420138295'
+          - invoice_legal_type
+          value_type: string
+          variable: invoice_legal_type
+        - value_selector:
+          - '1786420138295'
+          - payment_legal_type
+          value_type: string
+          variable: payment_legal_type
+        - value_selector:
+          - '1786420138295'
+          - legal_type_conflict
+          value_type: boolean
+          variable: legal_type_conflict
+        - value_selector:
+          - '1786420298962'
+          - name_similarity
+          value_type: number
+          variable: name_similarity
+        - value_selector:
+          - '1786418729517'
+          - invoice_core_name
+          value_type: string
+          variable: invoice_core_name
+        - value_selector:
+          - '1786418729517'
+          - payment_core_name
+          value_type: string
+          variable: payment_core_name
+        - value_selector:
+          - '1786420298962'
+          - core_sequence_similarity
+          value_type: number
+          variable: core_sequence_similarity
+        - value_selector:
+          - '1786420298962'
+          - core_token_similarity
+          value_type: number
+          variable: core_token_similarity
+        - value_selector:
+          - '1786420298962'
+          - core_containment_score
+          value_type: number
+          variable: core_containment_score
+        - value_selector:
+          - '1786420298962'
+          - full_name_exact_match
+          value_type: boolean
+          variable: full_name_exact_match
+        - value_selector:
+          - '1786420298962'
+          - core_name_exact_match
+          value_type: boolean
+          variable: core_name_exact_match
+        - value_selector:
+          - '1786420298962'
+          - same_core_token_set
+          value_type: boolean
+          variable: same_core_token_set
+        - value_selector:
+          - '1786420298962'
+          - core_word_order_only
+          value_type: boolean
+          variable: core_word_order_only
+        - value_selector:
+          - '1786420298962'
+          - short_name_detected
+          value_type: boolean
+          variable: short_name_detected
+        - value_selector:
+          - '1786420138295'
+          - legal_type_match
+          value_type: boolean
+          variable: legal_type_match
+      height: 52
+      id: '1786420410096'
+      position:
+        x: 1368
+        y: 141.3333333333333
+      positionAbsolute:
+        x: 1368
+        y: 141.3333333333333
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "def safe_text(value):\n    \"\"\"\n    Convert None or other input\
+          \ types into a safe string.\n    \"\"\"\n    if value is None:\n       \
+          \ return \"\"\n\n    return str(value).strip()\n\n\ndef safe_number(value,\
+          \ default=0.0):\n    \"\"\"\n    Convert Dify input into float safely.\n\
+          \    \"\"\"\n    try:\n        if value is None or value == \"\":\n    \
+          \        return float(default)\n\n        return float(value)\n\n    except\
+          \ (TypeError, ValueError):\n        return float(default)\n\n\ndef clamp(value,\
+          \ minimum=0.0, maximum=1.0):\n    \"\"\"\n    Keep numeric values inside\
+          \ the expected range.\n    \"\"\"\n    return max(\n        minimum,\n \
+          \       min(maximum, value)\n    )\n\n\ndef normalize_checks(checks_required):\n\
+          \    \"\"\"\n    Ensure checks_required is always an array of strings.\n\
+          \    Keep a maximum of three actionable checks.\n    \"\"\"\n    if not\
+          \ isinstance(checks_required, list):\n        return []\n\n    normalized_checks\
+          \ = []\n\n    for item in checks_required:\n        item_text = safe_text(item)\n\
+          \n        if item_text:\n            normalized_checks.append(item_text)\n\
+          \n    return normalized_checks[:3]\n\n\ndef build_fallback_warning(\n  \
+          \  decision,\n    reason_code,\n    invoice_legal_type,\n    payment_legal_type\n\
+          ):\n    \"\"\"\n    Deterministic fallback used when warning inputs are\
+          \ missing\n    or AI output is invalid.\n    \"\"\"\n\n    if decision ==\
+          \ \"MATCH\":\n        return {\n            \"warning_code\": \"NAME_VERIFICATION_PASSED\"\
+          ,\n            \"warning_title\": \"Tên bên thụ hưởng phù hợp\",\n     \
+          \       \"warning_message\": (\n                \"Tên bên thụ hưởng trên\
+          \ đề nghị chuyển tiền \"\n                \"phù hợp với tên trên hóa đơn.\"\
+          \n            ),\n            \"checks_required\": [],\n            \"generated_by_ai\"\
+          : False,\n            \"ai_status\": \"NOT_INVOKED\"\n        }\n\n    if\
+          \ (\n        decision == \"NOT_MATCH\"\n        and reason_code == \"LEGAL_ENTITY_TYPE_CONFLICT\"\
+          \n    ):\n        return {\n            \"warning_code\": \"LEGAL_ENTITY_TYPE_CONFLICT\"\
+          ,\n            \"warning_title\": (\n                \"Không khớp loại hình\
+          \ pháp nhân\"\n            ),\n            \"warning_message\": (\n    \
+          \            \"Loại hình pháp nhân không khớp. \"\n                f\"Tên\
+          \ trên hóa đơn có loại hình \"\n                f\"{invoice_legal_type},\
+          \ trong khi tên trên \"\n                f\"đề nghị chuyển tiền có loại\
+          \ hình \"\n                f\"{payment_legal_type}.\"\n            ),\n\
+          \            \"checks_required\": [\n                \"Kiểm tra lại tên\
+          \ đầy đủ của bên thụ hưởng\",\n                \"Đối chiếu lại hóa đơn và\
+          \ đề nghị chuyển tiền\",\n                \"Điều chỉnh thông tin trước khi\
+          \ tiếp tục\"\n            ],\n            \"generated_by_ai\": False,\n\
+          \            \"ai_status\": \"NOT_INVOKED\"\n        }\n\n    if decision\
+          \ == \"NOT_MATCH\":\n        return {\n            \"warning_code\": (\n\
+          \                reason_code or \"LOW_NAME_SIMILARITY\"\n            ),\n\
+          \            \"warning_title\": (\n                \"Tên bên thụ hưởng không\
+          \ phù hợp\"\n            ),\n            \"warning_message\": (\n      \
+          \          \"Tên bên thụ hưởng trên đề nghị chuyển tiền \"\n           \
+          \     \"có khác biệt đáng kể so với tên trên hóa đơn.\"\n            ),\n\
+          \            \"checks_required\": [\n                \"Kiểm tra lại tên\
+          \ đầy đủ của bên thụ hưởng\",\n                \"Đối chiếu lại hóa đơn và\
+          \ đề nghị chuyển tiền\"\n            ],\n            \"generated_by_ai\"\
+          : False,\n            \"ai_status\": \"NOT_INVOKED\"\n        }\n\n    return\
+          \ {\n        \"warning_code\": (\n            reason_code or \"INSUFFICIENT_DATA\"\
+          \n        ),\n        \"warning_title\": (\n            \"Cần kiểm tra tên\
+          \ bên thụ hưởng\"\n        ),\n        \"warning_message\": (\n        \
+          \    \"Thông tin tên bên thụ hưởng chưa đủ căn cứ \"\n            \"để xác\
+          \ định chắc chắn là cùng pháp nhân. \"\n            \"Vui lòng kiểm tra\
+          \ lại trước khi tiếp tục.\"\n        ),\n        \"checks_required\": [\n\
+          \            \"Đối chiếu tên trên hóa đơn\",\n            \"Đối chiếu tên\
+          \ trên đề nghị chuyển tiền\"\n        ],\n        \"generated_by_ai\": False,\n\
+          \        \"ai_status\": \"FALLBACK\"\n    }\n\n\ndef main(\n    request_id:\
+          \ str,\n    invoice_name: str,\n    payment_name: str,\n    invoice_account:\
+          \ str,\n    payment_account: str,\n    invoice_normalized: str,\n    payment_normalized:\
+          \ str,\n    invoice_legal_type: str,\n    payment_legal_type: str,\n   \
+          \ legal_type_match: bool,\n    sequence_similarity: float,\n    token_similarity:\
+          \ float,\n    name_similarity: float,\n    decision: str,\n    action: str,\n\
+          \    risk_level: str,\n    reason_code: str,\n    name_difference_rate:\
+          \ float,\n    difference_percentage: float,\n    difference_display: str,\n\
+          \    warning_code: str,\n    warning_title: str,\n    warning_message: str,\n\
+          \    checks_required: list,\n    generated_by_ai: bool,\n    ai_status:\
+          \ str\n) -> dict:\n\n    # ----------------------------\n    # Normalize\
+          \ source information\n    # ----------------------------\n\n    request_id\
+          \ = safe_text(request_id)\n\n    invoice_name = safe_text(invoice_name)\n\
+          \    payment_name = safe_text(payment_name)\n\n    invoice_account = safe_text(\n\
+          \        invoice_account\n    )\n\n    payment_account = safe_text(\n  \
+          \      payment_account\n    )\n\n    invoice_normalized = safe_text(\n \
+          \       invoice_normalized\n    )\n\n    payment_normalized = safe_text(\n\
+          \        payment_normalized\n    )\n\n    invoice_legal_type = (\n     \
+          \   safe_text(invoice_legal_type)\n        or \"UNKNOWN\"\n    )\n\n   \
+          \ payment_legal_type = (\n        safe_text(payment_legal_type)\n      \
+          \  or \"UNKNOWN\"\n    )\n\n    decision = safe_text(decision)\n    action\
+          \ = safe_text(action)\n    risk_level = safe_text(risk_level)\n    reason_code\
+          \ = safe_text(reason_code)\n\n    # ----------------------------\n    #\
+          \ Normalize similarity metrics\n    # ----------------------------\n\n \
+          \   sequence_similarity = clamp(\n        safe_number(sequence_similarity)\n\
+          \    )\n\n    token_similarity = clamp(\n        safe_number(token_similarity)\n\
+          \    )\n\n    name_similarity = clamp(\n        safe_number(name_similarity)\n\
+          \    )\n\n    name_difference_rate = clamp(\n        safe_number(\n    \
+          \        name_difference_rate,\n            1.0 - name_similarity\n    \
+          \    )\n    )\n\n    difference_percentage = round(\n        name_difference_rate\
+          \ * 100\n    )\n\n    # Do not trust an inconsistent percentage from upstream.\n\
+          \    # Recalculate from the normalized difference rate.\n    difference_percentage\
+          \ = int(\n        difference_percentage\n    )\n\n    difference_display\
+          \ = (\n        f\"Mức độ khác biệt tên: \"\n        f\"{difference_percentage}%\"\
+          \n    )\n\n    # ----------------------------\n    # Account supporting\
+          \ signal\n    # ----------------------------\n\n    same_account = (\n \
+          \       bool(invoice_account)\n        and bool(payment_account)\n     \
+          \   and invoice_account == payment_account\n    )\n\n    account_data_available\
+          \ = (\n        bool(invoice_account)\n        and bool(payment_account)\n\
+          \    )\n\n    # ----------------------------\n    # Validate warning content\n\
+          \    # ----------------------------\n\n    warning_code = safe_text(warning_code)\n\
+          \    warning_title = safe_text(warning_title)\n    warning_message = safe_text(warning_message)\n\
+          \    ai_status = safe_text(ai_status)\n\n    normalized_checks = normalize_checks(\n\
+          \        checks_required\n    )\n\n    warning_valid = (\n        bool(warning_code)\n\
+          \        and bool(warning_title)\n        and bool(warning_message)\n  \
+          \  )\n\n    if warning_valid:\n        final_warning = {\n            \"\
+          warning_code\": warning_code,\n            \"warning_title\": warning_title,\n\
+          \            \"warning_message\": warning_message,\n            \"checks_required\"\
+          : normalized_checks,\n            \"generated_by_ai\": bool(\n         \
+          \       generated_by_ai\n            ),\n            \"ai_status\": (\n\
+          \                ai_status or \"SUCCESS\"\n            )\n        }\n\n\
+          \    else:\n        final_warning = build_fallback_warning(\n          \
+          \  decision=decision,\n            reason_code=reason_code,\n          \
+          \  invoice_legal_type=invoice_legal_type,\n            payment_legal_type=payment_legal_type\n\
+          \        )\n\n    # AI is allowed only to generate warning text for REVIEW.\n\
+          \    # Any AI flag received for MATCH or NOT_MATCH is neutralized.\n   \
+          \ if decision != \"REVIEW\":\n        final_warning[\"generated_by_ai\"\
+          ] = False\n        final_warning[\"ai_status\"] = \"NOT_INVOKED\"\n\n  \
+          \  # AI never participates in the final decision.\n    ai_used_for_decision\
+          \ = False\n\n    # ----------------------------\n    # Build final API response\n\
+          \    # ----------------------------\n\n    response = {\n        \"request_id\"\
+          : request_id,\n\n        \"decision\": decision,\n        \"action\": action,\n\
+          \        \"risk_level\": risk_level,\n        \"decision_source\": \"RULE_ENGINE\"\
+          ,\n\n        \"name_verification\": {\n            \"invoice_name\": invoice_name,\n\
+          \            \"payment_name\": payment_name,\n\n            \"invoice_normalized\"\
+          :\n                invoice_normalized,\n\n            \"payment_normalized\"\
+          :\n                payment_normalized,\n\n            \"similarity_score\"\
+          :\n                round(name_similarity, 4),\n\n            \"name_difference_rate\"\
+          :\n                round(name_difference_rate, 4),\n\n            \"difference_percentage\"\
+          :\n                difference_percentage,\n\n            \"similarity_details\"\
+          : {\n                \"sequence_similarity\":\n                    round(sequence_similarity,\
+          \ 4),\n\n                \"token_similarity\":\n                    round(token_similarity,\
+          \ 4)\n            },\n\n            \"invoice_legal_type\":\n          \
+          \      invoice_legal_type,\n\n            \"payment_legal_type\":\n    \
+          \            payment_legal_type,\n\n            \"legal_type_match\":\n\
+          \                bool(legal_type_match)\n        },\n\n        \"account_verification\"\
+          : {\n            \"invoice_account\":\n                invoice_account,\n\
+          \n            \"payment_account\":\n                payment_account,\n\n\
+          \            \"account_data_available\":\n                account_data_available,\n\
+          \n            \"same_account\":\n                same_account,\n\n     \
+          \       \"used_for_decision\":\n                False\n        },\n\n  \
+          \      \"user_warning\": {\n            \"warning_code\":\n            \
+          \    final_warning[\"warning_code\"],\n\n            \"title\":\n      \
+          \          final_warning[\"warning_title\"],\n\n            \"message\"\
+          :\n                final_warning[\"warning_message\"],\n\n            \"\
+          checks_required\":\n                final_warning[\"checks_required\"],\n\
+          \n            \"difference_display\":\n                difference_display,\n\
+          \n            \"difference_metric_note\": (\n                \"Mức độ khác\
+          \ biệt được tính từ tên sau \"\n                \"chuẩn hóa. Chỉ số này\
+          \ không phải xác suất \"\n                \"hai bên là hai pháp nhân khác\
+          \ nhau và \"\n                \"không xác minh chủ tài khoản.\"\n      \
+          \      ),\n\n            \"generated_by_ai\":\n                final_warning[\"\
+          generated_by_ai\"],\n\n            \"used_for_decision\":\n            \
+          \    ai_used_for_decision,\n\n            \"ai_status\":\n             \
+          \   final_warning[\"ai_status\"]\n        },\n\n        \"reason_codes\"\
+          : [\n            reason_code\n        ] if reason_code else [],\n\n    \
+          \    \"workflow_version\": \"2.0\",\n        \"rule_engine_version\": \"\
+          1.0\",\n        \"normalization_version\": \"1.0\",\n        \"similarity_version\"\
+          : \"1.0\",\n        \"ai_warning_version\": \"2.0.0\",\n        \"prompt_version\"\
+          : \"2.0.0\"\n    }\n\n    return {\n        \"response\": response\n   \
+          \ }"
+        code_language: python3
+        outputs:
+          response:
+            children: null
+            type: object
+        selected: false
+        title: Build API Response
+        type: code
+        variables:
+        - value_selector:
+          - '1786418696006'
+          - request_id
+          value_type: string
+          variable: request_id
+        - value_selector:
+          - '1786418696006'
+          - invoice_beneficiary_name
+          value_type: string
+          variable: invoice_name
+        - value_selector:
+          - '1786418696006'
+          - payment_beneficiary_name
+          value_type: string
+          variable: payment_name
+        - value_selector:
+          - '1786418696006'
+          - invoice_account_number
+          value_type: string
+          variable: invoice_account
+        - value_selector:
+          - '1786418696006'
+          - payment_account_number
+          value_type: string
+          variable: payment_account
+        - value_selector:
+          - '1786418729517'
+          - invoice_normalized
+          value_type: string
+          variable: invoice_normalized
+        - value_selector:
+          - '1786418729517'
+          - payment_normalized
+          value_type: string
+          variable: payment_normalized
+        - value_selector:
+          - '1786420138295'
+          - invoice_legal_type
+          value_type: string
+          variable: invoice_legal_type
+        - value_selector:
+          - '1786420138295'
+          - payment_legal_type
+          value_type: string
+          variable: payment_legal_type
+        - value_selector:
+          - '1786420138295'
+          - legal_type_match
+          value_type: boolean
+          variable: legal_type_match
+        - value_selector:
+          - '1786420298962'
+          - sequence_similarity
+          value_type: number
+          variable: sequence_similarity
+        - value_selector:
+          - '1786420298962'
+          - token_similarity
+          value_type: number
+          variable: token_similarity
+        - value_selector:
+          - '1786420298962'
+          - name_similarity
+          value_type: number
+          variable: name_similarity
+        - value_selector:
+          - '1786420410096'
+          - decision
+          value_type: string
+          variable: decision
+        - value_selector:
+          - '1786420410096'
+          - action
+          value_type: string
+          variable: action
+        - value_selector:
+          - '1786420410096'
+          - risk_level
+          value_type: string
+          variable: risk_level
+        - value_selector:
+          - '1786420410096'
+          - reason_code
+          value_type: string
+          variable: reason_code
+        - value_selector:
+          - '1786437687922'
+          - name_difference_rate
+          value_type: number
+          variable: name_difference_rate
+        - value_selector:
+          - '1786437687922'
+          - difference_percentage
+          value_type: number
+          variable: difference_percentage
+        - value_selector:
+          - '1786437687922'
+          - difference_display
+          value_type: string
+          variable: difference_display
+        - value_selector:
+          - '1786438595926'
+          - warning_code
+          value_type: string
+          variable: warning_code
+        - value_selector:
+          - '1786441161904'
+          - warning_title
+          value_type: string
+          variable: warning_title
+        - value_selector:
+          - '1786441161904'
+          - warning_message
+          value_type: string
+          variable: warning_message
+        - value_selector:
+          - '1786441161904'
+          - checks_required
+          value_type: array[string]
+          variable: checks_required
+        - value_selector:
+          - '1786441161904'
+          - generated_by_ai
+          value_type: string
+          variable: generated_by_ai
+        - value_selector:
+          - '1786441161904'
+          - ai_status
+          value_type: string
+          variable: ai_status
+      height: 52
+      id: '1786421027184'
+      position:
+        x: 3118
+        y: 176.52380952380946
+      positionAbsolute:
+        x: 3118
+        y: 176.52380952380946
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        outputs:
+        - value_selector:
+          - '1786421027184'
+          - response
+          value_type: object
+          variable: result
+        selected: false
+        title: Output
+        type: end
+      height: 88
+      id: '1786421797177'
+      position:
+        x: 3460
+        y: 167.19047619047615
+      positionAbsolute:
+        x: 3460
+        y: 167.19047619047615
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "def main(name_similarity: float) -> dict:\n    similarity = max(\n\
+          \        0.0,\n        min(1.0, float(name_similarity or 0.0))\n    )\n\n\
+          \    difference_rate = round(\n        1.0 - similarity,\n        4\n  \
+          \  )\n\n    difference_percentage = round(\n        difference_rate * 100\n\
+          \    )\n\n    return {\n        \"name_difference_rate\": difference_rate,\n\
+          \        \"difference_percentage\": difference_percentage,\n        \"difference_display\"\
+          : (\n            f\"Mức độ khác biệt tên: \"\n            f\"{difference_percentage}%\"\
+          \n        )\n    }"
+        code_language: python3
+        outputs:
+          difference_display:
+            children: null
+            type: string
+          difference_percentage:
+            children: null
+            type: number
+          name_difference_rate:
+            children: null
+            type: number
+        selected: false
+        title: Calculate Warning Metrics
+        type: code
+        variables:
+        - value_selector:
+          - '1786420298962'
+          - name_similarity
+          value_type: number
+          variable: name_similarity
+      height: 52
+      id: '1786437687922'
+      position:
+        x: 1710
+        y: 149.99999999999994
+      positionAbsolute:
+        x: 1710
+        y: 149.99999999999994
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: befb71b9-7e77-4a0f-af51-7c39ac6316f4
+            value: MATCH
+            varType: string
+            variable_selector:
+            - '1786420410096'
+            - decision
+          id: 'true'
+          logical_operator: or
+        - case_id: d9da26db-d0ca-41a5-bddc-5b70cf14185b
+          conditions:
+          - comparison_operator: contains
+            id: bf489ab7-33e5-4768-930e-36ac4310f8cc
+            value: NOT_MATCH
+            varType: string
+            variable_selector:
+            - '1786420410096'
+            - decision
+          id: d9da26db-d0ca-41a5-bddc-5b70cf14185b
+          logical_operator: and
+        selected: false
+        title: Warning Route
+        type: if-else
+      height: 220
+      id: '1786437733421'
+      position:
+        x: 2052
+        y: 74.6666666666666
+      positionAbsolute:
+        x: 2052
+        y: 74.6666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "def main(difference_display: str) -> dict:\n    return {\n        \"\
+          warning_code\": \"NAME_VERIFICATION_PASSED\",\n        \"warning_title\"\
+          : \"Tên bên thụ hưởng phù hợp\",\n        \"warning_message\": (\n     \
+          \       \"Tên bên thụ hưởng trên đề nghị chuyển tiền \"\n            \"\
+          phù hợp với tên trên hóa đơn.\"\n        ),\n        \"checks_required\"\
+          : [],\n        \"generated_by_ai\": False,\n        \"ai_status\": \"NOT_INVOKED\"\
+          \n    }"
+        code_language: python3
+        outputs:
+          ai_status:
+            children: null
+            type: string
+          checks_required:
+            children: null
+            type: array[string]
+          generated_by_ai:
+            children: null
+            type: boolean
+          warning_code:
+            children: null
+            type: string
+          warning_message:
+            children: null
+            type: string
+          warning_title:
+            children: null
+            type: string
+        selected: false
+        title: Build Match Message
+        type: code
+        variables:
+        - value_selector:
+          - '1786437687922'
+          - difference_display
+          value_type: string
+          variable: difference_display
+      height: 52
+      id: '1786438595926'
+      position:
+        x: 2756
+        y: 69.52380952380949
+      positionAbsolute:
+        x: 2756
+        y: 69.52380952380949
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "def main(\n    reason_code: str,\n    invoice_legal_type: str,\n  \
+          \  payment_legal_type: str,\n    difference_display: str\n) -> dict:\n\n\
+          \    if reason_code == \"LEGAL_ENTITY_TYPE_CONFLICT\":\n        message\
+          \ = (\n            \"Loại hình pháp nhân không khớp. \"\n            f\"\
+          Tên trên hóa đơn có loại hình \"\n            f\"{invoice_legal_type}, trong\
+          \ khi tên trên \"\n            f\"đề nghị chuyển tiền có loại hình \"\n\
+          \            f\"{payment_legal_type}.\"\n        )\n\n        checks = [\n\
+          \            \"Kiểm tra lại tên bên thụ hưởng\",\n            \"Điều chỉnh\
+          \ đề nghị chuyển tiền nếu thông tin chưa đúng\"\n        ]\n    else:\n\
+          \        message = (\n            \"Tên bên thụ hưởng có khác biệt đáng\
+          \ kể \"\n            \"so với tên trên hóa đơn.\"\n        )\n\n       \
+          \ checks = [\n            \"Kiểm tra lại tên đầy đủ của bên thụ hưởng\"\
+          ,\n            \"Đối chiếu lại hóa đơn và đề nghị chuyển tiền\"\n      \
+          \  ]\n\n    return {\n        \"warning_code\": reason_code,\n        \"\
+          warning_title\": \"Tên bên thụ hưởng không phù hợp\",\n        \"warning_message\"\
+          : message,\n        \"checks_required\": checks,\n        \"generated_by_ai\"\
+          : False,\n        \"ai_status\": \"NOT_INVOKED\"\n    }"
+        code_language: python3
+        outputs:
+          ai_status:
+            children: null
+            type: string
+          checks_required:
+            children: null
+            type: array[string]
+          generated_by_ai:
+            children: null
+            type: boolean
+          warning_code:
+            children: null
+            type: string
+          warning_message:
+            children: null
+            type: string
+          warning_title:
+            children: null
+            type: string
+        selected: false
+        title: Build Not Match Warning
+        type: code
+        variables:
+        - value_selector:
+          - '1786420410096'
+          - reason_code
+          value_type: string
+          variable: reason_code
+        - value_selector:
+          - '1786420138295'
+          - invoice_legal_type
+          value_type: string
+          variable: invoice_legal_type
+        - value_selector:
+          - '1786420138295'
+          - payment_legal_type
+          value_type: string
+          variable: payment_legal_type
+        - value_selector:
+          - '1786437687922'
+          - difference_display
+          value_type: string
+          variable: difference_display
+      height: 52
+      id: '1786439414501'
+      position:
+        x: 2414
+        y: 146.5238095238095
+      positionAbsolute:
+        x: 2414
+        y: 146.5238095238095
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1786420410096'
+          - decision
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-5
+          provider: langgenius/openai/openai
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - id: 439610f9-ab60-4169-8a13-b5968d8fbdcc
+          role: system
+          text: 'Bạn là thành phần hỗ trợ diễn giải cảnh báo trong quy trình
+
+            kiểm tra tên bên thụ hưởng trước giải ngân.
+
+            Quyết định đã được Rule Engine xác định là REVIEW.
+
+            Bạn không được thay đổi hoặc phản biện quyết định này.
+
+            Nhiệm vụ:
+
+            1. Giải thích ngắn gọn điểm khác biệt giữa hai tên.
+
+            2. Nêu rõ thông tin nào chưa đủ căn cứ.
+
+            3. Đưa ra tối đa 3 bước kiểm tra cụ thể cho người dùng.
+
+            4. Sử dụng tiếng Việt rõ ràng, trung lập.
+
+            5. Không suy đoán chủ tài khoản, mã số thuế hoặc dữ liệu không có.
+
+            6. Không gọi similarity hoặc difference rate là xác suất hai pháp nhân
+
+            giống hoặc khác nhau.
+
+            7. Không khẳng định có gian lận.
+
+            8. Không tạo quyết định MATCH, REVIEW, NOT_MATCH, ALLOW hoặc BLOCK.
+
+            9. Chỉ trả kết quả theo structured output đã định nghĩa.'
+        - edition_type: basic
+          id: ae6159a5-2e43-4faa-b582-cad83eb08ee7
+          role: assistant
+          text: 'decision
+
+            reason_code
+
+            invoice_name
+
+            payment_name
+
+            invoice_normalized
+
+            payment_normalized
+
+            invoice_legal_type
+
+            payment_legal_type
+
+            name_similarity
+
+            name_difference_rate
+
+            difference_display'
+        - id: 89a23ab5-588a-46b2-a374-9193016cea19
+          role: user
+          text: 'Reason code: {{reason_code}}
+
+            Tên trên hóa đơn:
+
+            {{invoice_name}}
+
+            Tên trên đề nghị chuyển tiền:
+
+            {{payment_name}}
+
+            Tên hóa đơn sau chuẩn hóa:
+
+            {{invoice_normalized}}
+
+            Tên chuyển tiền sau chuẩn hóa:
+
+            {{payment_normalized}}
+
+            Loại hình pháp nhân trên hóa đơn:
+
+            {{invoice_legal_type}}
+
+            Loại hình pháp nhân trên đề nghị chuyển tiền:
+
+            {{payment_legal_type}}
+
+            Mức tương đồng kỹ thuật:
+
+            {{name_similarity}}
+
+            Mức khác biệt kỹ thuật:
+
+            {{name_difference_rate}}
+
+            Nội dung tỷ lệ hiển thị:
+
+            {{difference_display}}'
+        - id: d978e63f-0b57-466b-94f0-ff4031516e54
+          role: assistant
+          text: ''
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              checks_required:
+                items:
+                  type: string
+                maxItems: 3
+                type: array
+              warning_code:
+                type: string
+              warning_message:
+                type: string
+              warning_title:
+                type: string
+            required:
+            - warning_code
+            - warning_title
+            - warning_message
+            - checks_required
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1786439735565'
+      position:
+        x: 2414
+        y: 278.5238095238095
+      positionAbsolute:
+        x: 2414
+        y: 278.5238095238095
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: "ALLOWED_WARNING_CODES = {\n    \"PARTIAL_CORE_NAME_MATCH\",\n    \"\
+          NAME_SIMILAR_BUT_NOT_CONCLUSIVE\",\n    \"INSUFFICIENT_DATA\",\n    \"PAYMENT_LEGAL_TYPE_UNKNOWN\"\
+          ,\n    \"POSSIBLE_OCR_ERROR\"\n}\n\n\ndef main(ai_warning_code, ai_warning_title,\
+          \ ai_warning_message, ai_checks_required) -> dict:\n\n    code_valid = (\n\
+          \        ai_warning_code in ALLOWED_WARNING_CODES\n    )\n\n    content_valid\
+          \ = (\n        bool(ai_warning_title)\n        and bool(ai_warning_message)\n\
+          \        and isinstance(ai_checks_required, list)\n        and len(ai_checks_required)\
+          \ > 0\n    )\n\n    if code_valid and content_valid:\n        return {\n\
+          \            \"warning_code\": ai_warning_code,\n            \"warning_title\"\
+          : ai_warning_title,\n            \"warning_message\": ai_warning_message,\n\
+          \            \"checks_required\": ai_checks_required[:3],\n            \"\
+          generated_by_ai\": True,\n            \"ai_status\": \"SUCCESS\"\n     \
+          \   }\n\n    return {\n        \"warning_code\": \"AI_WARNING_FALLBACK\"\
+          ,\n        \"warning_title\": \"Cần kiểm tra tên bên thụ hưởng\",\n    \
+          \    \"warning_message\": (\n            \"Thông tin tên bên thụ hưởng chưa\
+          \ đủ căn cứ \"\n            \"để xác định chắc chắn là cùng pháp nhân. \"\
+          \n            \"Vui lòng kiểm tra lại trước khi tiếp tục.\"\n        ),\n\
+          \        \"checks_required\": [\n            \"Đối chiếu tên trên hóa đơn\"\
+          ,\n            \"Đối chiếu tên trên đề nghị chuyển tiền\"\n        ],\n\
+          \        \"generated_by_ai\": False,\n        \"ai_status\": \"INVALID_OUTPUT\"\
+          \n    }"
+        code_language: python3
+        outputs:
+          ai_status:
+            children: null
+            type: string
+          checks_required:
+            children: null
+            type: array[string]
+          generated_by_ai:
+            children: null
+            type: boolean
+          warning_code:
+            children: null
+            type: string
+          warning_message:
+            children: null
+            type: string
+          warning_title:
+            children: null
+            type: string
+        selected: false
+        title: Validate AI Warning
+        type: code
+        variables:
+        - value_selector:
+          - '1786439735565'
+          - structured_output
+          - warning_code
+          value_type: object
+          variable: ai_warning_code
+        - value_selector:
+          - '1786439735565'
+          - structured_output
+          - warning_title
+          value_type: object
+          variable: ai_warning_title
+        - value_selector:
+          - '1786439735565'
+          - structured_output
+          - warning_message
+          value_type: object
+          variable: ai_warning_message
+        - value_selector:
+          - '1786439735565'
+          - structured_output
+          - checks_required
+          value_type: object
+          variable: ai_checks_required
+      height: 52
+      id: '1786441161904'
+      position:
+        x: 2756
+        y: 311.19047619047615
+      positionAbsolute:
+        x: 2756
+        y: 311.19047619047615
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    viewport:
+      x: -308.8500000000008
+      y: 574.5166666666667
+      zoom: 0.7000000000000003
+  rag_pipeline_variables: []
