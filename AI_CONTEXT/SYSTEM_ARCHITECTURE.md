@@ -1,6 +1,32 @@
 # SYSTEM ARCHITECTURE — BeneMatch (demo)
 
-**Cập nhật:** 2026-08-19 · Kiến trúc mirror `PRJ-SG`. Configuration-driven.
+**Cập nhật:** 2026-08-22 · Kiến trúc mirror `PRJ-SG`. Configuration-driven.
+
+> **v0.2 — thêm tầng Batch Reconciliation** (đa hóa đơn ↔ đa lệnh CT). Luồng verify 1 cặp tên (bên dưới) **giữ nguyên** làm lõi; tầng recon gọi lại lõi này cho từng nhóm người thụ hưởng. Xem `RECONCILIATION_SPEC.md` + `OCR_SPEC.md`.
+
+## Sơ đồ Batch Reconciliation (v0.2)
+```
+[FE Bootstrap]  upload N hóa đơn (ảnh/PDF) + 1 CSV lệnh CT
+     │  POST multipart/base64
+     ▼
+[GAS Gateway]  doPost
+   1. OCR hóa đơn:  USE_OCR=true → Vision (OcrService.gs) | false → synthetic fixtures   (OCR_SPEC)
+   2. Parse CSV lệnh CT → transfer_orders[]
+   3. Recon.gs = port của src/recon:  normalize → group theo MST/tên
+        → sum nhóm + grand total → tolerance/over-under → duplicate → OCR flag
+   4. Verify tên từng nhóm:  POST Dify V2 (1 cặp/nhóm)   ← chỉ đây mới (có thể) chạm AI
+   5. Aggregate deterministic → batch response (RECONCILIATION_SPEC §6)
+   6. Log Sheet + trả FE
+     │
+     ▼
+[Dify V2]  verify tên 1 cặp/nhóm (rule-first, LLM chỉ REVIEW&ai_eligible=true — DIFY_OPTIMIZATION)
+[Google Sheet]  log batch + config threshold/weights (C3) + audit (C2)
+```
+- **Recon engine `src/recon/`** = JS thuần, **test offline** (`test/recon.test.mjs`) không cần endpoint; `Recon.gs` là bản port chạy trong GAS. Cùng logic, cùng dataset synthetic.
+
+---
+
+## Sơ đồ verify 1 cặp (lõi, giữ nguyên)
 
 ## Sơ đồ tổng thể
 ```

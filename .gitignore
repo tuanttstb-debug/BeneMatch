@@ -1,0 +1,26 @@
+# Secrets / credentials — KHÔNG commit
+*.secret.json
+.gas-secret.json
+.env
+*.key
+
+# Dữ liệu KH thật (chỉ synthetic mới được commit — xem data/synthetic/)
+data/real/
+*.real.json
+
+# Ảnh/PDF hóa đơn thật (nhạy cảm) — chỉ giữ mẫu synthetic nếu cố ý add -f
+data/invoices_real/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+
+# Node
+node_modules/
+
+# Backup yml gốc (dựng lại từ git history nếu cần)
+*.BACKUP-*.yml
+
+# OS
+Thumbs.db
+.DS_Store

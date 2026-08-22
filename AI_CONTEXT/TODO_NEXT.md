@@ -2,6 +2,18 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-08-22) — Scope Batch Reconciliation ĐÃ DỰNG (chờ [TT] cung cấp để chạy live)
+
+XONG [CC] (offline, đã verify): ✅ recon engine `src/recon/` + regression harness **14/14 pass** · ✅ dataset synthetic 9 nhóm · ✅ tối ưu Dify yml (4 nhánh, trả TD-BM-01/02/03; validate + code node chạy) · ✅ `gas/` gateway + OCR + Sheet + **parity Recon.gs ≡ src/recon** · ✅ FE `fe/index.html` (verify render trình duyệt) · ✅ artifact publish (private).
+
+**CẦN [TT] CUNG CẤP để chạy end-to-end thật (ưu tiên #1):**
+1. [TT] **Import yml đã tối ưu** lên Dify Cloud → smoke-test 4 nhánh (đặc biệt **NOT_MATCH** — xem TD-BM-03) → cấp **DIFY_API_URL + DIFY_API_KEY**.
+2. [TT] **Google Vision API key** (+ quota) cho đường OCR thật; và vài **ảnh/PDF hóa đơn mẫu** (ẩn thông tin) để hiệu chỉnh `parseInvoiceText_` (TD-BM-05).
+3. [TT] **Deploy GAS** (`gas/Code.gs`+`Recon.gs`+`OcrService.gs`) làm Web App → cấp URL; đặt Script Properties (DIFY_*, VISION_API_KEY, USE_OCR, SHEET_ID).
+4. [TT] Google **Sheet ID** cho log (chạy `setupConfigSheet()` 1 lần).
+
+**Tiếp theo [CC] khi có (2):** nối FE "Live" → GAS; smoke-test OCR ảnh thật; hiệu chỉnh regex; (tùy chọn) trả TD-BM-04.
+
 ## Cao
 1. [TT] Cung cấp **endpoint + API key** workflow Dify Cloud (để GAS gọi) + xác nhận app URL. → điền `SYSTEM_ARCHITECTURE.md` / config.
 2. [CC] Dựng **bộ dataset synthetic** phủ 7 case regression (không dấu, viết tắt, đảo thứ tự, khác legal type, tên ngắn, mơ hồ, thiếu tên) — `GOLDEN_DATASET.md`.

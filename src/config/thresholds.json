@@ -1,0 +1,26 @@
+{
+  "config_version": "1.0",
+  "amount": {
+    "abs_tolerance_vnd": 1000,
+    "rel_tolerance": 0.001
+  },
+  "ocr": {
+    "min_confidence": 0.85
+  },
+  "grouping": {
+    "key": "mst_then_name",
+    "mst_min_digits": 10
+  },
+  "severity": {
+    "AMOUNT_MATCH": 0,
+    "POSSIBLE_OCR_ERROR": 1,
+    "AMOUNT_UNDER_TOLERANCE": 1,
+    "TRANSFER_MISSING_FOR_GROUP": 1,
+    "BENEFICIARY_NAME_REVIEW": 1,
+    "GROUP_KEY_FALLBACK_NAME": 1,
+    "AMOUNT_OVER_TOLERANCE": 1,
+    "DUPLICATE_INVOICE": 1,
+    "INVOICE_MISSING_FOR_TRANSFER": 1,
+    "BENEFICIARY_NAME_MISMATCH": 2
+  }
+}

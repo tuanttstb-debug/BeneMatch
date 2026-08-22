@@ -1,0 +1,19 @@
+[
+  { "invoice_id": "INV-0001", "invoice_date": "2026-08-03", "beneficiary_name": "CÔNG TY TNHH ABC VIỆT NAM", "beneficiary_mst": "0101234567", "amount_total": 100000000, "source_file": "abc_hd01.jpg", "ocr_confidence": 0.99 },
+  { "invoice_id": "INV-0003", "invoice_date": "2026-08-07", "beneficiary_name": "CÔNG TY TNHH ABC VIỆT NAM", "beneficiary_mst": "0101234567", "amount_total": 50000000, "source_file": "abc_hd03.jpg", "ocr_confidence": 0.98 },
+
+  { "invoice_id": "INV-0002", "invoice_date": "2026-08-05", "beneficiary_name": "CÔNG TY CỔ PHẦN XÂY DỰNG BÌNH MINH", "beneficiary_mst": "0102000002", "amount_total": 80000000, "source_file": "binhminh_hd02.jpg", "ocr_confidence": 0.97 },
+
+  { "invoice_id": "INV-0004", "invoice_date": "2026-08-06", "beneficiary_name": "CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA", "beneficiary_mst": "0103000003", "amount_total": 40000000, "source_file": "hoanggia_hd04.jpg", "ocr_confidence": 0.98 },
+
+  { "invoice_id": "INV-0005", "invoice_date": "2026-08-08", "beneficiary_name": "DOANH NGHIỆP TƯ NHÂN THÀNH ĐẠT", "beneficiary_mst": "0104000004", "amount_total": 60000000, "source_file": "thanhdat_hd05.jpg", "ocr_confidence": 0.95 },
+
+  { "invoice_id": "INV-0007", "invoice_date": "2026-08-04", "beneficiary_name": "CÔNG TY TNHH CƠ KHÍ TIẾN PHÁT", "beneficiary_mst": "0106000006", "amount_total": 20000000, "source_file": "tienphat_hd07.jpg", "ocr_confidence": 0.98 },
+  { "invoice_id": "INV-0007", "invoice_date": "2026-08-04", "beneficiary_name": "CÔNG TY TNHH CƠ KHÍ TIẾN PHÁT", "beneficiary_mst": "0106000006", "amount_total": 20000000, "source_file": "tienphat_hd07_copy.jpg", "ocr_confidence": 0.98 },
+
+  { "invoice_id": "INV-0009", "invoice_date": "2026-08-09", "beneficiary_name": "CÔNG TY TNHH DELTA MEKONG", "beneficiary_mst": "0107000007", "amount_total": 45000000, "source_file": "delta_hd09.jpg", "ocr_confidence": 0.96 },
+
+  { "invoice_id": "INV-0010", "invoice_date": "2026-08-10", "beneficiary_name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ SAO VIỆT", "beneficiary_mst": "0108000008", "amount_total": 33333333, "source_file": "saoviet_hd10.jpg", "ocr_confidence": 0.99 },
+
+  { "invoice_id": "INV-0011", "invoice_date": "2026-08-11", "beneficiary_name": "CÔNG TY TNHH DỊCH VỤ MINH ANH", "beneficiary_mst": "0109000009", "amount_total": 12000000, "source_file": "minhanh_hd11.jpg", "ocr_confidence": 0.60 }
+]

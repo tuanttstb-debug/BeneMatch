@@ -238,6 +238,30 @@ workflow:
       targetHandle: target
       type: custom
       zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1786437733421-7c4e2f18-0a3b-4d6e-9f21-5b8c1d2e3f40-1786500000001-target
+      source: '1786437733421'
+      sourceHandle: 7c4e2f18-0a3b-4d6e-9f21-5b8c1d2e3f40
+      target: '1786500000001'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1786500000001-source-1786421027184-target
+      source: '1786500000001'
+      sourceHandle: source
+      target: '1786421027184'
+      targetHandle: target
+      type: custom
+      zIndex: 0
     nodes:
     - data:
         selected: false
@@ -1145,7 +1169,7 @@ workflow:
         - value_selector:
           - '1786441161904'
           - generated_by_ai
-          value_type: string
+          value_type: boolean
           variable: generated_by_ai
         - value_selector:
           - '1786441161904'
@@ -1237,7 +1261,7 @@ workflow:
         cases:
         - case_id: 'true'
           conditions:
-          - comparison_operator: contains
+          - comparison_operator: is
             id: befb71b9-7e77-4a0f-af51-7c39ac6316f4
             value: MATCH
             varType: string
@@ -1248,7 +1272,7 @@ workflow:
           logical_operator: or
         - case_id: d9da26db-d0ca-41a5-bddc-5b70cf14185b
           conditions:
-          - comparison_operator: contains
+          - comparison_operator: is
             id: bf489ab7-33e5-4768-930e-36ac4310f8cc
             value: NOT_MATCH
             varType: string
@@ -1256,6 +1280,17 @@ workflow:
             - '1786420410096'
             - decision
           id: d9da26db-d0ca-41a5-bddc-5b70cf14185b
+          logical_operator: and
+        - case_id: 7c4e2f18-0a3b-4d6e-9f21-5b8c1d2e3f40
+          conditions:
+          - comparison_operator: is
+            id: 3a9d5e71-2c48-4b6a-8e13-9f0a1b2c3d4e
+            value: DETERMINISTIC_WARNING
+            varType: string
+            variable_selector:
+            - '1786420410096'
+            - review_mode
+          id: 7c4e2f18-0a3b-4d6e-9f21-5b8c1d2e3f40
           logical_operator: and
         selected: false
         title: Warning Route
@@ -1268,6 +1303,87 @@ workflow:
       positionAbsolute:
         x: 2052
         y: 74.6666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        code: |
+          def main(reason_code: str, difference_display: str) -> dict:
+              templates = {
+                  "INSUFFICIENT_DATA": {
+                      "warning_title": "Thiếu dữ liệu để đối chiếu tên",
+                      "warning_message": "Thiếu tên bên thụ hưởng để đối chiếu. Vui lòng bổ sung tên đầy đủ trên chứng từ.",
+                      "checks_required": ["Bổ sung tên bên thụ hưởng đầy đủ trên hóa đơn và đề nghị chuyển tiền"],
+                  },
+                  "PARTIAL_CORE_NAME_MATCH": {
+                      "warning_title": "Tên khớp một phần",
+                      "warning_message": "Tên bên thụ hưởng khớp một phần (tên rút gọn hoặc chứa nhau). Cần xác minh tên pháp lý đầy đủ.",
+                      "checks_required": ["Đối chiếu tên pháp lý đầy đủ trên giấy phép/hợp đồng"],
+                  },
+                  "LEGAL_TYPE_MISSING_CORE_NAME_MATCH": {
+                      "warning_title": "Lõi tên trùng, thiếu loại hình pháp nhân",
+                      "warning_message": "Lõi tên trùng nhưng một phía thiếu loại hình pháp nhân (TNHH/CP...). Cần xác nhận loại hình.",
+                      "checks_required": ["Xác nhận loại hình pháp nhân của bên thụ hưởng"],
+                  },
+              }
+              t = templates.get(reason_code, {
+                  "warning_title": "Cần kiểm tra tên bên thụ hưởng",
+                  "warning_message": "Tên bên thụ hưởng cần được kiểm tra thủ công trước khi duyệt. " + (difference_display or ""),
+                  "checks_required": ["Kiểm tra thủ công tên bên thụ hưởng"],
+              })
+              return {
+                  "warning_code": reason_code or "REVIEW_REQUIRED",
+                  "warning_title": t["warning_title"],
+                  "warning_message": t["warning_message"],
+                  "checks_required": t["checks_required"][:3],
+                  "generated_by_ai": False,
+                  "ai_status": "NOT_INVOKED",
+              }
+        code_language: python3
+        outputs:
+          ai_status:
+            children: null
+            type: string
+          checks_required:
+            children: null
+            type: array[string]
+          generated_by_ai:
+            children: null
+            type: boolean
+          warning_code:
+            children: null
+            type: string
+          warning_message:
+            children: null
+            type: string
+          warning_title:
+            children: null
+            type: string
+        selected: false
+        title: Build Deterministic Review Warning
+        type: code
+        variables:
+        - value_selector:
+          - '1786420410096'
+          - reason_code
+          value_type: string
+          variable: reason_code
+        - value_selector:
+          - '1786437687922'
+          - difference_display
+          value_type: string
+          variable: difference_display
+      height: 52
+      id: '1786500000001'
+      position:
+        x: 2756
+        y: 320
+      positionAbsolute:
+        x: 2756
+        y: 320
       selected: false
       sourcePosition: right
       targetPosition: left

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeneMatch — Đối chiếu hóa đơn ↔ lệnh chuyển tiền</title>
+<style>
+  :root{
+    --purple:#7B2CBF; --purple-deep:#5A189A; --purple-soft:#EEE4FA;
+    --ink:#1b1330; --muted:#6b6580; --line:#e7e2f0; --bg:#faf8ff; --card:#ffffff;
+    --green:#16a34a; --green-bg:#e9f9ef; --amber:#d97706; --amber-bg:#fef4e6; --red:#dc2626; --red-bg:#fdeaea;
+    --shadow:0 2px 10px rgba(90,24,154,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#f3eefb; --muted:#b3a9c9; --line:#2c2440; --bg:#151022; --card:#1e1733; --purple-soft:#2a1f45; --shadow:0 2px 12px rgba(0,0,0,.4); }
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:20px}
+  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;box-shadow:var(--shadow)}
+  .brand h1{font-size:20px;margin:0} .brand p{margin:0;color:var(--muted);font-size:13px}
+  .tag{margin-left:auto;background:var(--purple-soft);color:var(--purple-deep);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
+  @media (prefers-color-scheme: dark){ .tag{color:#d9c6f5} }
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:900px){ .grid{grid-template-columns:420px 1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--purple-deep);margin:0 0 12px}
+  @media (prefers-color-scheme: dark){ .card h2{color:#c9b3ee} }
+  label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+  textarea,input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  textarea{min-height:150px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;resize:vertical}
+  .btn{cursor:pointer;border:0;border-radius:11px;padding:11px 16px;font-weight:700;font-size:14px}
+  .btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .muted{color:var(--muted);font-size:12.5px}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  @media(min-width:620px){ .kpis{grid-template-columns:repeat(4,1fr)} }
+  .kpi{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px}
+  .kpi .lab{font-size:11px;color:var(--muted)} .kpi .val{font-size:17px;font-weight:800;margin-top:3px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
+  .b-MATCH{background:var(--green-bg);color:var(--green)} .b-REVIEW{background:var(--amber-bg);color:var(--amber)} .b-NOT_MATCH{background:var(--red-bg);color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px} .scroll{overflow-x:auto}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .warns{margin:2px 0 0;padding:0;list-style:none}
+  .warns li{font-size:12px;color:var(--muted);padding:2px 0}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+  .d-HIGH{background:var(--red)} .d-MEDIUM{background:var(--amber)} .d-LOW{background:var(--green)}
+  .over{color:var(--red);font-weight:700} .under{color:var(--amber);font-weight:700} .ok{color:var(--green)}
+  .foot{margin-top:14px;font-size:12px;color:var(--muted)}
+  .pill{display:inline-block;background:var(--purple-soft);color:var(--purple-deep);border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:6px}
+  @media (prefers-color-scheme: dark){ .pill{color:#d9c6f5} }
+  details summary{cursor:pointer;color:var(--purple-deep);font-size:12.5px;font-weight:600}
+  @media (prefers-color-scheme: dark){ details summary{color:#c9b3ee} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">B</div>
+    <div class="brand"><h1>BeneMatch</h1><p>Đối chiếu hóa đơn ↔ lệnh chuyển tiền · deterministic-first</p></div>
+    <span class="tag">PoC / Demo TPBank</span>
+  </header>
+
+  <div class="grid">
+    <!-- INPUT -->
+    <section class="card">
+      <h2>Đầu vào</h2>
+      <label>Chế độ</label>
+      <select id="mode">
+        <option value="offline">Demo offline (tính trong trình duyệt)</option>
+        <option value="live">Live — gọi GAS endpoint</option>
+      </select>
+      <div id="liveBox" style="display:none">
+        <label>GAS Web App URL</label>
+        <input id="gasUrl" placeholder="https://script.google.com/macros/s/…/exec">
+      </div>
+
+      <label>Hóa đơn (JSON — mô phỏng đã OCR)</label>
+      <textarea id="invoices"></textarea>
+      <label>Lệnh chuyển tiền (CSV)</label>
+      <textarea id="transfers"></textarea>
+
+      <div class="row">
+        <button class="btn btn-primary" id="run">Chạy đối chiếu</button>
+        <button class="btn btn-ghost" id="reset">Nạp dữ liệu mẫu</button>
+      </div>
+      <p class="foot">Dữ liệu <b>synthetic</b> — an toàn công bố. Đường OCR thật (ảnh/PDF) chạy ở GAS + Vision khi bật <code>USE_OCR</code>.</p>
+    </section>
+
+    <!-- RESULT -->
+    <section class="card">
+      <h2>Kết quả đối chiếu</h2>
+      <div id="result"><p class="muted">Bấm “Chạy đối chiếu” để xem kết quả.</p></div>
+    </section>
+  </div>
+
+  <p class="foot" style="text-align:center;margin-top:20px">
+    <span class="pill">RULE_ENGINE</span> Quyết định tổng tiền & duplicate là <b>deterministic</b> (không AI). Khớp tên đi qua Dify V2 — AI chỉ diễn giải cảnh báo cho ~&lt;10% ca REVIEW mơ hồ.
+  </p>
+</div>
+
+<script>
+/* ====== RECON ENGINE (nạp từ gas/Recon.gs qua fe/build.mjs — nguồn logic duy nhất) ====== */
+/*__RECON_ENGINE__*/
+
+/* ====== Stub verify tên (offline, deterministic) — bản FE của gasStubVerify_ ====== */
+function feVerify(pair){
+  var invN=reconNormalizeName(pair.invoice_beneficiary_name), payN=reconNormalizeName(pair.payment_beneficiary_name);
+  if(!invN||!payN) return {decision:'REVIEW',reason_codes:['INSUFFICIENT_DATA'],source:'STUB_FE'};
+  function fam(s){ if(/\bTNHH\b/.test(s))return'TNHH'; if(/\bCONG TY CO PHAN\b/.test(s))return'CO_PHAN'; if(/\bDOANH NGHIEP TU NHAN\b/.test(s))return'DNTN'; if(/\bHOP TAC XA\b/.test(s))return'HTX'; return'UNKNOWN'; }
+  var fi=fam(invN),fp=fam(payN);
+  if(fi!=='UNKNOWN'&&fp!=='UNKNOWN'&&fi!==fp) return {decision:'NOT_MATCH',reason_codes:['LEGAL_ENTITY_TYPE_CONFLICT'],source:'STUB_FE'};
+  if(invN===payN) return {decision:'MATCH',reason_codes:['NORMALIZED_NAME_EXACT_MATCH'],source:'STUB_FE'};
+  var a=reconExtractCoreName(invN).split(' ').filter(Boolean), b=reconExtractCoreName(payN).split(' ').filter(Boolean);
+  if(a.join(' ')===b.join(' ')) return {decision:'MATCH',reason_codes:['LEGAL_TYPE_AND_CORE_NAME_EXACT_MATCH'],source:'STUB_FE'};
+  var setA={},inter=0; a.forEach(function(t){setA[t]=1;}); b.forEach(function(t){if(setA[t])inter++;});
+  var uni=a.length+b.length-inter, sim=uni?inter/uni:1;
+  return sim>=0.6?{decision:'REVIEW',reason_codes:['NAME_SIMILAR_BUT_NOT_CONCLUSIVE'],source:'STUB_FE'}
+                :{decision:'NOT_MATCH',reason_codes:['LOW_NAME_SIMILARITY'],source:'STUB_FE'};
+}
+
+/* ====== Synthetic data (nạp từ data/synthetic qua build) ====== */
+var SAMPLE_INVOICES = /*__SYNTHETIC_INVOICES__*/ [];
+var SAMPLE_TRANSFERS_CSV = /*__SYNTHETIC_TRANSFERS_CSV__*/ "";
+var CONFIG = /*__CONFIG__*/ {};
+
+var vnd = function(n){ return (Number(n)||0).toLocaleString('vi-VN'); };
+var $ = function(id){ return document.getElementById(id); };
+
+function loadSample(){
+  $('invoices').value = JSON.stringify(SAMPLE_INVOICES, null, 2);
+  $('transfers').value = SAMPLE_TRANSFERS_CSV.trim();
+}
+
+function render(res){
+  var s = res.summary;
+  var diffCls = s.grand_diff>0?'over':(s.grand_diff<0?'under':'ok');
+  var html = '<div class="kpis">'
+    + kpi('Σ Hóa đơn', vnd(s.grand_total_invoices)+' đ')
+    + kpi('Σ Lệnh CT', vnd(s.grand_total_transfers)+' đ')
+    + kpi('Chênh lệch', '<span class="'+diffCls+'">'+(s.grand_diff>0?'+':'')+vnd(s.grand_diff)+' đ</span>')
+    + kpi('Quyết định lô', '<span class="badge b-'+s.decision+'">'+s.decision+'</span>')
+    + '</div>';
+  html += '<div class="scroll"><table><thead><tr><th>Người thụ hưởng</th><th>Nhóm</th><th class="num">Σ HĐ</th><th class="num">Σ CT</th><th class="num">Lệch</th><th>Kết luận</th></tr></thead><tbody>';
+  res.groups.forEach(function(g){
+    var dcls = g.diff>0?'over':(g.diff<0?'under':'ok');
+    html += '<tr><td>'+esc(g.beneficiary_display)+'<div class="muted">'+g.invoices.length+' HĐ · '+g.transfers.length+' CT</div>'
+      + (g.warnings.length?'<ul class="warns">'+g.warnings.map(function(w){return '<li><span class="dot d-'+w.risk+'"></span>'+esc(w.message)+'</li>';}).join('')+'</ul>':'')
+      + '</td>'
+      + '<td>'+g.key_type+'<div class="muted">'+esc(g.group_key)+'</div></td>'
+      + '<td class="num">'+vnd(g.sum_invoices)+'</td>'
+      + '<td class="num">'+vnd(g.sum_transfers)+'</td>'
+      + '<td class="num '+dcls+'">'+(g.diff>0?'+':'')+vnd(g.diff)+'</td>'
+      + '<td><span class="badge b-'+g.decision+'">'+g.decision+'</span></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<p class="foot">Nguồn khớp tên: <b>'+res.audit.name_verify_source+'</b> · lô <code>'+esc(res.batch_id)+'</code> · '+s.warning_count+' cảnh báo.'
+    + ' <details><summary>Xem JSON kết quả</summary><textarea style="margin-top:8px" readonly>'+esc(JSON.stringify(res,null,2))+'</textarea></details></p>';
+  $('result').innerHTML = html;
+}
+function kpi(l,v){ return '<div class="kpi"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>'; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+function runOffline(){
+  var invoices, transfers;
+  try{ invoices = JSON.parse($('invoices').value||'[]'); }catch(e){ $('result').innerHTML='<p class="over">Lỗi JSON hóa đơn: '+esc(e.message)+'</p>'; return; }
+  transfers = reconParseTransferCsv($('transfers').value||'');
+  var res = reconcileBatch(invoices, transfers, CONFIG, feVerify, {batch_id:'BM-BATCH-FE'});
+  render(res);
+}
+function runLive(){
+  var url = $('gasUrl').value.trim();
+  if(!url){ $('result').innerHTML='<p class="under">Nhập GAS Web App URL trước.</p>'; return; }
+  var invoices; try{ invoices=JSON.parse($('invoices').value||'[]'); }catch(e){ $('result').innerHTML='<p class="over">Lỗi JSON hóa đơn.</p>'; return; }
+  $('result').innerHTML='<p class="muted">Đang gọi GAS…</p>';
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'reconcile',invoices:invoices,transfer_orders_csv:$('transfers').value||''})})
+    .then(function(r){return r.json();}).then(function(res){ if(res.error){ $('result').innerHTML='<p class="over">GAS lỗi: '+esc(res.error)+'</p>'; } else render(res); })
+    .catch(function(e){ $('result').innerHTML='<p class="over">Không gọi được GAS: '+esc(e.message)+'</p>'; });
+}
+
+$('mode').addEventListener('change', function(){ $('liveBox').style.display = this.value==='live'?'block':'none'; });
+$('run').addEventListener('click', function(){ $('mode').value==='live'?runLive():runOffline(); });
+$('reset').addEventListener('click', loadSample);
+loadSample();
+</script>
+</body>
+</html>

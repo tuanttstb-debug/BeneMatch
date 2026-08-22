@@ -1,6 +1,9 @@
 # PROJECT STATE — BeneMatch
 
-**Cập nhật:** 2026-08-19 · **Version:** 0.1.0 · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+**Cập nhật:** 2026-08-22 · **Version:** 0.2.0-dev · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+
+## Delta (2026-08-22) — Scope mới: Batch Reconciliation (đa hóa đơn ↔ đa lệnh CT)
+Phỏng vấn tổng thể 2 vòng chốt **mở rộng scope** từ "verify 1 cặp tên" → **đối chiếu lô**: upload nhiều hóa đơn (file) + nhiều lệnh CT (CSV) → OCR hybrid → **gộp nhóm theo người thụ hưởng (MST)** → kiểm **tổng nhóm + grand total** (dung sai, over/under) + **duplicate** + **khớp tên qua lõi V2** → dashboard cảnh báo. Chốt: OCR **hybrid** (GAS+Vision thật + synthetic fallback); mapping **gộp theo beneficiary**; validate đủ 4 (grand+nhóm · tolerance+chiều lệch · duplicate · khớp tên); output **FE + artifact**; Dify **rule-first** (LLM chỉ REVIEW&ai_eligible=true → trả TD-BM-01); recon engine **module JS riêng** (test offline) + Dify verify tên; lệnh CT **upload CSV**; OCR fields **tên+MST · tổng tiền · số HĐ+ngày**. Đây là hợp nhất cụ thể A1/A2/A3/A4/A5/B1/B2/B5/C1/C2/C3. Bộ context mới: `RECONCILIATION_SPEC.md`, `OCR_SPEC.md`, `DIFY_OPTIMIZATION.md`; cập nhật `API_CONTRACT` (batch), `SYSTEM_ARCHITECTURE`. **Đang dựng code** (recon engine + dataset + harness + yml tối ưu + GAS + FE + artifact).
 
 ## Tóm tắt
 Lõi verify là **Dify Workflow "Beneficiary Legal Entity Verification V2"** (workflow mode, chạy trên **Dify Cloud**, app version 0.7.0). Deterministic rule engine + 1 node LLM (gpt-5) chỉ sinh text cảnh báo cho REVIEW. Nguồn sự thật của lõi: file `Beneficiary Legal Entity Verification V2.yml` + tài liệu bàn giao `Beneficiary_Verification_Dify_V2_Handover.docx` (bàn giao 2026-08-11). Lớp demo (FE + GAS + Sheet) **chưa dựng** — mới khởi tạo context.

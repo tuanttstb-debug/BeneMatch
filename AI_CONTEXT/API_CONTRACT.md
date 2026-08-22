@@ -72,3 +72,38 @@ Ví dụ (synthetic):
 
 ## GAS ↔ Dify (tham khảo)
 `POST {DIFY_API_URL}/workflows/run` · Header `Authorization: Bearer {DIFY_API_KEY}` · Body `{ "inputs": {…5 biến…}, "response_mode": "blocking", "user": "{request_id}" }` · Đọc `data.outputs.result`.
+
+---
+
+# API_CONTRACT (v2) — Batch Reconciliation (FE ↔ GAS)
+
+Endpoint mới cho luồng đa hóa đơn ↔ đa lệnh CT (v0.2). Lõi verify 1 cặp ở trên **giữ nguyên**; batch gọi lại lõi cho từng nhóm. Chi tiết logic: `RECONCILIATION_SPEC.md`.
+
+## Input (FE → GAS, `action=reconcile`)
+```jsonc
+{
+  "action": "reconcile",
+  "batch_id": "BM-BATCH-20260822-0001",   // optional; GAS tự sinh nếu thiếu
+  "invoices": [                            // đường synthetic: gửi thẳng; đường OCR: gửi files[] thay thế
+    { "invoice_id":"INV-0001","invoice_date":"2026-08-10",
+      "beneficiary_name":"…","beneficiary_mst":"0101234567",
+      "amount_total":150000000,"source_file":"…","ocr_confidence":0.98 }
+  ],
+  "files": [                               // đường OCR thật (USE_OCR=true): base64 ảnh/PDF
+    { "name":"abc_hd01.jpg","mime":"image/jpeg","data":"<base64>" }
+  ],
+  "transfer_orders_csv": "beneficiary_name,beneficiary_mst,account_number,amount\n…",
+  "config_override": { "abs_tolerance_vnd": 1000, "rel_tolerance": 0.001 }  // optional
+}
+```
+- Gửi **`invoices[]`** (đã cấu trúc) HOẶC **`files[]`** (để GAS OCR). Không bắt buộc cả hai.
+- `transfer_orders_csv`: header cố định `beneficiary_name,beneficiary_mst,account_number,amount`; account là **String**, amount là số nguyên VND.
+
+## Output (GAS → FE)
+Trả nguyên **batch response** ở `RECONCILIATION_SPEC §6` (`summary` + `groups[]` + `warnings[]` + `audit`).
+
+## Bất biến (thêm cho batch)
+- `diff = sum_transfers − sum_invoices` (dương = thừa chi).
+- Tầng recon **deterministic**, không AI; chỉ verify tên/nhóm đi qua Dify V2.
+- Tiền = Number VND nguyên; MST/account = String.
+- Ngưỡng dung sai/trọng số đọc từ config (C3), không hardcode.
