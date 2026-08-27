@@ -24,3 +24,6 @@ node_modules/
 # OS
 Thumbs.db
 .DS_Store
+
+# Phiếu đăng ký sáng kiến (chứa PII Mã CBNV) — không đẩy GitHub (data-boundary)
+Innovation_*.docx
