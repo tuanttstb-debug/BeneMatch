@@ -50,7 +50,8 @@ function callDriveOcr_(base64, mime, name) {
     } else {
       throw new Error('Chưa bật Advanced Service "Drive API" (v2 hoặc v3) trong Apps Script');
     }
-    var text = DocumentApp.openById(fileId).getBody().getText();
+    // Đọc text qua Drive export (chỉ cần scope Drive) — tránh phụ thuộc DocumentApp/scope documents.
+    var text = Drive.Files.export(fileId, 'text/plain').getDataAsString('UTF-8');
     return { text: text, confidence: 0.9 };
   } finally {
     if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (e) {} }
