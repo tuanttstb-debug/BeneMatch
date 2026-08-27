@@ -27,3 +27,9 @@ Thumbs.db
 
 # Phiếu đăng ký sáng kiến (chứa PII Mã CBNV) — không đẩy GitHub (data-boundary)
 Innovation_*.docx
+
+# Smoke-test LIVE: URL endpoint + output chỉ giữ local
+test/live/config.mjs
+test/live/*_response.json
+# EVD synthetic cho test OCR — cho phép commit (ngoại lệ của *.png ở trên)
+!test/live/invoice_synth_01.png

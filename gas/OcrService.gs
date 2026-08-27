@@ -50,9 +50,13 @@ function callDriveOcr_(base64, mime, name) {
     } else {
       throw new Error('Chưa bật Advanced Service "Drive API" (v2 hoặc v3) trong Apps Script');
     }
-    // Đọc text qua Drive export (chỉ cần scope Drive) — tránh phụ thuộc DocumentApp/scope documents.
-    var text = Drive.Files.export(fileId, 'text/plain').getDataAsString('UTF-8');
-    return { text: text, confidence: 0.9 };
+    // Đọc text qua REST export + OAuth token của script (scope Drive + external_request đã có) —
+    // tránh quirk "alt=media" của advanced Drive.Files.export và phụ thuộc scope documents.
+    var exp = UrlFetchApp.fetch(
+      'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fileId) + '/export?mimeType=' + encodeURIComponent('text/plain'),
+      { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    if (exp.getResponseCode() !== 200) throw new Error('Drive export HTTP ' + exp.getResponseCode() + ': ' + exp.getContentText().slice(0, 200));
+    return { text: exp.getContentText(), confidence: 0.9 };
   } finally {
     if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (e) {} }
   }
