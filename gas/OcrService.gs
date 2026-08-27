@@ -57,6 +57,17 @@ function callDriveOcr_(base64, mime, name) {
   }
 }
 
+/**
+ * authorizeDrive — CHẠY 1 LẦN từ Apps Script editor để cấp quyền Drive cho script.
+ * Web App cấp quyền TRƯỚC khi có code dùng Drive → thiếu scope. Run hàm này, bấm "Xem lại
+ * quyền" và ĐỒNG Ý quyền Drive; sau đó Deploy → New version. Không dùng khi chạy live.
+ */
+function authorizeDrive() {
+  DriveApp.getRootFolder().getName();                 // xin scope Drive (DriveApp)
+  if (Drive.Files && Drive.Files.list) Drive.Files.list({ pageSize: 1, maxResults: 1 });  // scope advanced Drive
+  return 'Drive authorized ✓ — nhớ Deploy New version';
+}
+
 /** Gọi Google Vision DOCUMENT_TEXT_DETECTION. base64 = nội dung file (không prefix). */
 function callVision_(base64, mime, apiKey) {
   var res = UrlFetchApp.fetch('https://vision.googleapis.com/v1/images:annotate?key=' + encodeURIComponent(apiKey), {
