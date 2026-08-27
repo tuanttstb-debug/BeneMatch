@@ -63,9 +63,11 @@ function callDriveOcr_(base64, mime, name) {
  * quyền" và ĐỒNG Ý quyền Drive; sau đó Deploy → New version. Không dùng khi chạy live.
  */
 function authorizeDrive() {
-  DriveApp.getRootFolder().getName();                 // xin scope Drive (DriveApp)
-  if (Drive.Files && Drive.Files.list) Drive.Files.list({ pageSize: 1, maxResults: 1 });  // scope advanced Drive
-  return 'Drive authorized ✓ — nhớ Deploy New version';
+  // Phải là thao tác GHI để Apps Script xin FULL Drive scope (đọc thôi → create bị chặn).
+  var f = DriveApp.createFile('__bm_auth_' + Date.now() + '.txt', 'authorize', 'text/plain');
+  f.setTrashed(true);
+  if (Drive.Files && Drive.Files.list) Drive.Files.list({ pageSize: 1, maxResults: 1 });  // chạm advanced Drive
+  return 'Drive (full) authorized ✓ — Deploy New version';
 }
 
 /** Gọi Google Vision DOCUMENT_TEXT_DETECTION. base64 = nội dung file (không prefix). */
