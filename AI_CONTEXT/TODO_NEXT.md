@@ -2,6 +2,14 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-08-27) — Pivot demo public GitHub Pages + OCR free + nghiệm thu live
+
+XONG [CC] (đã push origin/main): ✅ **trang demo public** `docs/index.html` (showcase + 6 kịch bản, offline-only, synthetic) · ✅ `scenarios.json` verify **6/6** · ✅ **Free OCR** Drive (đa provider) — **nghiệm thu LIVE** ảnh→OCR→parse→reconcile→Dify **MATCH** · ✅ route `verify_name` + passthrough `ai_status` (routing đúng) · ✅ vá **TD-BM-05** (invoice_id) · ✅ dời test/EVD vào `test/live/`. Ưu tiên tiếp:
+- [TT] **Bật GitHub Pages** (Settings → Pages → branch `main` · folder `/docs` → Save) → link **https://tuanttstb-debug.github.io/BeneMatch/** gửi nhân sự demo. *(deliverable chính — chưa xong)*
+- [TT] (tùy chọn) **Redeploy `OcrService.gs`** áp vá `invoice_id` (không gấp — quyết định không đổi).
+- [TT] (tùy chọn, phía Dify) Gắn **credential model gpt-5** trong workflow → node LLM hết FALLBACK (nay ~<10% ca REVIEW dùng template thay AI; quyết định vẫn đúng).
+- [CC] khi [TT] xác nhận Pages live → kiểm link lần cuối; (tùy chọn) đổi `FEEDBACK_EMAIL` sang email công việc; đóng nốt `WRITE-TRANSPORT-01` nếu còn.
+
 ## ▣ Delta (2026-08-22) — Scope Batch Reconciliation ĐÃ DỰNG (chờ [TT] cung cấp để chạy live)
 
 XONG [CC] (offline, đã verify): ✅ recon engine `src/recon/` + regression harness **14/14 pass** · ✅ dataset synthetic 9 nhóm · ✅ tối ưu Dify yml (4 nhánh, trả TD-BM-01/02/03; validate + code node chạy) · ✅ `gas/` gateway + OCR + Sheet + **parity Recon.gs ≡ src/recon** · ✅ FE `fe/index.html` (verify render trình duyệt) · ✅ artifact publish (private).

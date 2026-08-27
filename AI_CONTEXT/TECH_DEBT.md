@@ -2,6 +2,11 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-08-27):** Pivot demo public. 🔧 **TD-BM-05 vá phần lớn** — `parseInvoiceText_` yêu cầu số hóa đơn chứa chữ số (hết bắt nhầm "thue"); nghiệm thu LIVE Drive OCR bóc đúng tên/MST/tiền → MATCH; test_parse 2/2. **Còn:** cần [TT] redeploy `OcrService.gs` để áp vá; regex vẫn theo mẫu VAT chung, mẫu layout khác có thể cần chỉnh tiếp. 🆕 **TD-BM-06** (node LLM Dify trả FALLBACK/timeout — chưa gắn model credential, việc phía Dify; không ảnh hưởng quyết định deterministic). Đường **OCR nay có bản MIỄN PHÍ** (Google Drive OCR, `OCR_PROVIDER=drive`) — giảm phụ thuộc Vision trả phí. Demo public offline-only nên **không** phát sinh nợ backend cho trang nhân sự.
+
+## TD-BM-06 — Node LLM Dify trả FALLBACK (chưa gắn model credential) (2026-08-27)
+Ca REVIEW + `ai_eligible=true` (luật 9, `NAME_SIMILAR_BUT_NOT_CONCLUSIVE`) route đúng sang nhánh AI, nhưng node LLM trên Dify Cloud trả `ai_status="FALLBACK"` sau ~93s (timeout) → dùng template deterministic thay vì AI diễn giải. **Nguyên nhân:** workflow chưa gắn credential model gpt-5 (hoặc plugin openai chưa cấu hình) trên workspace Dify của [TT]. **Ảnh hưởng:** thấp — quyết định vẫn deterministic đúng; chỉ mất phần diễn giải AI cho ~<10% ca REVIEW + latency cao. **Hướng:** [TT] gắn credential model trong workflow Dify. Quan sát bằng route debug `verify_name` (`ai_status`/`generated_by_ai`). Ưu tiên thấp.
+
 **Trạng thái (2026-08-22):** Scope Batch Reconciliation. ✅ **TD-BM-01 GIẢI QUYẾT** (Warning Route 4 nhánh, LLM chỉ REVIEW+ai_eligible=true qua `review_mode is DETERMINISTIC_WARNING`). ✅ **TD-BM-02 GIẢI QUYẾT** (`generated_by_ai` → boolean). 🆕 **TD-BM-03** (phát hiện + đã vá: Warning Route dùng `contains "MATCH"` misroute NOT_MATCH → Build Match; đổi sang `is`). 🆕 **TD-BM-04** (ai_status "FALLBACK" cho nhánh REVIEW-deterministic — nhãn nhẹ) + **TD-BM-05** (OCR regex `parseInvoiceText_` cần hiệu chỉnh bằng ảnh mẫu thật). Các nợ mới đều **thấp**. ⚠ Toàn bộ thay đổi Dify **chưa import Dify Cloud** — [TT] phải import + smoke-test.
 
 ## TD-BM-05 — OCR parseInvoiceText_ regex chưa hiệu chỉnh mẫu thật (2026-08-22)
