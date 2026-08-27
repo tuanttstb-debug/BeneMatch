@@ -38,13 +38,22 @@ function callDriveOcr_(base64, mime, name) {
   var blob = Utilities.newBlob(Utilities.base64Decode(base64), mime || 'image/png', name || 'invoice');
   var fileId = null;
   try {
-    var meta = { title: '__bm_ocr_tmp_' + Date.now(), mimeType: 'application/vnd.google-apps.document' };
-    var created = Drive.Files.insert(meta, blob, { ocr: true, ocrLanguage: 'vi' });  // Drive API v2 advanced service
-    fileId = created.id;
+    var title = '__bm_ocr_tmp_' + Date.now();
+    if (Drive.Files && typeof Drive.Files.insert === 'function') {
+      // Drive API v2 advanced service
+      var f2 = Drive.Files.insert({ title: title, mimeType: 'application/vnd.google-apps.document' }, blob, { ocr: true, ocrLanguage: 'vi' });
+      fileId = f2.id;
+    } else if (Drive.Files && typeof Drive.Files.create === 'function') {
+      // Drive API v3 advanced service — chuyển ảnh sang Google Doc = kích hoạt OCR
+      var f3 = Drive.Files.create({ name: title, mimeType: 'application/vnd.google-apps.document' }, blob, { ocrLanguage: 'vi' });
+      fileId = f3.id;
+    } else {
+      throw new Error('Chưa bật Advanced Service "Drive API" (v2 hoặc v3) trong Apps Script');
+    }
     var text = DocumentApp.openById(fileId).getBody().getText();
     return { text: text, confidence: 0.9 };
   } finally {
-    if (fileId) { try { Drive.Files.remove(fileId); } catch (e) {} }
+    if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (e) {} }
   }
 }
 
