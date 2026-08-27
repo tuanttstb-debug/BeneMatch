@@ -114,7 +114,8 @@ function parseInvoiceText_(text) {
   if (amt) { var digits = amt[1].replace(/[^\d]/g, ''); out.amount_total = digits ? parseInt(digits, 10) : 0; }
 
   // Số hóa đơn: nhãn "Số" / "No." (thường dạng 00001234 hoặc AA/24E-...).
-  var no = t.match(/(?:s[ốo]\s*(?:h[óo]a\s*[đd][ơo]n)?|invoice\s*no\.?|no\.?)\s*[:.]?\s*([A-Z0-9][A-Z0-9/\-]{2,})/i);
+  // Giá trị BẮT BUỘC chứa ít nhất 1 chữ số → tránh bắt nhầm "thue" trong "Mã số thuế".
+  var no = t.match(/(?:s[ốo]\s*(?:h[óo]a\s*[đd][ơo]n)?|invoice\s*no\.?|no\.?)\s*[:.]?\s*([A-Z0-9][A-Z0-9/\-]*\d[A-Z0-9/\-]*)/i);
   if (no) out.invoice_id = no[1].replace(/[.,;]+$/, '');
 
   // Ngày: "Ngày dd tháng mm năm yyyy" hoặc dd/mm/yyyy.
