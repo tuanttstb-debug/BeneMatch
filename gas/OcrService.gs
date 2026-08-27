@@ -3,22 +3,49 @@
  * ocrInvoices_ chỉ được gọi khi USE_OCR=true; đường synthetic bỏ qua file này.
  * parseInvoiceText_ tách riêng, unit-test bằng gas/verify_ocr.mjs (text mẫu).
  * ⚠ Regex theo mẫu hóa đơn VAT VN — CẦN [TT] cấp ảnh mẫu để hiệu chỉnh.
+ *
+ * Provider (Script Property OCR_PROVIDER):
+ *   'drive'  (MẶC ĐỊNH, MIỄN PHÍ) — Google Drive OCR, không cần key. Cần bật Advanced Service "Drive API".
+ *   'vision' — Google Cloud Vision (mất phí, cần VISION_API_KEY).
  */
 
 function ocrInvoices_(files, cfg, props) {
+  var provider = String(props.getProperty('OCR_PROVIDER') || 'drive').toLowerCase();
   var apiKey = props.getProperty('VISION_API_KEY');
-  if (!apiKey) throw new Error('USE_OCR=true nhưng thiếu VISION_API_KEY');
+  if (provider === 'vision' && !apiKey) throw new Error('OCR_PROVIDER=vision nhưng thiếu VISION_API_KEY');
   var out = [];
   for (var i = 0; i < files.length; i++) {
     var f = files[i];
-    var vision = callVision_(f.data, f.mime, apiKey);   // {text, confidence}
-    var inv = parseInvoiceText_(vision.text);
+    var ocr = provider === 'vision'
+      ? callVision_(f.data, f.mime, apiKey)          // {text, confidence}
+      : callDriveOcr_(f.data, f.mime, f.name);       // {text, confidence} — free
+    var inv = parseInvoiceText_(ocr.text);
     inv.source_file = f.name || ('file_' + (i + 1));
-    inv.ocr_confidence = vision.confidence;
+    inv.ocr_confidence = ocr.confidence;
+    inv.ocr_provider = provider;
     if (!inv.invoice_id) inv.invoice_id = 'OCR-' + String(i + 1).padStart(4, '0');
     out.push(inv);
   }
   return out;
+}
+
+/**
+ * Drive OCR (MIỄN PHÍ) — nạp ảnh/PDF thành Google Doc với ocr:true rồi đọc text, xoá file tạm.
+ * Cần bật Advanced Service "Drive API" (Apps Script: Services → Drive API). Không cần API key.
+ * Không có confidence → mặc định 0.9 (trên OCR_MIN_CONFIDENCE nên không gắn cờ nhầm).
+ */
+function callDriveOcr_(base64, mime, name) {
+  var blob = Utilities.newBlob(Utilities.base64Decode(base64), mime || 'image/png', name || 'invoice');
+  var fileId = null;
+  try {
+    var meta = { title: '__bm_ocr_tmp_' + Date.now(), mimeType: 'application/vnd.google-apps.document' };
+    var created = Drive.Files.insert(meta, blob, { ocr: true, ocrLanguage: 'vi' });  // Drive API v2 advanced service
+    fileId = created.id;
+    var text = DocumentApp.openById(fileId).getBody().getText();
+    return { text: text, confidence: 0.9 };
+  } finally {
+    if (fileId) { try { Drive.Files.remove(fileId); } catch (e) {} }
+  }
 }
 
 /** Gọi Google Vision DOCUMENT_TEXT_DETECTION. base64 = nội dung file (không prefix). */

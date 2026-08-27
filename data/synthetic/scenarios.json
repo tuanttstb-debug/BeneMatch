@@ -1,0 +1,69 @@
+[
+  {
+    "id": "khop-sach",
+    "title": "Khớp sạch",
+    "risk": "LOW",
+    "expect": "MATCH",
+    "story": "Tên người thụ hưởng và số tiền trên hóa đơn khớp lệnh chuyển tiền. Đây là ca lý tưởng — hệ thống cho qua (ALLOW).",
+    "invoices": [
+      { "invoice_id": "INV-101", "invoice_date": "2026-08-03", "beneficiary_name": "CÔNG TY TNHH ABC VIỆT NAM", "beneficiary_mst": "0101234567", "amount_total": 100000000, "source_file": "abc_hd101.jpg", "ocr_confidence": 0.99 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCTY TNHH ABC VIET NAM,0101234567,0123456789,100000000"
+  },
+  {
+    "id": "sai-phap-nhan",
+    "title": "Sai người thụ hưởng (khác pháp nhân)",
+    "risk": "HIGH",
+    "expect": "NOT_MATCH",
+    "story": "Hóa đơn ghi CÔNG TY CỔ PHẦN, nhưng lệnh chuyển tiền lại đứng tên CÔNG TY TNHH — khác loại hình pháp nhân dù trùng mã số thuế. Đây là rủi ro nặng nhất: chuyển tiền cho sai thực thể. Hệ thống CHẶN (BLOCK).",
+    "invoices": [
+      { "invoice_id": "INV-201", "invoice_date": "2026-08-08", "beneficiary_name": "CÔNG TY CỔ PHẦN ĐẦU TƯ DELTA MEKONG", "beneficiary_mst": "0107000007", "amount_total": 45000000, "source_file": "delta_hd201.jpg", "ocr_confidence": 0.98 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH DELTA MEKONG,0107000007,0122334455,45000000"
+  },
+  {
+    "id": "lech-tien",
+    "title": "Lệch tiền (thừa chi)",
+    "risk": "HIGH",
+    "expect": "REVIEW",
+    "story": "Tên khớp, nhưng lệnh chuyển 50.000.000 đ trong khi hóa đơn chỉ 40.000.000 đ — thừa 10 triệu vượt dung sai. Hệ thống đưa vào diện kiểm tra (WARN).",
+    "invoices": [
+      { "invoice_id": "INV-301", "invoice_date": "2026-08-06", "beneficiary_name": "CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA", "beneficiary_mst": "0103000003", "amount_total": 40000000, "source_file": "hoanggia_hd301.jpg", "ocr_confidence": 0.98 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA,0103000003,0111222333,50000000"
+  },
+  {
+    "id": "trung-hoa-don",
+    "title": "Hóa đơn trùng",
+    "risk": "HIGH",
+    "expect": "REVIEW",
+    "story": "Hai hóa đơn cùng số tiền, cùng ngày, cùng mã số thuế — nghi thanh toán hai lần cho một khoản. Tổng lệnh 40 triệu có nguy cơ trả gấp đôi. Hệ thống gắn cờ nghi trùng (WARN).",
+    "invoices": [
+      { "invoice_id": "INV-401", "invoice_date": "2026-08-05", "beneficiary_name": "CÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH", "beneficiary_mst": "0105000005", "amount_total": 20000000, "source_file": "phuthinh_hd401.jpg", "ocr_confidence": 0.97 },
+      { "invoice_id": "INV-402", "invoice_date": "2026-08-05", "beneficiary_name": "CÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH", "beneficiary_mst": "0105000005", "amount_total": 20000000, "source_file": "phuthinh_hd402.jpg", "ocr_confidence": 0.97 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH,0105000005,0444555666,40000000"
+  },
+  {
+    "id": "thieu-chung-tu",
+    "title": "Thiếu chứng từ",
+    "risk": "HIGH",
+    "expect": "REVIEW",
+    "story": "Một hóa đơn chưa có lệnh chuyển tiền tương ứng, và một lệnh chuyển tiền lại không có hóa đơn kèm theo. Chứng từ khập khiễng — cần bổ sung trước khi chi (WARN).",
+    "invoices": [
+      { "invoice_id": "INV-501", "invoice_date": "2026-08-08", "beneficiary_name": "DOANH NGHIỆP TƯ NHÂN THÀNH ĐẠT", "beneficiary_mst": "0104000004", "amount_total": 60000000, "source_file": "thanhdat_hd501.jpg", "ocr_confidence": 0.95 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH CƠ KHÍ TIẾN PHÁT,0106000006,0777888999,40000000"
+  },
+  {
+    "id": "ten-gan-giong",
+    "title": "Tên gần giống, chưa kết luận",
+    "risk": "MEDIUM",
+    "expect": "REVIEW",
+    "story": "Hóa đơn ghi thêm cụm \"ĐẦU TƯ\" so với lệnh chuyển tiền (cùng mã số thuế). Tên gần giống nhưng chưa đủ căn cứ khẳng định cùng một pháp nhân — hệ thống chuyển cho người kiểm tra (đây là ~<10% ca mà AI diễn giải cảnh báo).",
+    "invoices": [
+      { "invoice_id": "INV-601", "invoice_date": "2026-08-10", "beneficiary_name": "CÔNG TY TNHH ĐẦU TƯ THƯƠNG MẠI HOÀNG GIA", "beneficiary_mst": "0109000009", "amount_total": 30000000, "source_file": "hoanggia_hd601.jpg", "ocr_confidence": 0.98 }
+    ],
+    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA,0109000009,0133445566,30000000"
+  }
+]

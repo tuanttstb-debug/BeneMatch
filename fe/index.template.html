@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BeneMatch — Đối chiếu hóa đơn ↔ lệnh chuyển tiền</title>
+<meta name="description" content="Demo đối chiếu lô hóa đơn với lệnh chuyển tiền, phát hiện sai người thụ hưởng, lệch tiền, hóa đơn trùng — deterministic-first. Dữ liệu mẫu.">
 <style>
   :root{
     --purple:#7B2CBF; --purple-deep:#5A189A; --purple-soft:#EEE4FA;
@@ -17,24 +18,41 @@
   *{box-sizing:border-box} html,body{margin:0}
   body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
   .wrap{max-width:1120px;margin:0 auto;padding:20px}
-  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
   .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;box-shadow:var(--shadow)}
   .brand h1{font-size:20px;margin:0} .brand p{margin:0;color:var(--muted);font-size:13px}
   .tag{margin-left:auto;background:var(--purple-soft);color:var(--purple-deep);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
   @media (prefers-color-scheme: dark){ .tag{color:#d9c6f5} }
+  .demo-banner{display:flex;gap:10px;align-items:flex-start;background:var(--amber-bg);color:var(--amber);border:1px solid #f5d9a8;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px}
+  @media (prefers-color-scheme: dark){ .demo-banner{border-color:#5a4620} }
+  .hero{background:linear-gradient(135deg,rgba(123,44,191,.09),rgba(90,24,154,.04));border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:16px}
+  .hero h2{margin:0 0 6px;font-size:18px}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:80ch}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .legend .badge{font-size:11.5px}
+  .legend .lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
   .grid{display:grid;grid-template-columns:1fr;gap:16px}
-  @media(min-width:900px){ .grid{grid-template-columns:420px 1fr} }
+  @media(min-width:900px){ .grid{grid-template-columns:440px 1fr} }
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
   .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--purple-deep);margin:0 0 12px}
   @media (prefers-color-scheme: dark){ .card h2{color:#c9b3ee} }
+  .scn{display:grid;grid-template-columns:1fr;gap:9px}
+  .scn button{text-align:left;cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;color:var(--ink);transition:border-color .12s,transform .08s}
+  .scn button:hover{border-color:var(--purple)}
+  .scn button.active{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-soft)}
+  .scn .t{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .scn .d{font-size:12px;color:var(--muted);margin-top:3px}
   label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
   textarea,input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
-  textarea{min-height:150px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;resize:vertical}
-  .btn{cursor:pointer;border:0;border-radius:11px;padding:11px 16px;font-weight:700;font-size:14px}
+  textarea{min-height:130px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;resize:vertical}
+  .btn{cursor:pointer;border:0;border-radius:11px;padding:10px 16px;font-weight:700;font-size:14px}
   .btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff}
   .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
   .muted{color:var(--muted);font-size:12.5px}
+  .story{background:var(--purple-soft);border-radius:12px;padding:11px 13px;font-size:13px;margin-bottom:14px;color:var(--ink)}
+  @media (prefers-color-scheme: dark){ .story{background:#241a3d} }
+  .story b{color:var(--purple-deep)} @media (prefers-color-scheme: dark){ .story b{color:#d9c6f5} }
   .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
   @media(min-width:620px){ .kpis{grid-template-columns:repeat(4,1fr)} }
   .kpi{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px}
@@ -55,6 +73,8 @@
   @media (prefers-color-scheme: dark){ .pill{color:#d9c6f5} }
   details summary{cursor:pointer;color:var(--purple-deep);font-size:12.5px;font-weight:600}
   @media (prefers-color-scheme: dark){ details summary{color:#c9b3ee} }
+  .sitefoot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+  .sitefoot a{color:var(--purple-deep);font-weight:700;text-decoration:none} @media (prefers-color-scheme: dark){ .sitefoot a{color:#c9b3ee} }
 </style>
 </head>
 <body>
@@ -62,52 +82,66 @@
   <header class="top">
     <div class="logo">B</div>
     <div class="brand"><h1>BeneMatch</h1><p>Đối chiếu hóa đơn ↔ lệnh chuyển tiền · deterministic-first</p></div>
-    <span class="tag">PoC / Demo TPBank</span>
+    <span class="tag">Demo · TPBank</span>
   </header>
 
+  <div class="demo-banner">
+    <span>⚠️</span>
+    <span>Đây là trang <b>DEMO</b> chạy hoàn toàn trong trình duyệt với <b>dữ liệu mẫu (synthetic)</b>. Vui lòng <b>KHÔNG nhập hóa đơn, số tài khoản hay dữ liệu khách hàng thật</b>.</span>
+  </div>
+
+  <section class="hero">
+    <h2>BeneMatch làm gì?</h2>
+    <p>Khi chi một lô nhiều hóa đơn, BeneMatch tự động <b>gộp theo người thụ hưởng</b> rồi đối chiếu với lệnh chuyển tiền để bắt bốn nhóm rủi ro: <b>chuyển sai người thụ hưởng</b> (khác pháp nhân), <b>lệch số tiền</b> (thừa/thiếu ngoài dung sai), <b>hóa đơn trùng</b> (trả hai lần), và <b>thiếu chứng từ</b>. Phần quyết định về tiền & trùng là <b>deterministic</b> (theo luật, không AI); chỉ khớp tên mới cần AI diễn giải cho số ít ca mơ hồ.</p>
+    <div class="legend">
+      <span class="lg"><span class="badge b-MATCH">MATCH</span> cho qua</span>
+      <span class="lg"><span class="badge b-REVIEW">REVIEW</span> cần kiểm tra</span>
+      <span class="lg"><span class="badge b-NOT_MATCH">NOT_MATCH</span> chặn lại</span>
+    </div>
+  </section>
+
   <div class="grid">
-    <!-- INPUT -->
+    <!-- SCENARIOS -->
     <section class="card">
-      <h2>Đầu vào</h2>
-      <label>Chế độ</label>
-      <select id="mode">
-        <option value="offline">Demo offline (tính trong trình duyệt)</option>
-        <option value="live">Live — gọi GAS endpoint</option>
-      </select>
-      <div id="liveBox" style="display:none">
-        <label>GAS Web App URL</label>
-        <input id="gasUrl" placeholder="https://script.google.com/macros/s/…/exec">
-      </div>
-
-      <label>Hóa đơn (JSON — mô phỏng đã OCR)</label>
-      <textarea id="invoices"></textarea>
-      <label>Lệnh chuyển tiền (CSV)</label>
-      <textarea id="transfers"></textarea>
-
-      <div class="row">
-        <button class="btn btn-primary" id="run">Chạy đối chiếu</button>
-        <button class="btn btn-ghost" id="reset">Nạp dữ liệu mẫu</button>
-      </div>
-      <p class="foot">Dữ liệu <b>synthetic</b> — an toàn công bố. Đường OCR thật (ảnh/PDF) chạy ở GAS + Vision khi bật <code>USE_OCR</code>.</p>
+      <h2>Chọn tình huống demo</h2>
+      <div class="scn" id="scnList"></div>
+      <details style="margin-top:14px">
+        <summary>Nâng cao — tự nhập dữ liệu mẫu</summary>
+        <label>Hóa đơn (JSON — mô phỏng đã OCR)</label>
+        <textarea id="invoices"></textarea>
+        <label>Lệnh chuyển tiền (CSV)</label>
+        <textarea id="transfers"></textarea>
+        <div class="row">
+          <button class="btn btn-primary" id="run">Chạy đối chiếu</button>
+          <button class="btn btn-ghost" id="reset">Nạp lô tổng hợp</button>
+        </div>
+        <p class="foot">Chỉ dùng dữ liệu <b>mẫu</b>. Đối chiếu chạy tại chỗ trong trình duyệt — không gửi đi đâu.</p>
+      </details>
     </section>
 
     <!-- RESULT -->
     <section class="card">
       <h2>Kết quả đối chiếu</h2>
-      <div id="result"><p class="muted">Bấm “Chạy đối chiếu” để xem kết quả.</p></div>
+      <div id="story"></div>
+      <div id="result"><p class="muted">Chọn một tình huống bên trái để xem BeneMatch xử lý.</p></div>
     </section>
   </div>
 
-  <p class="foot" style="text-align:center;margin-top:20px">
-    <span class="pill">RULE_ENGINE</span> Quyết định tổng tiền & duplicate là <b>deterministic</b> (không AI). Khớp tên đi qua Dify V2 — AI chỉ diễn giải cảnh báo cho ~&lt;10% ca REVIEW mơ hồ.
+  <p class="foot" style="text-align:center;margin-top:18px">
+    <span class="pill">RULE_ENGINE</span> Quyết định tổng tiền &amp; hóa đơn trùng là <b>deterministic</b> (không AI). Khớp tên đi qua workflow xác thực pháp nhân — AI chỉ diễn giải cảnh báo cho ~&lt;10% ca REVIEW mơ hồ.
   </p>
+
+  <div class="sitefoot">
+    <span>BeneMatch — bản demo dữ liệu mẫu để giới thiệu &amp; lấy góp ý. Không dùng cho dữ liệu thật.</span>
+    <a id="feedback" href="#">✉︎ Gửi góp ý</a>
+  </div>
 </div>
 
 <script>
 /* ====== RECON ENGINE (nạp từ gas/Recon.gs qua fe/build.mjs — nguồn logic duy nhất) ====== */
 /*__RECON_ENGINE__*/
 
-/* ====== Stub verify tên (offline, deterministic) — bản FE của gasStubVerify_ ====== */
+/* ====== Verify tên offline (deterministic) — bản FE của gasStubVerify_ ====== */
 function feVerify(pair){
   var invN=reconNormalizeName(pair.invoice_beneficiary_name), payN=reconNormalizeName(pair.payment_beneficiary_name);
   if(!invN||!payN) return {decision:'REVIEW',reason_codes:['INSUFFICIENT_DATA'],source:'STUB_FE'};
@@ -123,17 +157,41 @@ function feVerify(pair){
                 :{decision:'NOT_MATCH',reason_codes:['LOW_NAME_SIMILARITY'],source:'STUB_FE'};
 }
 
-/* ====== Synthetic data (nạp từ data/synthetic qua build) ====== */
+/* ====== Dữ liệu mẫu (nạp từ data/synthetic qua build) ====== */
 var SAMPLE_INVOICES = /*__SYNTHETIC_INVOICES__*/ [];
 var SAMPLE_TRANSFERS_CSV = /*__SYNTHETIC_TRANSFERS_CSV__*/ "";
 var CONFIG = /*__CONFIG__*/ {};
+var SCENARIOS = /*__SCENARIOS__*/ [];
+var FEEDBACK_EMAIL = "tuantt.stb@gmail.com"; // đổi sang email công việc nếu cần
 
 var vnd = function(n){ return (Number(n)||0).toLocaleString('vi-VN'); };
 var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 
-function loadSample(){
-  $('invoices').value = JSON.stringify(SAMPLE_INVOICES, null, 2);
-  $('transfers').value = SAMPLE_TRANSFERS_CSV.trim();
+function riskBadge(r){ var m={HIGH:'b-NOT_MATCH',MEDIUM:'b-REVIEW',LOW:'b-MATCH'}; return '<span class="badge '+(m[r]||'b-REVIEW')+'" style="font-size:10.5px">'+r+'</span>'; }
+
+function buildScnList(){
+  var full = { id:'lo-tong-hop', title:'Lô tổng hợp (nhiều nhóm)', risk:'HIGH',
+    story:'Một lô thực tế gồm nhiều người thụ hưởng với đủ loại tình huống trộn lẫn — BeneMatch xếp nhóm rủi ro cao lên trước để xử lý.' };
+  var items = SCENARIOS.concat([full]);
+  $('scnList').innerHTML = items.map(function(sc,i){
+    return '<button data-i="'+i+'"><div class="t">'+esc(sc.title)+' '+riskBadge(sc.risk)+'</div><div class="d">'+esc((sc.story||'').slice(0,80))+(sc.story&&sc.story.length>80?'…':'')+'</div></button>';
+  }).join('');
+  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){
+    b.addEventListener('click', function(){ selectScenario(items[+b.dataset.i], b); });
+  });
+  return items;
+}
+
+function selectScenario(sc, btn){
+  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  var invoices = sc.invoices || SAMPLE_INVOICES;
+  var csv = sc.transfers_csv || SAMPLE_TRANSFERS_CSV;
+  $('invoices').value = JSON.stringify(invoices, null, 2);
+  $('transfers').value = csv.trim();
+  $('story').innerHTML = sc.story ? '<div class="story"><b>'+esc(sc.title)+'.</b> '+esc(sc.story)+'</div>' : '';
+  runOffline();
 }
 
 function render(res){
@@ -158,34 +216,26 @@ function render(res){
       + '<td><span class="badge b-'+g.decision+'">'+g.decision+'</span></td></tr>';
   });
   html += '</tbody></table></div>';
-  html += '<p class="foot">Nguồn khớp tên: <b>'+res.audit.name_verify_source+'</b> · lô <code>'+esc(res.batch_id)+'</code> · '+s.warning_count+' cảnh báo.'
+  html += '<p class="foot">Nguồn khớp tên: <b>'+res.audit.name_verify_source+'</b> · '+s.warning_count+' cảnh báo · lô <code>'+esc(res.batch_id)+'</code>.'
     + ' <details><summary>Xem JSON kết quả</summary><textarea style="margin-top:8px" readonly>'+esc(JSON.stringify(res,null,2))+'</textarea></details></p>';
   $('result').innerHTML = html;
 }
 function kpi(l,v){ return '<div class="kpi"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>'; }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
 function runOffline(){
-  var invoices, transfers;
+  var invoices;
   try{ invoices = JSON.parse($('invoices').value||'[]'); }catch(e){ $('result').innerHTML='<p class="over">Lỗi JSON hóa đơn: '+esc(e.message)+'</p>'; return; }
-  transfers = reconParseTransferCsv($('transfers').value||'');
-  var res = reconcileBatch(invoices, transfers, CONFIG, feVerify, {batch_id:'BM-BATCH-FE'});
+  var transfers = reconParseTransferCsv($('transfers').value||'');
+  var res = reconcileBatch(invoices, transfers, CONFIG, feVerify, {batch_id:'BM-BATCH-DEMO'});
   render(res);
 }
-function runLive(){
-  var url = $('gasUrl').value.trim();
-  if(!url){ $('result').innerHTML='<p class="under">Nhập GAS Web App URL trước.</p>'; return; }
-  var invoices; try{ invoices=JSON.parse($('invoices').value||'[]'); }catch(e){ $('result').innerHTML='<p class="over">Lỗi JSON hóa đơn.</p>'; return; }
-  $('result').innerHTML='<p class="muted">Đang gọi GAS…</p>';
-  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'reconcile',invoices:invoices,transfer_orders_csv:$('transfers').value||''})})
-    .then(function(r){return r.json();}).then(function(res){ if(res.error){ $('result').innerHTML='<p class="over">GAS lỗi: '+esc(res.error)+'</p>'; } else render(res); })
-    .catch(function(e){ $('result').innerHTML='<p class="over">Không gọi được GAS: '+esc(e.message)+'</p>'; });
-}
 
-$('mode').addEventListener('change', function(){ $('liveBox').style.display = this.value==='live'?'block':'none'; });
-$('run').addEventListener('click', function(){ $('mode').value==='live'?runLive():runOffline(); });
-$('reset').addEventListener('click', loadSample);
-loadSample();
+var scnItems = buildScnList();
+$('run').addEventListener('click', function(){ $('story').innerHTML=''; runOffline(); });
+$('reset').addEventListener('click', function(){ selectScenario(scnItems[scnItems.length-1], $('scnList').querySelector('button:last-child')); });
+$('feedback').setAttribute('href', 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeURIComponent('[BeneMatch demo] Góp ý'));
+// Mở sẵn tình huống đầu tiên
+selectScenario(scnItems[0], $('scnList').querySelector('button'));
 </script>
 </body>
 </html>

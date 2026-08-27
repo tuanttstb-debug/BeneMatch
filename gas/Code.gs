@@ -20,11 +20,26 @@ function doPost(e) {
   try {
     var payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     var action = payload.action || 'reconcile';
-    if (action !== 'reconcile') return jsonOut_({ error: 'action không hợp lệ: ' + action });
-    return jsonOut_(handleReconcile_(payload));
+    if (action === 'reconcile') return jsonOut_(handleReconcile_(payload));
+    if (action === 'verify_name') return jsonOut_(handleVerifyName_(payload));  // debug: 1 cặp tên → full Dify result
+    return jsonOut_({ error: 'action không hợp lệ: ' + action });
   } catch (err) {
     return jsonOut_({ error: String(err && err.message || err) });
   }
+}
+
+/**
+ * Debug route: verify 1 cặp tên qua Dify, trả NGUYÊN result (gồm user_warning.ai_status,
+ * generated_by_ai, name_verification.similarity_*) để quan sát nhánh LLM (luật 9) vs template
+ * deterministic. Không đi qua Recon → không ảnh hưởng parity. Nếu chưa cấu hình Dify → báo rõ.
+ */
+function handleVerifyName_(payload) {
+  var props = PropertiesService.getScriptProperties();
+  var url = props.getProperty('DIFY_API_URL');
+  var key = props.getProperty('DIFY_API_KEY');
+  if (!url || !key) return { error: 'Chưa cấu hình DIFY_API_URL/DIFY_API_KEY (verify_name cần Dify thật)' };
+  var pair = payload.pair || {};
+  return difyVerifyRaw_(url, key, pair);
 }
 
 function handleReconcile_(payload) {
@@ -74,7 +89,8 @@ function makeGasVerifier_(props) {
   return function (pair) { return gasStubVerify_(pair); };
 }
 
-function difyVerify_(url, key, pair) {
+/** Gọi Dify workflow, trả NGUYÊN object result (hoặc {error,...}). Dùng chung cho verify + debug. */
+function difyVerifyRaw_(url, key, pair) {
   var res = UrlFetchApp.fetch(url.replace(/\/$/, '') + '/workflows/run', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     headers: { Authorization: 'Bearer ' + key },
@@ -90,11 +106,22 @@ function difyVerify_(url, key, pair) {
     }),
   });
   var code = res.getResponseCode();
-  if (code < 200 || code >= 300) return { decision: 'REVIEW', reason_codes: ['DIFY_HTTP_' + code], source: 'DIFY_ERROR' };
+  if (code < 200 || code >= 300) return { error: 'DIFY_HTTP_' + code, body: res.getContentText().slice(0, 400) };
   var data = JSON.parse(res.getContentText());
   var r = data && data.data && data.data.outputs && data.data.outputs.result;
-  if (!r) return { decision: 'REVIEW', reason_codes: ['DIFY_NO_RESULT'], source: 'DIFY_ERROR' };
-  return { decision: r.decision, reason_codes: r.reason_codes || [], source: 'DIFY_V2' };
+  if (!r) return { error: 'DIFY_NO_RESULT', raw: data };
+  return r;
+}
+
+function difyVerify_(url, key, pair) {
+  var r = difyVerifyRaw_(url, key, pair);
+  if (r.error) return { decision: 'REVIEW', reason_codes: [r.error], source: 'DIFY_ERROR' };
+  var uw = r.user_warning || {};
+  // Passthrough nhãn AI để quan sát nhánh LLM (Recon bỏ qua field thừa — vô hại parity).
+  return {
+    decision: r.decision, reason_codes: r.reason_codes || [], source: 'DIFY_V2',
+    ai_status: uw.ai_status || 'NOT_INVOKED', generated_by_ai: !!uw.generated_by_ai,
+  };
 }
 
 /** Stub nội bộ (deterministic, không AI) — khi chưa cấu hình Dify. Dùng logic Recon.gs. */
