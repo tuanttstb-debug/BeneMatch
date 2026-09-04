@@ -75,6 +75,32 @@
   @media (prefers-color-scheme: dark){ details summary{color:#c9b3ee} }
   .sitefoot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
   .sitefoot a{color:var(--purple-deep);font-weight:700;text-decoration:none} @media (prefers-color-scheme: dark){ .sitefoot a{color:#c9b3ee} }
+  /* ==== Email cảnh báo gửi ĐVKD (xem trước) ==== */
+  .grid > .card{min-width:0} /* cho cột 1fr co đúng, không nở theo min-content thẻ email */
+  .emails{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+  .emails > h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--purple-deep);margin:0 0 12px}
+  @media (prefers-color-scheme: dark){ .emails > h3{color:#c9b3ee} }
+  .email-card{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;background:var(--card);margin-bottom:14px;overflow:hidden}
+  .email-card.sev-0{border-left-color:var(--green)} .email-card.sev-1{border-left-color:var(--amber)} .email-card.sev-2{border-left-color:var(--red)}
+  .email-hd{background:var(--bg);border-bottom:1px solid var(--line);padding:8px 14px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .email-body{padding:14px 16px;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere}
+  .email-body p{margin:0 0 9px} .email-body ol{margin:0 0 9px;padding-left:22px} .email-body li{margin:2px 0}
+  .email-ai{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+  .email-ai-hd{font-weight:800;margin-bottom:9px;font-size:13px}
+  .email-line{margin:7px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .act,.rsk{display:inline-block;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:800}
+  .act-0,.rsk-LOW{background:var(--green-bg);color:var(--green)}
+  .act-1,.rsk-MEDIUM{background:var(--amber-bg);color:var(--amber)}
+  .act-2,.rsk-HIGH{background:var(--red-bg);color:var(--red)}
+  .email-warns{margin:8px 0}
+  .email-warns .wlab{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .cal{display:flex;gap:9px;align-items:flex-start;border-radius:9px;padding:8px 11px;margin:6px 0;font-size:13px;font-weight:600;border:1px solid transparent}
+  .cal .ic{font-size:14px;line-height:1.35;flex:0 0 auto}
+  .cal-LOW{background:var(--green-bg);color:var(--green);border-color:rgba(22,163,74,.28)}
+  .cal-MEDIUM{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.28)}
+  .cal-HIGH{background:var(--red-bg);color:var(--red);border-color:rgba(220,38,38,.3)}
+  .email-att a{color:var(--purple-deep);font-weight:700;text-decoration:none}
+  @media (prefers-color-scheme: dark){ .email-att a{color:#c9b3ee} }
 </style>
 </head>
 <body>
@@ -467,6 +493,7 @@ var CONFIG = {
 var SCENARIOS = [
   {
     "id": "khop-sach",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Khớp sạch",
     "risk": "LOW",
     "expect": "MATCH",
@@ -478,6 +505,7 @@ var SCENARIOS = [
   },
   {
     "id": "sai-phap-nhan",
+    "request": { "dvkd": "TPBank Chi nhánh Sài Gòn – 015", "purpose": "Vay thanh toán tiền mua thiết bị theo hợp đồng." },
     "title": "Sai người thụ hưởng (khác pháp nhân)",
     "risk": "HIGH",
     "expect": "NOT_MATCH",
@@ -489,6 +517,7 @@ var SCENARIOS = [
   },
   {
     "id": "lech-tien",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Lệch tiền (thừa chi)",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -500,6 +529,7 @@ var SCENARIOS = [
   },
   {
     "id": "trung-hoa-don",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa nhập khẩu." },
     "title": "Hóa đơn trùng",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -512,6 +542,7 @@ var SCENARIOS = [
   },
   {
     "id": "thieu-chung-tu",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Thiếu chứng từ",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -523,6 +554,7 @@ var SCENARIOS = [
   },
   {
     "id": "ten-gan-giong",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Tên gần giống, chưa kết luận",
     "risk": "MEDIUM",
     "expect": "REVIEW",
@@ -534,6 +566,15 @@ var SCENARIOS = [
   }
 ];
 var FEEDBACK_EMAIL = "tuantt.stb@gmail.com"; // đổi sang email công việc nếu cần
+
+/* ==== Email cảnh báo gửi ĐVKD — cấu hình demo (synthetic) ==== */
+var DVKD_DEFAULT = "TPBank Tân Thuận – 239";
+var PURPOSE_DEFAULT = "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn).";
+var DEC_LABEL  = { MATCH:"KHỚP", REVIEW:"CẦN KIỂM TRA", NOT_MATCH:"KHÔNG KHỚP" };
+var ACT_LABEL  = { ALLOW:"Cho qua — tiếp tục giải ngân", WARN:"Kiểm soát & hoàn thiện hồ sơ trước khi chi", BLOCK:"Chặn — dừng giải ngân, chuyển kiểm tra" };
+var RISK_LABEL = { LOW:"Thấp", MEDIUM:"Trung bình", HIGH:"Cao" };
+var SEV_OF_DEC = { MATCH:0, REVIEW:1, NOT_MATCH:2 };
+var CUR_REQUEST = null; // metadata hồ sơ của kịch bản đang chọn (dvkd/purpose), null = tự nhập
 
 var vnd = function(n){ return (Number(n)||0).toLocaleString('vi-VN'); };
 var $ = function(id){ return document.getElementById(id); };
@@ -557,12 +598,70 @@ function buildScnList(){
 function selectScenario(sc, btn){
   Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){ b.classList.remove('active'); });
   if(btn) btn.classList.add('active');
+  CUR_REQUEST = sc.request || null;
   var invoices = sc.invoices || SAMPLE_INVOICES;
   var csv = sc.transfers_csv || SAMPLE_TRANSFERS_CSV;
   $('invoices').value = JSON.stringify(invoices, null, 2);
   $('transfers').value = csv.trim();
   $('story').innerHTML = sc.story ? '<div class="story"><b>'+esc(sc.title)+'.</b> '+esc(sc.story)+'</div>' : '';
   runOffline();
+}
+
+/* Sinh chuỗi số deterministic từ seed (để GNOL/số khoản vay ổn định theo nhóm). */
+function bmHash(s){ var h=5381; s=String(s==null?'':s); for(var i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return h>>>0; }
+function bmDigits(seed, len){ var out='', x=seed>>>0; while(out.length<len){ x=(x*1103515245+12345)>>>0; out+=String(x%10); } return out.slice(0,len); }
+
+/* Metadata hồ sơ giải ngân (synthetic) cho 1 nhóm người thụ hưởng. */
+function genRequestMeta(g, batchReq){
+  var dvkd = (batchReq && batchReq.dvkd) || DVKD_DEFAULT;
+  var purpose = (batchReq && batchReq.purpose) || PURPOSE_DEFAULT;
+  var bm = dvkd.match(/(\d{2,4})\s*$/); var branch = bm ? bm[1] : '239';
+  var seed = bmHash(g.group_key);
+  return {
+    dvkd: dvkd, purpose: purpose,
+    gnol: 'GNOL' + bmDigits(seed, 17),
+    loan_no: branch + 'M9PA' + bmDigits(bmHash(g.group_key + '|L'), 9),
+    company: g.beneficiary_display,
+    amount: g.sum_transfers || g.sum_invoices,
+  };
+}
+
+/* Render các email cảnh báo (1 email / mỗi nhóm người thụ hưởng), xếp chồng. */
+function renderEmails(res, batchReq){
+  var cards = res.groups.map(function(g){
+    var meta = genRequestMeta(g, batchReq);
+    var sev = SEV_OF_DEC[g.decision] || 0;
+    var warnHtml;
+    if(g.warnings.length){
+      warnHtml = g.warnings.map(function(w){
+        var ic = w.risk==='HIGH' ? '⛔' : (w.risk==='MEDIUM' ? '⚠️' : '●');
+        return '<div class="cal cal-'+w.risk+'"><span class="ic">'+ic+'</span><span>'+esc(w.message)+'</span></div>';
+      }).join('');
+    } else {
+      warnHtml = '<div class="cal cal-LOW"><span class="ic">✓</span><span>Không phát hiện bất thường — đề nghị cho qua theo quy định GNOL.</span></div>';
+    }
+    return '<div class="email-card sev-'+sev+'">'
+      + '<div class="email-hd">📧 Email cảnh báo — gửi ĐVKD</div>'
+      + '<div class="email-body">'
+      +   '<p>Kính gửi <b>'+esc(meta.dvkd)+'</b>,</p>'
+      +   '<p>Hệ thống DCB tiếp nhận và xử lý yêu cầu giải ngân số <b>'+esc(meta.gnol)+'</b> của công ty <b>'+esc(meta.company)+'</b>.</p>'
+      +   '<p><b>Thông tin chi tiết:</b></p>'
+      +   '<ol><li>Số tiền đề nghị giải ngân: <b>'+vnd(meta.amount)+' VND</b></li>'
+      +     '<li>Mục đích giải ngân: '+esc(meta.purpose)+'</li>'
+      +     '<li>Số khoản vay '+esc(meta.loan_no)+'</li></ol>'
+      +   '<p>ĐVKD thực hiện việc kiểm tra và hoàn thiện hồ sơ giải ngân theo quy định Giải Ngân Online dành cho KHDN.</p>'
+      +   '<div class="email-ai">'
+      +     '<div class="email-ai-hd">Kiểm tra thông tin thụ hưởng tự động bằng AI</div>'
+      +     '<div class="email-line">Kết quả: <span class="badge b-'+g.decision+'">'+(DEC_LABEL[g.decision]||g.decision)+'</span></div>'
+      +     '<div class="email-line">Hành động đề xuất: <span class="act act-'+sev+'">'+esc(ACT_LABEL[g.action]||g.action)+'</span></div>'
+      +     '<div class="email-warns"><div class="wlab">Chi tiết cảnh báo:</div>'+warnHtml+'</div>'
+      +     '<div class="email-line">Mức độ rủi ro: <span class="rsk rsk-'+g.risk_level+'">'+(RISK_LABEL[g.risk_level]||g.risk_level)+'</span></div>'
+      +   '</div>'
+      +   '<p class="email-att">Danh mục Hồ sơ đính kèm: <a href="#" onclick="return false">Tại đây</a></p>'
+      +   '<p>Trân trọng cảm ơn!</p>'
+      + '</div></div>';
+  }).join('');
+  return '<div class="emails"><h3>📧 Email cảnh báo gửi ĐVKD (xem trước · '+res.groups.length+' email)</h3>'+cards+'</div>';
 }
 
 function render(res){
@@ -589,6 +688,7 @@ function render(res){
   html += '</tbody></table></div>';
   html += '<p class="foot">Nguồn khớp tên: <b>'+res.audit.name_verify_source+'</b> · '+s.warning_count+' cảnh báo · lô <code>'+esc(res.batch_id)+'</code>.'
     + ' <details><summary>Xem JSON kết quả</summary><textarea style="margin-top:8px" readonly>'+esc(JSON.stringify(res,null,2))+'</textarea></details></p>';
+  html += renderEmails(res, CUR_REQUEST);
   $('result').innerHTML = html;
 }
 function kpi(l,v){ return '<div class="kpi"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>'; }
@@ -602,7 +702,7 @@ function runOffline(){
 }
 
 var scnItems = buildScnList();
-$('run').addEventListener('click', function(){ $('story').innerHTML=''; runOffline(); });
+$('run').addEventListener('click', function(){ CUR_REQUEST=null; $('story').innerHTML=''; runOffline(); });
 $('reset').addEventListener('click', function(){ selectScenario(scnItems[scnItems.length-1], $('scnList').querySelector('button:last-child')); });
 $('feedback').setAttribute('href', 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeURIComponent('[BeneMatch demo] Góp ý'));
 // Mở sẵn tình huống đầu tiên

@@ -1,6 +1,7 @@
 [
   {
     "id": "khop-sach",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Khớp sạch",
     "risk": "LOW",
     "expect": "MATCH",
@@ -12,6 +13,7 @@
   },
   {
     "id": "sai-phap-nhan",
+    "request": { "dvkd": "TPBank Chi nhánh Sài Gòn – 015", "purpose": "Vay thanh toán tiền mua thiết bị theo hợp đồng." },
     "title": "Sai người thụ hưởng (khác pháp nhân)",
     "risk": "HIGH",
     "expect": "NOT_MATCH",
@@ -23,6 +25,7 @@
   },
   {
     "id": "lech-tien",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Lệch tiền (thừa chi)",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -34,6 +37,7 @@
   },
   {
     "id": "trung-hoa-don",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa nhập khẩu." },
     "title": "Hóa đơn trùng",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -46,6 +50,7 @@
   },
   {
     "id": "thieu-chung-tu",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Thiếu chứng từ",
     "risk": "HIGH",
     "expect": "REVIEW",
@@ -57,6 +62,7 @@
   },
   {
     "id": "ten-gan-giong",
+    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
     "title": "Tên gần giống, chưa kết luận",
     "risk": "MEDIUM",
     "expect": "REVIEW",

@@ -2,6 +2,9 @@
 
 **Cập nhật:** 2026-08-22 · **Version:** 0.2.0-dev · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
 
+## Delta (2026-09-04) — CR: Email cảnh báo gửi ĐVKD dưới outcome demo (thuần FE)
+Thêm **email cảnh báo gửi ĐVKD** render có màu **bên dưới outcome JSON** ở màn demo (`docs/index.html`). [TT] chốt: **1 email/mỗi nhóm người thụ hưởng, xếp chồng** + **chỉ xem trước**. Mỗi `group` → 1 thẻ email theo khung mẫu [TT] (Kính gửi ĐVKD · GNOL · công ty · số tiền/mục đích/số khoản vay · Kết quả/Hành động/Chi tiết cảnh báo/Mức rủi ro). **Bôi màu 3 mức** theo risk/decision (🟢 MATCH/ALLOW · 🟡 REVIEW/WARN · 🔴 NOT_MATCH/BLOCK); mỗi cảnh báo là callout riêng có màu; nhóm sạch → callout xanh. Metadata giải ngân **synthetic** (GNOL/số khoản vay deterministic từ `group_key`; ĐVKD/mục đích từ `scenarios.json.request`, branch parse từ ĐVKD). Sửa `fe/index.template.html`+`scenarios.json`, rebuild 3 file. **KHÔNG đụng engine/GAS.** Verify Chrome đủ 4 mức + lô 9 email + mobile 360px 0 tràn; recon harness **14/14**. **Blocker:** không (offline, không redeploy GAS).
+
 ## Delta (2026-08-27) — Pivot: demo public GitHub Pages (synthetic) + OCR free + nghiệm thu live
 **Mục tiêu dự án chuyển thành trang demo public** giới thiệu năng lực cho nhân sự + lấy góp ý (chốt [TT] 2026-08-27). Dựng `docs/index.html` — static site tự chứa cho **GitHub Pages** (`/docs`, offline-in-browser, chỉ **synthetic**): showcase + **scenario picker 6 kịch bản** (verify 6/6). **Free OCR** = Google Drive OCR (thay/bổ sung Vision) — `OcrService.gs` đa provider; **nghiệm thu LIVE trọn** ảnh→OCR→parse→reconcile→Dify **MATCH**. Thêm route debug `verify_name` (Code.gs). Vá TD-BM-05. Đẩy 8 commit (`39b1606`→`faa9be5`, push origin/main). **Blocker:** không — chờ [TT] **bật GitHub Pages** (link: https://tuanttstb-debug.github.io/BeneMatch/). Ghi chú: node LLM Dify trả FALLBACK (chưa gắn model credential — việc phía Dify).
 

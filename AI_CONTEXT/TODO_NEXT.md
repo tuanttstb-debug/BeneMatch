@@ -2,6 +2,12 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-09-04) — CR: Email cảnh báo gửi ĐVKD dưới outcome demo
+
+XONG [CC] (thuần FE, rebuild 3 file, đã push origin/main): ✅ email cảnh báo gửi ĐVKD **bên dưới outcome JSON** — **1 email/nhóm xếp chồng**, preview-only · ✅ **bôi màu 3 mức** (🟢 MATCH · 🟡 REVIEW · 🔴 NOT_MATCH); mỗi cảnh báo callout riêng có màu; nhóm sạch → callout xanh · ✅ metadata synthetic (GNOL/khoản vay deterministic; ĐVKD/mục đích từ `scenarios.json.request`) · ✅ verify Chrome 4 mức + lô 9 email + mobile 360px 0 tràn · ✅ recon **14/14** (engine không đụng). Ưu tiên tiếp:
+- [TT] Xem `docs/index.html` (hoặc Pages sau khi bật) → nghiệm thu email từng kịch bản; báo em nếu muốn chỉnh **nhãn** (Cho qua/Kiểm soát/Chặn), **ĐVKD/mục đích mặc định**, hay **format GNOL/số khoản vay**.
+- [CC] (tùy chọn) nếu cần GNOL/số khoản vay **thật theo từng nhà cung cấp** thay vì sinh deterministic → thêm field vào invoice/transfer data + đọc trong `genRequestMeta`.
+
 ## ▣ Delta (2026-08-27) — Pivot demo public GitHub Pages + OCR free + nghiệm thu live
 
 XONG [CC] (đã push origin/main): ✅ **trang demo public** `docs/index.html` (showcase + 6 kịch bản, offline-only, synthetic) · ✅ `scenarios.json` verify **6/6** · ✅ **Free OCR** Drive (đa provider) — **nghiệm thu LIVE** ảnh→OCR→parse→reconcile→Dify **MATCH** · ✅ route `verify_name` + passthrough `ai_status` (routing đúng) · ✅ vá **TD-BM-05** (invoice_id) · ✅ dời test/EVD vào `test/live/`. Ưu tiên tiếp:
