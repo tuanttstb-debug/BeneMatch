@@ -144,13 +144,15 @@ function reconcileBatch(invoices, transfers, config, verifyFn, opts) {
     var display = (g.invoices[0] && g.invoices[0].beneficiary_name) || (g.transfers[0] && g.transfers[0].beneficiary_name) || g.key;
 
     if (g.type === 'NAME_FALLBACK') warnings.push(reconMkWarn('GROUP_KEY_FALLBACK_NAME', cfg, 'Nhóm theo TÊN (thiếu MST) — độ tin thấp hơn'));
-    if (g.invoices.length && !g.transfers.length) warnings.push(reconMkWarn('TRANSFER_MISSING_FOR_GROUP', cfg, 'Có hóa đơn (' + reconFmtVnd(sum_invoices) + ') nhưng thiếu lệnh chuyển tiền'));
+    // CR: BỎ cảnh báo "thiếu lệnh chuyển tiền" (hóa đơn chưa chi KHÔNG là rủi ro).
+    // GIỮ chiều ngược: có lệnh chi nhưng thiếu hóa đơn (chi thiếu chứng từ) = rủi ro.
     if (g.transfers.length && !g.invoices.length) warnings.push(reconMkWarn('INVOICE_MISSING_FOR_TRANSFER', cfg, 'Có lệnh chuyển tiền (' + reconFmtVnd(sum_transfers) + ') nhưng thiếu hóa đơn'));
 
+    // So tổng theo TỪNG bên thụ hưởng (đã gộp nhóm trên). Chỉ THỪA chi (lệnh CT > hóa đơn) là rủi ro.
     var amount_status = 'AMOUNT_MATCH';
     if (g.invoices.length && g.transfers.length) {
       if (diff > tolerance) { amount_status = 'AMOUNT_OVER_TOLERANCE'; warnings.push(reconMkWarn('AMOUNT_OVER_TOLERANCE', cfg, 'Thừa chi ' + reconFmtVnd(diff) + ' (dung sai ' + reconFmtVnd(tolerance) + ')')); }
-      else if (diff < -tolerance) { amount_status = 'AMOUNT_UNDER_TOLERANCE'; warnings.push(reconMkWarn('AMOUNT_UNDER_TOLERANCE', cfg, 'Thiếu chi ' + reconFmtVnd(-diff) + ' (dung sai ' + reconFmtVnd(tolerance) + ')')); }
+      else if (diff < -tolerance) { amount_status = 'AMOUNT_UNDER_NO_RISK'; } // CR: Hóa đơn > Lệnh CT (chi ít hơn) — KHÔNG cảnh báo
     }
 
     var seen = {};

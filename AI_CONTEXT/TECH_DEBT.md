@@ -2,6 +2,8 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro:** Không nợ mới. CR2 chạm engine (`gas/Recon.gs`+`src/recon/reconcile.js`) — **parity OK + harness 14/14** (cập nhật 2 EXPECT). Quy tắc mới: chỉ **thừa chi** (ΣCT>ΣHĐ) + **chi thiếu hóa đơn** là rủi ro; ΣHĐ>ΣCT và hóa-đơn-chưa-chi KHÔNG cảnh báo. **Deploy-gated:** [TT] redeploy `Recon.gs` để áp trên đường GAS live (demo public offline đã áp qua build). Các code `TRANSFER_MISSING_FOR_GROUP`/`AMOUNT_UNDER_TOLERANCE` còn trong `WARN_META` (không push nữa) — vô hại, giữ để tương thích/tham chiếu.
+
 **Trạng thái (2026-09-04 #2) — Form tự nhập nhanh (thuần FE):** Không nợ mới. Form nhập trường đơn dùng chung đường `runOffline` (không tạo path recon thứ 2), 0 đụng engine/GAS (recon 14/14). Ghi chú (không phải nợ): hiện hỗ trợ **1↔1** và **nhiều HĐ↔1 lệnh**; chiều "nhiều lệnh↔1 HĐ" chưa có (tùy chọn tương lai). Số tiền nhập tự do (parse bỏ ký tự lạ).
 
 **Trạng thái (2026-09-04) — CR Email cảnh báo ĐVKD (thuần FE):** Không nợ mới. Thuần trình bày FE (`index.template.html`+`scenarios.json`), 0 đụng engine/GAS (recon 14/14). Đã **fix** overflow ngang tiềm ẩn (`.grid>.card{min-width:0}` — cột 1fr từng nở theo min-content thẻ email). Ghi chú (không phải nợ): số **GNOL/khoản vay là synthetic deterministic** từ `group_key` (đủ cho demo); nếu cần số thật theo nhà cung cấp → thêm field vào invoice/transfer data. TD-BM-05/06 dưới đây giữ nguyên.

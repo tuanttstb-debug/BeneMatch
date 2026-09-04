@@ -109,21 +109,19 @@ async function reconcile(invoices, transfers, config, verifyFn, opts) {
     if (g.type === 'NAME_FALLBACK')
       warnings.push(mkWarn('GROUP_KEY_FALLBACK_NAME', cfg, 'Nhóm theo TÊN (thiếu MST) — độ tin thấp hơn'));
 
-    // 4) Unmatched
-    if (g.invoices.length && !g.transfers.length)
-      warnings.push(mkWarn('TRANSFER_MISSING_FOR_GROUP', cfg, `Có hóa đơn (${fmtVnd(sum_invoices)}) nhưng thiếu lệnh chuyển tiền`));
+    // 4) Unmatched — CR: BỎ cảnh báo "thiếu lệnh chuyển tiền" (hóa đơn chưa chi KHÔNG là rủi ro).
+    //    GIỮ chiều ngược: có lệnh chi nhưng thiếu hóa đơn (chi thiếu chứng từ) = rủi ro.
     if (g.transfers.length && !g.invoices.length)
       warnings.push(mkWarn('INVOICE_MISSING_FOR_TRANSFER', cfg, `Có lệnh chuyển tiền (${fmtVnd(sum_transfers)}) nhưng thiếu hóa đơn`));
 
-    // 3) Amount status (chỉ khi có cả 2 phía)
+    // 3) Amount status (chỉ khi có cả 2 phía; tổng theo TỪNG bên thụ hưởng). Chỉ THỪA chi là rủi ro.
     let amount_status = 'AMOUNT_MATCH';
     if (g.invoices.length && g.transfers.length) {
       if (diff > tolerance) {
         amount_status = 'AMOUNT_OVER_TOLERANCE';
         warnings.push(mkWarn('AMOUNT_OVER_TOLERANCE', cfg, `Thừa chi ${fmtVnd(diff)} (dung sai ${fmtVnd(tolerance)})`));
       } else if (diff < -tolerance) {
-        amount_status = 'AMOUNT_UNDER_TOLERANCE';
-        warnings.push(mkWarn('AMOUNT_UNDER_TOLERANCE', cfg, `Thiếu chi ${fmtVnd(-diff)} (dung sai ${fmtVnd(tolerance)})`));
+        amount_status = 'AMOUNT_UNDER_NO_RISK'; // CR: Hóa đơn > Lệnh CT (chi ít hơn) — KHÔNG cảnh báo
       }
     }
 

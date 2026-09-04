@@ -2,6 +2,12 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro số tiền/chứng từ
+
+XONG [CC] (push origin/main; parity OK + harness 14/14): ✅ **CR1** ô số tiền tự thêm dấu nghìn khi gõ (chỉ số tiền, giữ MST/STK/số HĐ) · ✅ **CR2** engine (`gas/Recon.gs`+`src/recon`): BỎ cảnh báo thiếu-lệnh-CT + BỎ ΣHĐ>ΣCT (không rủi ro); GIỮ thừa chi + chi-thiếu-hóa-đơn; so tổng theo từng bên thụ hưởng · ✅ verify Chrome đủ ca. Ưu tiên tiếp:
+- [TT] **(nếu dùng đường GAS live)** redeploy `gas/Recon.gs` + smoke (demo public offline đã áp qua build — không cần deploy cho trang nhân sự).
+- [TT] nghiệm thu demo: gõ số tiền có dấu nghìn; hóa đơn > lệnh CT → KHỚP; thừa chi → CẦN KIỂM TRA; "Thiếu chứng từ" chỉ còn cảnh báo bên thiếu-hóa-đơn.
+
 ## ▣ Delta (2026-09-04 #2) — Form tự nhập nhanh 1↔1 & nhiều HĐ↔1 lệnh
 
 XONG [CC] (thuần FE, rebuild, push origin/main): ✅ form nhập nhanh theo trường đơn (2 chế độ **1 HĐ↔1 lệnh** · **nhiều HĐ↔1 lệnh** + thêm/xóa dòng) · ✅ "Đối chiếu thử" chạy **đúng luồng `reconcileBatch`** (đổ về ô Nâng cao → runOffline) → KPI+bảng+JSON+email ĐVKD · ✅ nút "Điền mẫu" · ✅ verify Chrome (1↔1 MATCH/NOT_MATCH · gộp nhiều HĐ 90+60=150) + recon 14/14. Ưu tiên tiếp:

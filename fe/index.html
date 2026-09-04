@@ -359,13 +359,15 @@ function reconcileBatch(invoices, transfers, config, verifyFn, opts) {
     var display = (g.invoices[0] && g.invoices[0].beneficiary_name) || (g.transfers[0] && g.transfers[0].beneficiary_name) || g.key;
 
     if (g.type === 'NAME_FALLBACK') warnings.push(reconMkWarn('GROUP_KEY_FALLBACK_NAME', cfg, 'Nhóm theo TÊN (thiếu MST) — độ tin thấp hơn'));
-    if (g.invoices.length && !g.transfers.length) warnings.push(reconMkWarn('TRANSFER_MISSING_FOR_GROUP', cfg, 'Có hóa đơn (' + reconFmtVnd(sum_invoices) + ') nhưng thiếu lệnh chuyển tiền'));
+    // CR: BỎ cảnh báo "thiếu lệnh chuyển tiền" (hóa đơn chưa chi KHÔNG là rủi ro).
+    // GIỮ chiều ngược: có lệnh chi nhưng thiếu hóa đơn (chi thiếu chứng từ) = rủi ro.
     if (g.transfers.length && !g.invoices.length) warnings.push(reconMkWarn('INVOICE_MISSING_FOR_TRANSFER', cfg, 'Có lệnh chuyển tiền (' + reconFmtVnd(sum_transfers) + ') nhưng thiếu hóa đơn'));
 
+    // So tổng theo TỪNG bên thụ hưởng (đã gộp nhóm trên). Chỉ THỪA chi (lệnh CT > hóa đơn) là rủi ro.
     var amount_status = 'AMOUNT_MATCH';
     if (g.invoices.length && g.transfers.length) {
       if (diff > tolerance) { amount_status = 'AMOUNT_OVER_TOLERANCE'; warnings.push(reconMkWarn('AMOUNT_OVER_TOLERANCE', cfg, 'Thừa chi ' + reconFmtVnd(diff) + ' (dung sai ' + reconFmtVnd(tolerance) + ')')); }
-      else if (diff < -tolerance) { amount_status = 'AMOUNT_UNDER_TOLERANCE'; warnings.push(reconMkWarn('AMOUNT_UNDER_TOLERANCE', cfg, 'Thiếu chi ' + reconFmtVnd(-diff) + ' (dung sai ' + reconFmtVnd(tolerance) + ')')); }
+      else if (diff < -tolerance) { amount_status = 'AMOUNT_UNDER_NO_RISK'; } // CR: Hóa đơn > Lệnh CT (chi ít hơn) — KHÔNG cảnh báo
     }
 
     var seen = {};
@@ -594,7 +596,7 @@ var SCENARIOS = [
     "title": "Thiếu chứng từ",
     "risk": "HIGH",
     "expect": "REVIEW",
-    "story": "Một hóa đơn chưa có lệnh chuyển tiền tương ứng, và một lệnh chuyển tiền lại không có hóa đơn kèm theo. Chứng từ khập khiễng — cần bổ sung trước khi chi (WARN).",
+    "story": "Một lệnh chuyển tiền không có hóa đơn kèm theo — chi mà thiếu chứng từ, cần bổ sung trước khi chi (WARN). Chiều ngược lại (hóa đơn chưa có lệnh chi) nay KHÔNG tính rủi ro.",
     "invoices": [
       { "invoice_id": "INV-501", "invoice_date": "2026-08-08", "beneficiary_name": "DOANH NGHIỆP TƯ NHÂN THÀNH ĐẠT", "beneficiary_mst": "0104000004", "amount_total": 60000000, "source_file": "thanhdat_hd501.jpg", "ocr_confidence": 0.95 }
     ],
@@ -757,6 +759,20 @@ $('feedback').setAttribute('href', 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeUR
 /* ====== Form tự nhập nhanh (1↔1 · nhiều HĐ↔1 lệnh) ====== */
 function qMode(){ var r=document.querySelector('input[name="qmode"]:checked'); return r?r.value:'1v1'; }
 function qDigits(s){ return String(s==null?'':s).replace(/[^\d]/g,''); }
+/* CR: chỉ ô SỐ TIỀN tự thêm dấu chấm phân tách nghìn (vi-VN) khi gõ; giữ vị trí con trỏ. */
+function attachAmt(inp){
+  inp.addEventListener('input', function(){
+    var raw=inp.value, caret=inp.selectionStart==null?raw.length:inp.selectionStart;
+    var digitsBefore=raw.slice(0,caret).replace(/[^\d]/g,'').length;
+    var d=raw.replace(/[^\d]/g,'');
+    if(!d){ inp.value=''; return; }
+    var f=Number(d).toLocaleString('vi-VN');
+    inp.value=f;
+    var pos=0,count=0;
+    while(pos<f.length && count<digitsBefore){ if(/\d/.test(f.charAt(pos))) count++; pos++; }
+    try{ inp.setSelectionRange(pos,pos); }catch(e){}
+  });
+}
 function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function invRowHtml(){
   return '<div class="qinv">'
@@ -772,7 +788,8 @@ function invRowHtml(){
 }
 function qRows(){ return [].slice.call(document.querySelectorAll('#q_inv_list .qinv')); }
 function addInvRow(){ var d=document.createElement('div'); d.innerHTML=invRowHtml(); var row=d.firstChild; $('q_inv_list').appendChild(row);
-  row.querySelector('.q_i_del').addEventListener('click', function(){ if(qRows().length>1) row.remove(); }); return row; }
+  row.querySelector('.q_i_del').addEventListener('click', function(){ if(qRows().length>1) row.remove(); });
+  attachAmt(row.querySelector('.q_i_amt')); return row; }
 function applyMode(){
   var mode=qMode(), body=$('qBody');
   body.className='qbody '+(mode==='1v1'?'mode-1v1':'mode-1vN');
@@ -821,6 +838,7 @@ document.querySelectorAll('input[name="qmode"]').forEach(function(r){ r.addEvent
 $('q_add').addEventListener('click', function(){ addInvRow(); });
 $('q_run').addEventListener('click', qRun);
 $('q_sample').addEventListener('click', qFillSample);
+attachAmt($('q_t_amt'));
 addInvRow(); applyMode();
 
 // Mở sẵn tình huống đầu tiên

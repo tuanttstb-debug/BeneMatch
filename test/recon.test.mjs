@@ -21,12 +21,14 @@ const config = JSON.parse(readFileSync(join(ROOT, 'src/config/thresholds.json'),
 const transfers = parseTransferCsv(csv);
 
 // Kỳ vọng theo group key (MST) — xem data/synthetic/scenarios.md
+// CR 2026-09-04 #3: bỏ cảnh báo THIẾU LỆNH CT (0104 chỉ có HĐ → hết cờ) +
+// hóa đơn > lệnh CT không là rủi ro (0103 ΣHĐ 40tr > ΣCT 35tr → hết cờ). Cả hai → MATCH.
 const EXPECT = {
   '0101234567': 'MATCH',
-  '0102000002': 'REVIEW',
-  '0103000003': 'REVIEW',
-  '0104000004': 'REVIEW',
-  '0105000005': 'REVIEW',
+  '0102000002': 'REVIEW',   // thừa chi (ΣCT 90tr > ΣHĐ 80tr) — GIỮ cảnh báo
+  '0103000003': 'MATCH',    // ΣHĐ 40tr > ΣCT 35tr (chi ít hơn) — không còn rủi ro
+  '0104000004': 'MATCH',    // chỉ có hóa đơn, chưa có lệnh CT — không còn cảnh báo
+  '0105000005': 'REVIEW',   // chỉ có lệnh CT, thiếu hóa đơn — GIỮ cảnh báo
   '0106000006': 'REVIEW',
   '0107000007': 'NOT_MATCH',
   '0108000008': 'MATCH',

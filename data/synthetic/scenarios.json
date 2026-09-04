@@ -54,7 +54,7 @@
     "title": "Thiếu chứng từ",
     "risk": "HIGH",
     "expect": "REVIEW",
-    "story": "Một hóa đơn chưa có lệnh chuyển tiền tương ứng, và một lệnh chuyển tiền lại không có hóa đơn kèm theo. Chứng từ khập khiễng — cần bổ sung trước khi chi (WARN).",
+    "story": "Một lệnh chuyển tiền không có hóa đơn kèm theo — chi mà thiếu chứng từ, cần bổ sung trước khi chi (WARN). Chiều ngược lại (hóa đơn chưa có lệnh chi) nay KHÔNG tính rủi ro.",
     "invoices": [
       { "invoice_id": "INV-501", "invoice_date": "2026-08-08", "beneficiary_name": "DOANH NGHIỆP TƯ NHÂN THÀNH ĐẠT", "beneficiary_mst": "0104000004", "amount_total": 60000000, "source_file": "thanhdat_hd501.jpg", "ocr_confidence": 0.95 }
     ],

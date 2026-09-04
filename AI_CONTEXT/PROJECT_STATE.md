@@ -2,6 +2,9 @@
 
 **Cập nhật:** 2026-08-22 · **Version:** 0.2.0-dev · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
 
+## Delta (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro số tiền/chứng từ
+2 CR. **CR1 (FE):** ô **số tiền** tự thêm dấu chấm nghìn khi gõ (chỉ số tiền, không MST/STK/số HĐ). **CR2 (engine `gas/Recon.gs`+`src/recon/reconcile.js`):** BỎ cảnh báo `TRANSFER_MISSING_FOR_GROUP` (hóa đơn chưa chi) + BỎ `AMOUNT_UNDER_TOLERANCE` (ΣHĐ>ΣCT chi ít hơn — không rủi ro); GIỮ thừa chi + `INVOICE_MISSING_FOR_TRANSFER` (chi thiếu hóa đơn). So tổng theo TỪNG bên thụ hưởng (không đổi). Parity OK + harness **14/14** (EXPECT 0103/0104→MATCH). **Blocker:** CR2 chạm engine GAS → [TT] **redeploy `Recon.gs`** cho đường live (demo public offline đã áp qua build).
+
 ## Delta (2026-09-04 #2) — Form tự nhập nhanh 1↔1 & nhiều HĐ↔1 lệnh (thuần FE)
 Thêm **form nhập nhanh theo trường đơn** trên demo (`docs/index.html`) cho người dùng nghiệp vụ tự test không cần JSON/CSV. 2 chế độ: **1 HĐ ↔ 1 lệnh** · **nhiều HĐ ↔ 1 lệnh** (thêm/xóa dòng HĐ). Nhập tên/MST/số tiền (+số HĐ/ngày) → "Đối chiếu thử" → chạy **đúng luồng `reconcileBatch`** → KPI+bảng+JSON+**email cảnh báo ĐVKD**. Dùng chung đường `runOffline` (đổ về ô Nâng cao). Sửa `fe/index.template.html`, rebuild. KHÔNG đụng engine/GAS. Verify Chrome (1↔1 MATCH/NOT_MATCH · gộp nhiều HĐ) + recon **14/14**. **Blocker:** không.
 
