@@ -75,6 +75,24 @@
   @media (prefers-color-scheme: dark){ details summary{color:#c9b3ee} }
   .sitefoot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
   .sitefoot a{color:var(--purple-deep);font-weight:700;text-decoration:none} @media (prefers-color-scheme: dark){ .sitefoot a{color:#c9b3ee} }
+  /* ==== Form tự nhập nhanh (1↔1 · nhiều HĐ↔1 lệnh) ==== */
+  .quick{margin-top:14px;border:1px solid var(--purple-soft);border-radius:12px}
+  .quick > summary{padding:11px 13px;background:var(--purple-soft);border-radius:11px;color:var(--purple-deep);font-weight:800;font-size:13px}
+  @media (prefers-color-scheme: dark){ .quick > summary{color:#d9c6f5} }
+  .quick[open] > summary{border-radius:11px 11px 0 0}
+  .quick .qbody{padding:12px 13px}
+  .qmode{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+  .qmode label{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink);margin:0}
+  .qmode input{width:auto}
+  .qsec{border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin-bottom:10px;background:var(--bg)}
+  .qsec-t{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:8px}
+  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .qgrid .qf-name{grid-column:1/-1}
+  .qgrid label{margin:0 0 3px}
+  .qinv{position:relative;border:1px dashed var(--line);border-radius:9px;padding:9px;margin-bottom:8px}
+  .qinv .q_i_del{position:absolute;top:7px;right:7px;width:22px;height:22px;border:0;border-radius:6px;background:var(--red-bg);color:var(--red);font-weight:800;cursor:pointer;line-height:1;font-size:14px;padding:0}
+  .qaddbtn{padding:7px 12px;font-size:13px}
+  .mode-1v1 .q_i_del,.mode-1v1 #q_add{display:none}
   /* ==== Email cảnh báo gửi ĐVKD (xem trước) ==== */
   .grid > .card{min-width:0} /* cho cột 1fr co đúng, không nở theo min-content thẻ email */
   .emails{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
@@ -131,8 +149,38 @@
     <section class="card">
       <h2>Chọn tình huống demo</h2>
       <div class="scn" id="scnList"></div>
+
+      <details class="quick" open>
+        <summary>✍️ Tự nhập nhanh — đối chiếu thử</summary>
+        <div class="qbody mode-1v1" id="qBody">
+          <div class="qmode">
+            <label><input type="radio" name="qmode" value="1v1" checked> 1 hóa đơn ↔ 1 lệnh</label>
+            <label><input type="radio" name="qmode" value="1vN"> Nhiều hóa đơn ↔ 1 lệnh</label>
+          </div>
+          <div class="qsec">
+            <div class="qsec-t">Lệnh chuyển tiền</div>
+            <div class="qgrid">
+              <div class="qf-name"><label>Tên người thụ hưởng</label><input id="q_t_name" placeholder="CÔNG TY TNHH ..."></div>
+              <div><label>Mã số thuế</label><input id="q_t_mst" inputmode="numeric" placeholder="0101234567"></div>
+              <div><label>Số tiền (VND)</label><input id="q_t_amt" inputmode="numeric" placeholder="0"></div>
+              <div class="qf-name"><label>Số tài khoản (tùy chọn)</label><input id="q_t_acc" inputmode="numeric" placeholder="0123456789"></div>
+            </div>
+          </div>
+          <div class="qsec">
+            <div class="qsec-t">Hóa đơn <span id="q_inv_hint" class="muted" style="font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+            <div id="q_inv_list"></div>
+            <button type="button" class="btn btn-ghost qaddbtn" id="q_add">+ Thêm hóa đơn</button>
+          </div>
+          <div class="row">
+            <button type="button" class="btn btn-primary" id="q_run">Đối chiếu thử</button>
+            <button type="button" class="btn btn-ghost" id="q_sample">Điền mẫu</button>
+          </div>
+          <p class="foot">Chỉ dùng dữ liệu <b>mẫu</b>. Đối chiếu chạy tại chỗ trong trình duyệt — không gửi đi đâu.</p>
+        </div>
+      </details>
+
       <details style="margin-top:14px">
-        <summary>Nâng cao — tự nhập dữ liệu mẫu</summary>
+        <summary>Nâng cao — tự nhập dữ liệu mẫu (JSON/CSV)</summary>
         <label>Hóa đơn (JSON — mô phỏng đã OCR)</label>
         <textarea id="invoices"></textarea>
         <label>Lệnh chuyển tiền (CSV)</label>
@@ -705,6 +753,76 @@ var scnItems = buildScnList();
 $('run').addEventListener('click', function(){ CUR_REQUEST=null; $('story').innerHTML=''; runOffline(); });
 $('reset').addEventListener('click', function(){ selectScenario(scnItems[scnItems.length-1], $('scnList').querySelector('button:last-child')); });
 $('feedback').setAttribute('href', 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeURIComponent('[BeneMatch demo] Góp ý'));
+
+/* ====== Form tự nhập nhanh (1↔1 · nhiều HĐ↔1 lệnh) ====== */
+function qMode(){ var r=document.querySelector('input[name="qmode"]:checked'); return r?r.value:'1v1'; }
+function qDigits(s){ return String(s==null?'':s).replace(/[^\d]/g,''); }
+function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function invRowHtml(){
+  return '<div class="qinv">'
+    + '<div class="qgrid">'
+    +   '<div class="qf-name"><label>Tên người thụ hưởng</label><input class="q_i_name" placeholder="CÔNG TY TNHH ..."></div>'
+    +   '<div><label>Mã số thuế</label><input class="q_i_mst" inputmode="numeric" placeholder="0101234567"></div>'
+    +   '<div><label>Số tiền (VND)</label><input class="q_i_amt" inputmode="numeric" placeholder="0"></div>'
+    +   '<div><label>Số hóa đơn (tùy chọn)</label><input class="q_i_id" placeholder="INV-001"></div>'
+    +   '<div><label>Ngày (tùy chọn)</label><input class="q_i_date" type="date"></div>'
+    + '</div>'
+    + '<button type="button" class="q_i_del" title="Xóa hóa đơn">×</button>'
+    + '</div>';
+}
+function qRows(){ return [].slice.call(document.querySelectorAll('#q_inv_list .qinv')); }
+function addInvRow(){ var d=document.createElement('div'); d.innerHTML=invRowHtml(); var row=d.firstChild; $('q_inv_list').appendChild(row);
+  row.querySelector('.q_i_del').addEventListener('click', function(){ if(qRows().length>1) row.remove(); }); return row; }
+function applyMode(){
+  var mode=qMode(), body=$('qBody');
+  body.className='qbody '+(mode==='1v1'?'mode-1v1':'mode-1vN');
+  if(mode==='1v1'){ var rows=qRows(); for(var i=rows.length-1;i>=1;i--) rows[i].remove(); if(!qRows().length) addInvRow(); }
+  else if(qRows().length<2){ addInvRow(); }
+  $('q_inv_hint').textContent = mode==='1v1' ? '(1 hóa đơn)' : '(gộp nhiều hóa đơn — cùng người thụ hưởng)';
+}
+function setRow(row, o){ row.querySelector('.q_i_name').value=o.name||''; row.querySelector('.q_i_mst').value=o.mst||'';
+  row.querySelector('.q_i_amt').value=o.amt||''; row.querySelector('.q_i_id').value=o.id||''; row.querySelector('.q_i_date').value=o.date||''; }
+function qFillSample(){
+  var mode=qMode();
+  $('q_t_name').value='CÔNG TY TNHH ABC VIỆT NAM'; $('q_t_mst').value='0101234567'; $('q_t_acc').value='0123456789';
+  if(mode==='1v1'){ $('q_t_amt').value='100.000.000'; setRow(qRows()[0], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'100.000.000',id:'INV-001',date:'2026-09-01'}); }
+  else{ $('q_t_amt').value='150.000.000';
+    var rows=qRows(); while(rows.length<2){ addInvRow(); rows=qRows(); }
+    setRow(rows[0], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'90.000.000',id:'INV-001',date:'2026-09-01'});
+    setRow(rows[1], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'60.000.000',id:'INV-002',date:'2026-09-02'}); }
+}
+function qRun(){
+  var mode=qMode();
+  var transfers=[{ beneficiary_name:$('q_t_name').value.trim(), beneficiary_mst:qDigits($('q_t_mst').value),
+    account_number:qDigits($('q_t_acc').value), amount:Number(qDigits($('q_t_amt').value))||0 }];
+  var rows=qRows(); if(mode==='1v1') rows=rows.slice(0,1);
+  var invoices=rows.map(function(r,i){ return {
+      invoice_id: r.querySelector('.q_i_id').value.trim() || ('INV-'+String(i+1).padStart(3,'0')),
+      invoice_date: r.querySelector('.q_i_date').value || '',
+      beneficiary_name: r.querySelector('.q_i_name').value.trim(),
+      beneficiary_mst: qDigits(r.querySelector('.q_i_mst').value),
+      amount_total: Number(qDigits(r.querySelector('.q_i_amt').value))||0,
+      ocr_confidence: 0.99
+    }; }).filter(function(x){ return x.beneficiary_name || x.amount_total; });
+  if(!invoices.length || !(transfers[0].beneficiary_name || transfers[0].amount)){
+    $('story').innerHTML='<div class="story"><b>Thiếu dữ liệu.</b> Nhập ít nhất tên/số tiền cho lệnh chuyển tiền và 1 hóa đơn.</div>';
+    $('result').innerHTML='<p class="muted">Điền form rồi bấm “Đối chiếu thử”.</p>'; return;
+  }
+  // Đổ vào ô Nâng cao để dùng chung 1 đường chạy (runOffline) — người dùng xem/chỉnh được JSON/CSV.
+  $('invoices').value = JSON.stringify(invoices, null, 2);
+  var head='beneficiary_name,beneficiary_mst,account_number,amount';
+  $('transfers').value = head+'\n'+transfers.map(function(t){ return [t.beneficiary_name,t.beneficiary_mst,t.account_number,t.amount].map(csvCell).join(','); }).join('\n');
+  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){ b.classList.remove('active'); });
+  CUR_REQUEST=null;
+  $('story').innerHTML='<div class="story"><b>Đối chiếu thử (tự nhập).</b> '+(mode==='1v1'?'1 hóa đơn ↔ 1 lệnh chuyển tiền.':(invoices.length+' hóa đơn ↔ 1 lệnh chuyển tiền.'))+'</div>';
+  runOffline();
+}
+document.querySelectorAll('input[name="qmode"]').forEach(function(r){ r.addEventListener('change', applyMode); });
+$('q_add').addEventListener('click', function(){ addInvRow(); });
+$('q_run').addEventListener('click', qRun);
+$('q_sample').addEventListener('click', qFillSample);
+addInvRow(); applyMode();
+
 // Mở sẵn tình huống đầu tiên
 selectScenario(scnItems[0], $('scnList').querySelector('button'));
 </script>

@@ -2,6 +2,9 @@
 
 **Cập nhật:** 2026-08-22 · **Version:** 0.2.0-dev · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
 
+## Delta (2026-09-04 #2) — Form tự nhập nhanh 1↔1 & nhiều HĐ↔1 lệnh (thuần FE)
+Thêm **form nhập nhanh theo trường đơn** trên demo (`docs/index.html`) cho người dùng nghiệp vụ tự test không cần JSON/CSV. 2 chế độ: **1 HĐ ↔ 1 lệnh** · **nhiều HĐ ↔ 1 lệnh** (thêm/xóa dòng HĐ). Nhập tên/MST/số tiền (+số HĐ/ngày) → "Đối chiếu thử" → chạy **đúng luồng `reconcileBatch`** → KPI+bảng+JSON+**email cảnh báo ĐVKD**. Dùng chung đường `runOffline` (đổ về ô Nâng cao). Sửa `fe/index.template.html`, rebuild. KHÔNG đụng engine/GAS. Verify Chrome (1↔1 MATCH/NOT_MATCH · gộp nhiều HĐ) + recon **14/14**. **Blocker:** không.
+
 ## Delta (2026-09-04) — CR: Email cảnh báo gửi ĐVKD dưới outcome demo (thuần FE)
 Thêm **email cảnh báo gửi ĐVKD** render có màu **bên dưới outcome JSON** ở màn demo (`docs/index.html`). [TT] chốt: **1 email/mỗi nhóm người thụ hưởng, xếp chồng** + **chỉ xem trước**. Mỗi `group` → 1 thẻ email theo khung mẫu [TT] (Kính gửi ĐVKD · GNOL · công ty · số tiền/mục đích/số khoản vay · Kết quả/Hành động/Chi tiết cảnh báo/Mức rủi ro). **Bôi màu 3 mức** theo risk/decision (🟢 MATCH/ALLOW · 🟡 REVIEW/WARN · 🔴 NOT_MATCH/BLOCK); mỗi cảnh báo là callout riêng có màu; nhóm sạch → callout xanh. Metadata giải ngân **synthetic** (GNOL/số khoản vay deterministic từ `group_key`; ĐVKD/mục đích từ `scenarios.json.request`, branch parse từ ĐVKD). Sửa `fe/index.template.html`+`scenarios.json`, rebuild 3 file. **KHÔNG đụng engine/GAS.** Verify Chrome đủ 4 mức + lô 9 email + mobile 360px 0 tràn; recon harness **14/14**. **Blocker:** không (offline, không redeploy GAS).
 

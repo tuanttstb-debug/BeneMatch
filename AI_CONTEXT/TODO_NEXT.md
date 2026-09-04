@@ -2,6 +2,12 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-09-04 #2) — Form tự nhập nhanh 1↔1 & nhiều HĐ↔1 lệnh
+
+XONG [CC] (thuần FE, rebuild, push origin/main): ✅ form nhập nhanh theo trường đơn (2 chế độ **1 HĐ↔1 lệnh** · **nhiều HĐ↔1 lệnh** + thêm/xóa dòng) · ✅ "Đối chiếu thử" chạy **đúng luồng `reconcileBatch`** (đổ về ô Nâng cao → runOffline) → KPI+bảng+JSON+email ĐVKD · ✅ nút "Điền mẫu" · ✅ verify Chrome (1↔1 MATCH/NOT_MATCH · gộp nhiều HĐ 90+60=150) + recon 14/14. Ưu tiên tiếp:
+- [TT] Test tự nhập: 1↔1 (đổi tên HĐ khác pháp nhân → KHÔNG KHỚP; lệch tiền → CẦN KIỂM TRA) · nhiều HĐ↔1 lệnh (tổng ≠ lệnh → thừa/thiếu; 2 HĐ cùng số/ngày → nghi trùng).
+- [CC] (tùy chọn) thêm chiều **nhiều lệnh ↔ 1 HĐ**; nút "Xóa form"; format số tiền có phân tách khi gõ.
+
 ## ▣ Delta (2026-09-04) — CR: Email cảnh báo gửi ĐVKD dưới outcome demo
 
 XONG [CC] (thuần FE, rebuild 3 file, đã push origin/main): ✅ email cảnh báo gửi ĐVKD **bên dưới outcome JSON** — **1 email/nhóm xếp chồng**, preview-only · ✅ **bôi màu 3 mức** (🟢 MATCH · 🟡 REVIEW · 🔴 NOT_MATCH); mỗi cảnh báo callout riêng có màu; nhóm sạch → callout xanh · ✅ metadata synthetic (GNOL/khoản vay deterministic; ĐVKD/mục đích từ `scenarios.json.request`) · ✅ verify Chrome 4 mức + lô 9 email + mobile 360px 0 tràn · ✅ recon **14/14** (engine không đụng). Ưu tiên tiếp:

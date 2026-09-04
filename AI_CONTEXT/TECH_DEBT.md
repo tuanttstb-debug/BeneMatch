@@ -2,6 +2,8 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-09-04 #2) — Form tự nhập nhanh (thuần FE):** Không nợ mới. Form nhập trường đơn dùng chung đường `runOffline` (không tạo path recon thứ 2), 0 đụng engine/GAS (recon 14/14). Ghi chú (không phải nợ): hiện hỗ trợ **1↔1** và **nhiều HĐ↔1 lệnh**; chiều "nhiều lệnh↔1 HĐ" chưa có (tùy chọn tương lai). Số tiền nhập tự do (parse bỏ ký tự lạ).
+
 **Trạng thái (2026-09-04) — CR Email cảnh báo ĐVKD (thuần FE):** Không nợ mới. Thuần trình bày FE (`index.template.html`+`scenarios.json`), 0 đụng engine/GAS (recon 14/14). Đã **fix** overflow ngang tiềm ẩn (`.grid>.card{min-width:0}` — cột 1fr từng nở theo min-content thẻ email). Ghi chú (không phải nợ): số **GNOL/khoản vay là synthetic deterministic** từ `group_key` (đủ cho demo); nếu cần số thật theo nhà cung cấp → thêm field vào invoice/transfer data. TD-BM-05/06 dưới đây giữ nguyên.
 
 **Trạng thái (2026-08-31) — [TT] redeploy GAS + smoke test XONG:** ✅ **TD-BM-05 phần deploy-gated ĐÓNG** — `OcrService.gs` (vá `parseInvoiceText_` yêu cầu số HĐ chứa chữ số) đã redeploy trên live; nghiệm thu LIVE Drive OCR bóc đúng tên/MST/tiền → MATCH. **Còn tồn (KHÔNG đóng được bằng deploy):** regex vẫn theo mẫu VAT chung — layout hóa đơn khác có thể cần chỉnh; cần [TT] cấp thêm ảnh mẫu đa layout (ẩn thông tin) để hiệu chỉnh (ưu tiên trung, chỉ đường OCR thật). 🆕 **TD-BM-06 vẫn mở** — node LLM Dify FALLBACK: gắn credential model gpt-5 là **việc phía workspace Dify của [TT]**, không phải nợ code repo; quyết định deterministic vẫn đúng.
