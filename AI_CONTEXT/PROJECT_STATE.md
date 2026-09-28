@@ -2,6 +2,9 @@
 
 **Cập nhật:** 2026-09-28 · **Version:** 0.4.0 (engine 3.1.0) · **Prod:** https://tuanttstb-debug.github.io/BeneMatch/ · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
 
+## Delta (2026-09-28 #3) — Đổi model AI tư vấn sang Gemini 3.8 Flash
+[TT] duyệt sau đánh giá ảnh hưởng (`ADVISOR_SPEC §4b`): `dify/BeneMatch_Name_Advisor_v3.yml` = **Gemini 3.8 Flash** (thinking medium, không temperature, schema bỏ additionalProperties, không kèm dependency) · `…_v3_gpt5.yml` = dự phòng. Engine/GAS/FE không đổi logic. **Bắt buộc key Gemini trả phí.** Blocker: [TT] cài/cập nhật plugin Gemini + key trả phí + import + thay `DIFY_API_KEY` + `taoMaTruyCap`.
+
 ## Delta (2026-09-28 #2) — AI tư vấn nhận diện tên (LLM qua Dify, chỉ tham khảo) · engine 3.1.0
 [TT] phản hồi: OCR đã có trên BIZ; cần LLM vì tên KHDN phức tạp. Phỏng vấn 3 vòng chốt: **Dify Cloud + GPT-5 được phép với dữ liệu thật** · LLM **chỉ đề xuất + giải thích** · giai đoạn 1 công cụ cán bộ qua **GAS proxy + mã truy cập**, giai đoạn 2 service GNOL (BIZ→BPM) · chưa có nguồn tra cứu (tên chủ TK/ĐKKD) · dữ liệu đo = trích lịch sử GNOL (**không có cột kết luận → phải gán nhãn**).
 **Đã làm:** luật `GROUP_TIER_DIFFERENT` (vá lỗ hổng: Tổng cty ↔ cty từng có thể KHỚP) · `BM.advisor` (eligible/payload/collect/guard) · workflow Dify mới `dify/BeneMatch_Name_Advisor_v3.yml` (GPT-5, structured output, node gác Python) · GAS `advise_names` (mã truy cập, hạn mức, server tự tính lại engine, log không tên) · FE thẻ "AI tư vấn" + ý kiến dưới từng cặp + cột AI trong Excel/phiếu + nút ở Check nhanh · `tools/eval` (template → prepare → gán nhãn → score ẩn danh; chặn ghi vào repo) · `advisor_smoke` 22 ca khó giả lập · mock proxy. Test: engine **133/133** · GAS **17/17** · e2e FE + eval qua mock OK. Phát hiện 2 lỗi workflow V2 (biến prompt sai cú pháp → LLM không nhận tên; temperature với GPT-5).

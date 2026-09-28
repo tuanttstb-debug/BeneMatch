@@ -1,12 +1,17 @@
 app:
-  description: 'LLM tư vấn nhận diện tên pháp nhân (tham khảo, không quyết định) cho ca CẦN KIỂM TRA / khác biệt mềm của engine BeneMatch v3. Model: Gemini 3.8 Flash.'
+  description: 'LLM tư vấn nhận diện tên pháp nhân (tham khảo, không quyết định) cho ca CẦN KIỂM TRA / khác biệt mềm của engine BeneMatch v3. Model: GPT-5.'
   icon: 🧭
   icon_background: '#FFEAD5'
   icon_type: emoji
   mode: workflow
-  name: BeneMatch Name Advisor v3 (Gemini 3.8 Flash)
+  name: BeneMatch Name Advisor v3 (GPT-5)
   use_icon_as_answer_icon: false
-dependencies: []
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:1.0.3@cc37544750d72ca3782bdaa81ab0e2facbf5bb74105a169a7ff974a27c6a5f29
+    version: null
 kind: app
 version: 0.7.0
 workflow:
@@ -215,8 +220,8 @@ workflow:
         model:
           completion_params: {}
           mode: chat
-          name: gemini-3.8-flash
-          provider: langgenius/gemini/google
+          name: gpt-5
+          provider: langgenius/openai/openai
         prompt_config:
           jinja2_variables: []
         prompt_template:
@@ -288,6 +293,7 @@ workflow:
         structured_output:
           schema:
             type: object
+            additionalProperties: false
             required:
             - verdict
             - relation
@@ -332,7 +338,7 @@ workflow:
                   type: string
                 maxItems: 3
         structured_output_enabled: true
-        title: LLM Name Advisor (Gemini 3.8 Flash)
+        title: LLM Name Advisor (GPT-5)
         type: llm
         vision:
           enabled: false
@@ -351,7 +357,7 @@ workflow:
       width: 244
       zIndex: 0
     - data:
-        code: "import json\n\nVERDICTS = [\"SAME_ENTITY\", \"DIFFERENT_ENTITY\", \"RELATED_ENTITY\", \"UNCERTAIN\"]\nRELATIONS = [\"IDENTICAL\", \"ABBREVIATION\", \"TRANSLATION\", \"TRANSLITERATION\", \"TRUNCATION\", \"TYPO_OCR\",\n             \"BRANCH\", \"PARENT_SUBSIDIARY\", \"RENAMED\", \"UNRELATED\", \"UNKNOWN\"]\n\n\ndef _parse(structured, text):\n    if isinstance(structured, dict) and structured.get(\"verdict\"):\n        return structured\n    t = (text or \"\").strip()\n    if \"{\" in t and \"}\" in t:\n        try:\n            return json.loads(t[t.index(\"{\"): t.rindex(\"}\") + 1])\n        except Exception:\n            return None\n    return None\n\n\ndef main(structured: dict, text: str, invoice_legal: str, payment_legal: str) -> dict:\n    a = _parse(structured, text)\n    ok = isinstance(a, dict) and a.get(\"verdict\") in VERDICTS\n    a = a if isinstance(a, dict) else {}\n    verdict = a.get(\"verdict\") if a.get(\"verdict\") in VERDICTS else \"UNCERTAIN\"\n    relation = a.get(\"relation\") if a.get(\"relation\") in RELATIONS else \"UNKNOWN\"\n    try:\n        conf = max(0.0, min(1.0, float(a.get(\"confidence\", 0))))\n    except Exception:\n        conf = 0.0\n    notes = []\n    fi, fp = (invoice_legal or \"UNKNOWN\"), (payment_legal or \"UNKNOWN\")\n    if verdict == \"SAME_ENTITY\" and fi != \"UNKNOWN\" and fp != \"UNKNOWN\" and fi != fp:\n        verdict, conf = \"UNCERTAIN\", min(conf, 0.5)\n        notes.append(\"Khác loại hình pháp nhân — luật cứng.\")\n    if verdict == \"SAME_ENTITY\" and relation == \"PARENT_SUBSIDIARY\":\n        verdict = \"RELATED_ENTITY\"\n        notes.append(\"Mẹ ↔ con là hai pháp nhân khác nhau.\")\n\n    def arr(x, n):\n        return [str(s)[:300] for s in (x if isinstance(x, list) else []) if s][:n]\n\n    return {\"result\": {\n        \"ai_status\": \"OK\" if ok else \"FALLBACK\",\n        \"verdict\": verdict, \"relation\": relation, \"confidence\": round(conf, 2),\n        \"evidence\": arr(a.get(\"evidence\"), 4),\n        \"explanation\": str(a.get(\"explanation\", \"\"))[:800],\n        \"checks_for_officer\": arr(a.get(\"checks_for_officer\"), 3),\n        \"guard_notes\": notes, \"model\": \"gemini-3.8-flash\", \"used_for_decision\": False,\n    }}\n"
+        code: "import json\n\nVERDICTS = [\"SAME_ENTITY\", \"DIFFERENT_ENTITY\", \"RELATED_ENTITY\", \"UNCERTAIN\"]\nRELATIONS = [\"IDENTICAL\", \"ABBREVIATION\", \"TRANSLATION\", \"TRANSLITERATION\", \"TRUNCATION\", \"TYPO_OCR\",\n             \"BRANCH\", \"PARENT_SUBSIDIARY\", \"RENAMED\", \"UNRELATED\", \"UNKNOWN\"]\n\n\ndef _parse(structured, text):\n    if isinstance(structured, dict) and structured.get(\"verdict\"):\n        return structured\n    t = (text or \"\").strip()\n    if \"{\" in t and \"}\" in t:\n        try:\n            return json.loads(t[t.index(\"{\"): t.rindex(\"}\") + 1])\n        except Exception:\n            return None\n    return None\n\n\ndef main(structured: dict, text: str, invoice_legal: str, payment_legal: str) -> dict:\n    a = _parse(structured, text)\n    ok = isinstance(a, dict) and a.get(\"verdict\") in VERDICTS\n    a = a if isinstance(a, dict) else {}\n    verdict = a.get(\"verdict\") if a.get(\"verdict\") in VERDICTS else \"UNCERTAIN\"\n    relation = a.get(\"relation\") if a.get(\"relation\") in RELATIONS else \"UNKNOWN\"\n    try:\n        conf = max(0.0, min(1.0, float(a.get(\"confidence\", 0))))\n    except Exception:\n        conf = 0.0\n    notes = []\n    fi, fp = (invoice_legal or \"UNKNOWN\"), (payment_legal or \"UNKNOWN\")\n    if verdict == \"SAME_ENTITY\" and fi != \"UNKNOWN\" and fp != \"UNKNOWN\" and fi != fp:\n        verdict, conf = \"UNCERTAIN\", min(conf, 0.5)\n        notes.append(\"Khác loại hình pháp nhân — luật cứng.\")\n    if verdict == \"SAME_ENTITY\" and relation == \"PARENT_SUBSIDIARY\":\n        verdict = \"RELATED_ENTITY\"\n        notes.append(\"Mẹ ↔ con là hai pháp nhân khác nhau.\")\n\n    def arr(x, n):\n        return [str(s)[:300] for s in (x if isinstance(x, list) else []) if s][:n]\n\n    return {\"result\": {\n        \"ai_status\": \"OK\" if ok else \"FALLBACK\",\n        \"verdict\": verdict, \"relation\": relation, \"confidence\": round(conf, 2),\n        \"evidence\": arr(a.get(\"evidence\"), 4),\n        \"explanation\": str(a.get(\"explanation\", \"\"))[:800],\n        \"checks_for_officer\": arr(a.get(\"checks_for_officer\"), 3),\n        \"guard_notes\": notes, \"model\": \"gpt-5\", \"used_for_decision\": False,\n    }}\n"
         code_language: python3
         outputs:
           result:

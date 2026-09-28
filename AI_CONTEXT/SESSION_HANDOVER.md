@@ -2,6 +2,14 @@
 
 **Từ phiên:** 2026-09-28 / Claude Code (Opus) · **Cho:** phiên kế tiếp
 
+## Delta phiên (2026-09-28 #3 — Đổi model AI tư vấn GPT-5 → Gemini 3.8 Flash, Claude Code)
+- **Task completed:** [TT] yêu cầu đổi sang Gemini 3.8 Flash + đánh giá ảnh hưởng trước → xác minh model (`gemini-3.8-flash`, GA 02/09/2026, thinking low/medium/high, bỏ temperature), đánh giá 8 hạng mục (`ADVISOR_SPEC §4b`) → [TT] duyệt (key trả phí, thinking medium) → generator sinh 2 bản DSL.
+- **Files changed:** `dify/build_advisor_dsl.py` (VARIANTS), `dify/BeneMatch_Name_Advisor_v3.yml` (Gemini), MỚI `dify/BeneMatch_Name_Advisor_v3_gpt5.yml`, `AI_CONTEXT/ADVISOR_SPEC.md`, `CLAUDE.md`, `README.md`, `fe/index.template.html` (+ build), AI_CONTEXT.
+- **Decision made:** Gemini 3.8 Flash = bản chính, GPT-5 = dự phòng · bắt buộc key Gemini **trả phí** (data-boundary) · thinking medium · prompt/schema/gác giữ nguyên để so sánh được 2 model.
+- **Blocker:** [TT] cài/cập nhật plugin Gemini trên Dify + key trả phí + import + thay `DIFY_API_KEY` + `taoMaTruyCap`.
+- **Next step:** [TT] checklist `ADVISOR_SPEC §6` → `advisor_smoke` → gửi em kết quả (nếu Gemini không đạt chỉ tiêu §5 → thử thinking high hoặc quay GPT-5).
+- **Regression risk:** Rất thấp — chỉ đổi file workflow (chưa import); engine 133/133 · GAS 20/20 không đổi; guard Python parse OK cả 2 bản.
+
 ## Delta phiên (2026-09-28 #2 — AI tư vấn nhận diện tên qua Dify/GPT-5 + bộ đo trên lịch sử GNOL, Claude Code)
 - **Task completed:** [TT] hỏi giải pháp có đáp ứng tên KHDN phức tạp bằng LLM không → đánh giá: luật chỉ xử lý khác biệt cách viết; 4 nhóm ca khó (tiếng Anh, viết tắt, mẹ↔con, đổi tên/OCR) cần LLM. Phỏng vấn 3 vòng → dựng lớp AI tư vấn 3 lớp (luật quyết định → LLM tư vấn → gác 2 nơi) + GAS proxy + FE + bộ đo local + vá engine (`GROUP_TIER_DIFFERENT`).
 - **Files changed:** MỚI `AI_CONTEXT/ADVISOR_SPEC.md`, `dify/{build_advisor_dsl.py, BeneMatch_Name_Advisor_v3.yml}`, `test/{golden_hard.json, gas_harness.mjs, gas_advisor.test.mjs}`, `tools/eval/{lib,template,prepare,score,advisor_smoke}.mjs + package.json + README.md`, `tools/dev/mock_proxy.mjs`, `src/config/advisor.json`. SỬA `src/engine/bm-engine.js` (3.1.0), `gas/Code.gs`, `fe/index.template.html`, `fe/build.mjs`, `test/engine.test.mjs`, spec/README/CLAUDE.md. (chưa commit)

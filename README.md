@@ -2,7 +2,7 @@
 
 **Kiểm tra người thụ hưởng & chứng từ trước giải ngân — đối chiếu hóa đơn ↔ lệnh chuyển tiền (UNC) của một hồ sơ.**
 Bắt: **chi sai người thụ hưởng** (khác pháp nhân / không có trên hóa đơn), **thừa chi**, **hóa đơn trùng**, **hóa đơn không xuất cho KH vay**, tên bị cắt cụt / chi nhánh / tên tiếng Anh cần kiểm tra.
-**Kết luận 100% deterministic, dữ liệu không rời máy.** Tùy chọn **AI tư vấn** (GPT-5 qua Dify) cho ca tên khó — chỉ tham khảo, chỉ gửi cặp tên khi cán bộ bấm "Hỏi AI".
+**Kết luận 100% deterministic, dữ liệu không rời máy.** Tùy chọn **AI tư vấn** (Gemini 3.8 Flash qua Dify) cho ca tên khó — chỉ tham khảo, chỉ gửi cặp tên khi cán bộ bấm "Hỏi AI".
 
 ## 🔗 Công cụ
 
@@ -25,7 +25,7 @@ Tab **Check nhanh tên**: gõ 2 tên → kết luận + mức tương đồng + 
 | `fe/index.template.html` → `fe/build.mjs` | Sinh `docs/index.html` (GitHub Pages), `fe/index.html`, `fe/present.html`, `gas/Engine.gs`. |
 | `src/config/thresholds.json` | Ngưỡng tên, dung sai tiền, mức cảnh báo. |
 | `gas/` | Đường API tùy chọn (Google Apps Script) dùng cùng engine; log Sheet chỉ ghi kết luận, không ghi tên/STK. |
-| `dify/` | Workflow **BeneMatch Name Advisor v3** (LLM tư vấn, sinh từ `build_advisor_dsl.py`). Spec: `AI_CONTEXT/ADVISOR_SPEC.md`. `Beneficiary Legal Entity Verification V2.yml` = baseline cũ để tham chiếu. |
+| `dify/` | Workflow **BeneMatch Name Advisor v3** — bản chính Gemini 3.8 Flash + bản dự phòng GPT-5 (sinh từ `build_advisor_dsl.py`). Spec: `AI_CONTEXT/ADVISOR_SPEC.md`. `Beneficiary Legal Entity Verification V2.yml` = baseline cũ để tham chiếu. |
 | `tools/eval/` | Đo chất lượng engine + AI trên lịch sử GNOL — chạy trên máy [TT], dữ liệu không vào repo. |
 
 ## Phát triển

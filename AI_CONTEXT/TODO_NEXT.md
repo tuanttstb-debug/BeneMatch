@@ -4,7 +4,7 @@
 
 ## ▣ Delta (2026-09-28 #2) — AI tư vấn qua Dify (GPT-5)
 1. ✅ [CC] GAS deploy @9 bằng clasp (URL giữ nguyên) + URL cổng gắn vào công cụ + push.
-2. [TT] 🔴 Checklist `ADVISOR_SPEC.md §6`: gắn GPT-5 trên Dify → import `dify/BeneMatch_Name_Advisor_v3.yml` → publish, lấy API key → GAS Script Properties thay `DIFY_API_KEY` → chạy hàm `taoMaTruyCap` lấy mã.
+2. [TT] 🔴 Checklist `ADVISOR_SPEC.md §6`: cài/cập nhật plugin Gemini + **key trả phí** → import `dify/BeneMatch_Name_Advisor_v3.yml` (Gemini 3.8 Flash) → publish, lấy API key → GAS Script Properties thay `DIFY_API_KEY` → chạy hàm `taoMaTruyCap` lấy mã.
 3. [TT] Chạy `node tools/eval/advisor_smoke.mjs --ai-url … --ai-code …` → gửi em kết quả (22 ca giả lập) → [CC] chỉnh prompt nếu AI nói CÙNG sai.
 4. [TT] Trích lịch sử GNOL theo mẫu (`tools/eval/template.mjs`, ≥ 200 cặp) → `prepare` → cán bộ gán nhãn → `score` → gửi em `BeneMatch_danh_gia_<ngày>.md` (ẩn danh).
 6. [CC] Theo báo cáo đo: chỉnh prompt/ngưỡng hiển thị; đề xuất chỉ tiêu nghiệm thu với [TT]; chuẩn bị spec G2 (service GNOL nhận OCR BIZ) + hồ sơ US AI (AI.IT).

@@ -1,6 +1,8 @@
 """
 build_advisor_dsl.py — sinh DSL Dify cho workflow "BeneMatch Name Advisor v3" (LLM tư vấn, không quyết định).
-Chạy: PYTHONUTF8=1 python dify/build_advisor_dsl.py  → dify/BeneMatch_Name_Advisor_v3.yml (import vào Dify Cloud).
+Chạy: PYTHONUTF8=1 python dify/build_advisor_dsl.py → 2 bản (import vào Dify Cloud):
+  - dify/BeneMatch_Name_Advisor_v3.yml        — BẢN CHÍNH: Gemini 3.8 Flash ([TT] chốt 2026-09-28; key Gemini TRẢ PHÍ)
+  - dify/BeneMatch_Name_Advisor_v3_gpt5.yml   — dự phòng: GPT-5 (OpenAI)
 Khung (app/dependencies/features) lấy từ workflow V2 để đúng định dạng import của workspace hiện tại.
 Nguồn chuẩn của prompt/schema/guard: file này (+ BM.advisor.guard trong src/engine/bm-engine.js — cùng logic).
 """
@@ -8,7 +10,18 @@ import copy, os, yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 V2 = os.path.join(ROOT, 'Beneficiary Legal Entity Verification V2.yml')
-OUT = os.path.join(ROOT, 'dify', 'BeneMatch_Name_Advisor_v3.yml')
+VARIANTS = [
+    # Gemini 3.8 Flash: bỏ hẳn temperature/top_p/top_k; thinking mặc định MEDIUM (giữ theo [TT]) → completion_params rỗng.
+    # Schema bỏ additionalProperties (Gemini response schema hay từ chối) — lớp gác vẫn lọc trường thừa.
+    # dependencies để trống: cài/cập nhật plugin Gemini trên workspace trước khi import (bản có gemini-3.8-flash).
+    {'file': 'BeneMatch_Name_Advisor_v3.yml', 'label': 'gemini-3.8-flash', 'title': 'Gemini 3.8 Flash',
+     'model': {'completion_params': {}, 'mode': 'chat', 'name': 'gemini-3.8-flash', 'provider': 'langgenius/gemini/google'},
+     'strict_schema': False, 'keep_dependencies': False},
+    # GPT-5: chỉ nhận temperature mặc định → KHÔNG đặt temperature (V2 đặt 0.7 — một nguyên nhân FALLBACK).
+    {'file': 'BeneMatch_Name_Advisor_v3_gpt5.yml', 'label': 'gpt-5', 'title': 'GPT-5',
+     'model': {'completion_params': {}, 'mode': 'chat', 'name': 'gpt-5', 'provider': 'langgenius/openai/openai'},
+     'strict_schema': True, 'keep_dependencies': True},
+]
 
 base = yaml.safe_load(open(V2, encoding='utf-8'))
 
@@ -126,7 +139,7 @@ def main(structured: dict, text: str, invoice_legal: str, payment_legal: str) ->
         "evidence": arr(a.get("evidence"), 4),
         "explanation": str(a.get("explanation", ""))[:800],
         "checks_for_officer": arr(a.get("checks_for_officer"), 3),
-        "guard_notes": notes, "model": "gpt-5", "used_for_decision": False,
+        "guard_notes": notes, "model": "__MODEL_LABEL__", "used_for_decision": False,
     }}
 '''
 
@@ -139,44 +152,52 @@ def edge(a, b, st, tt):
             'id': f'{a}-source-{b}-target', 'source': a, 'sourceHandle': 'source', 'target': b, 'targetHandle': 'target',
             'type': 'custom', 'zIndex': 0}
 
-nodes = [
-    node(START, {'selected': False, 'title': 'START', 'type': 'start', 'variables': start_vars}, 0, 0, 380),
-    node(LLM, {
-        'context': {'enabled': False, 'variable_selector': []},
-        # GPT-5 chỉ nhận temperature mặc định → KHÔNG đặt temperature (V2 đặt 0.7 — nghi là một nguyên nhân FALLBACK).
-        'model': {'completion_params': {}, 'mode': 'chat', 'name': 'gpt-5', 'provider': 'langgenius/openai/openai'},
-        'prompt_config': {'jinja2_variables': []},
-        'prompt_template': [
-            {'id': 'a1b2c3d4-0001-4000-8000-000000000001', 'role': 'system', 'text': SYSTEM},
-            {'id': 'a1b2c3d4-0002-4000-8000-000000000002', 'role': 'user', 'text': USER},
-        ],
-        'selected': False, 'structured_output': {'schema': SCHEMA}, 'structured_output_enabled': True,
-        'title': 'LLM Name Advisor', 'type': 'llm', 'vision': {'enabled': False},
-    }, 340, 0),
-    node(GUARD, {
-        'code': GUARD_CODE, 'code_language': 'python3',
-        'outputs': {'result': {'children': None, 'type': 'object'}},
-        'selected': False, 'title': 'Validate & Guard', 'type': 'code',
-        'variables': [
-            {'value_selector': [LLM, 'structured_output'], 'value_type': 'object', 'variable': 'structured'},
-            {'value_selector': [LLM, 'text'], 'value_type': 'string', 'variable': 'text'},
-            {'value_selector': [START, 'invoice_legal'], 'value_type': 'string', 'variable': 'invoice_legal'},
-            {'value_selector': [START, 'payment_legal'], 'value_type': 'string', 'variable': 'payment_legal'},
-        ],
-    }, 680, 0),
-    node(END, {'outputs': [{'value_selector': [GUARD, 'result'], 'value_type': 'object', 'variable': 'result'}],
-               'selected': False, 'title': 'Output', 'type': 'end'}, 1020, 0),
-]
-edges = [edge(START, LLM, 'start', 'llm'), edge(LLM, GUARD, 'llm', 'code'), edge(GUARD, END, 'code', 'end')]
+def build(v):
+    schema = copy.deepcopy(SCHEMA)
+    if not v['strict_schema']:
+        schema.pop('additionalProperties', None)
+    nodes = [
+        node(START, {'selected': False, 'title': 'START', 'type': 'start', 'variables': start_vars}, 0, 0, 380),
+        node(LLM, {
+            'context': {'enabled': False, 'variable_selector': []},
+            'model': copy.deepcopy(v['model']),
+            'prompt_config': {'jinja2_variables': []},
+            'prompt_template': [
+                {'id': 'a1b2c3d4-0001-4000-8000-000000000001', 'role': 'system', 'text': SYSTEM},
+                {'id': 'a1b2c3d4-0002-4000-8000-000000000002', 'role': 'user', 'text': USER},
+            ],
+            'selected': False, 'structured_output': {'schema': schema}, 'structured_output_enabled': True,
+            'title': 'LLM Name Advisor (' + v['title'] + ')', 'type': 'llm', 'vision': {'enabled': False},
+        }, 340, 0),
+        node(GUARD, {
+            'code': GUARD_CODE.replace('__MODEL_LABEL__', v['label']), 'code_language': 'python3',
+            'outputs': {'result': {'children': None, 'type': 'object'}},
+            'selected': False, 'title': 'Validate & Guard', 'type': 'code',
+            'variables': [
+                {'value_selector': [LLM, 'structured_output'], 'value_type': 'object', 'variable': 'structured'},
+                {'value_selector': [LLM, 'text'], 'value_type': 'string', 'variable': 'text'},
+                {'value_selector': [START, 'invoice_legal'], 'value_type': 'string', 'variable': 'invoice_legal'},
+                {'value_selector': [START, 'payment_legal'], 'value_type': 'string', 'variable': 'payment_legal'},
+            ],
+        }, 680, 0),
+        node(END, {'outputs': [{'value_selector': [GUARD, 'result'], 'value_type': 'object', 'variable': 'result'}],
+                   'selected': False, 'title': 'Output', 'type': 'end'}, 1020, 0),
+    ]
+    edges = [edge(START, LLM, 'start', 'llm'), edge(LLM, GUARD, 'llm', 'code'), edge(GUARD, END, 'code', 'end')]
+    dsl = copy.deepcopy(base)
+    dsl['app']['name'] = 'BeneMatch Name Advisor v3 (' + v['title'] + ')'
+    dsl['app']['description'] = 'LLM tư vấn nhận diện tên pháp nhân (tham khảo, không quyết định) cho ca CẦN KIỂM TRA / khác biệt mềm của engine BeneMatch v3. Model: ' + v['title'] + '.'
+    dsl['app']['icon'] = '🧭'
+    if not v['keep_dependencies']:
+        dsl['dependencies'] = []
+    dsl['workflow']['graph']['nodes'] = nodes
+    dsl['workflow']['graph']['edges'] = edges
+    dsl['workflow']['graph']['viewport'] = {'x': 60, 'y': 200, 'zoom': 0.8}
+    out = os.path.join(ROOT, 'dify', v['file'])
+    with open(out, 'w', encoding='utf-8', newline='\n') as f:
+        yaml.safe_dump(dsl, f, allow_unicode=True, sort_keys=False, width=100000)
+    print('✓', out, '—', v['title'])
 
-dsl = copy.deepcopy(base)
-dsl['app']['name'] = 'BeneMatch Name Advisor v3'
-dsl['app']['description'] = 'LLM tư vấn nhận diện tên pháp nhân (tham khảo, không quyết định) cho ca CẦN KIỂM TRA / khác biệt mềm của engine BeneMatch v3.'
-dsl['app']['icon'] = '🧭'
-dsl['workflow']['graph']['nodes'] = nodes
-dsl['workflow']['graph']['edges'] = edges
-dsl['workflow']['graph']['viewport'] = {'x': 60, 'y': 200, 'zoom': 0.8}
 
-with open(OUT, 'w', encoding='utf-8', newline='\n') as f:
-    yaml.safe_dump(dsl, f, allow_unicode=True, sort_keys=False, width=100000)
-print('✓', OUT)
+for v in VARIANTS:
+    build(v)
