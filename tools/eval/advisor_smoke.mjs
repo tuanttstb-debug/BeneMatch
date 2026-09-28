@@ -16,11 +16,13 @@ process.stdout.write('\n');
 let ok = 0, strict = 0, falseSame = 0, fallback = 0;
 H.forEach((h, i) => {
   const x = adv[i] || {}, v = x.advice || {};
-  const acc = h.acceptable.includes(v.verdict), ex = v.verdict === h.truth;
+  // FALLBACK (AI không trả lời) KHÔNG được tính là đạt.
+  const acc = v.ai_status === 'OK' && h.acceptable.includes(v.verdict), ex = v.ai_status === 'OK' && v.verdict === h.truth;
   if (acc) ok++; if (ex) strict++;
   if (v.verdict === 'SAME_ENTITY' && h.truth !== 'SAME_ENTITY' && !h.acceptable.includes('SAME_ENTITY')) falseSame++;
   if (v.ai_status !== 'OK') fallback++;
-  console.log(`${acc ? '✓' : '✗'} ${h.id} ${h.cat.padEnd(18)} engine=${(x.engine || {}).decision} AI=${v.verdict} (${v.confidence}) ${v.relation || ''} — kỳ vọng ${h.truth}`);
+  console.log(`${acc ? '✓' : (v.ai_status !== 'OK' ? '⚠' : '✗')} ${h.id} ${h.cat.padEnd(18)} engine=${(x.engine || {}).decision} AI=${v.verdict} (${v.confidence}) ${v.relation || ''} — kỳ vọng ${h.truth}`);
 });
 console.log(`\nChấp nhận được: ${ok}/${H.length} · đúng tuyệt đối: ${strict}/${H.length} · AI nói CÙNG sai: ${falseSame} · FALLBACK: ${fallback} · ${(Date.now() - t0) / 1000}s`);
-process.exit(falseSame ? 1 : 0);
+if (fallback) { const d = (adv.find((x) => x.advice && x.advice.diag) || {}).advice; if (d) console.log('Chẩn đoán lỗi Dify (1 ca):', JSON.stringify(d.diag).slice(0, 400)); }
+process.exit(falseSame || fallback ? 1 : 0);

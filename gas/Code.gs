@@ -73,27 +73,36 @@ function handleAdviseNames_(payload) {
   lock.releaseLock();
 
   var t0 = Date.now();
-  var reqs = todo.map(function (x) {
+  var mkReq = function (x) {
     return {
       url: url.replace(/\/$/, '') + '/workflows/run', method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       headers: { Authorization: 'Bearer ' + key },
       payload: JSON.stringify({ inputs: BM.advisor.payload(x.nc), response_mode: 'blocking', user: 'bm-' + label }),
     };
-  });
-  var resps = reqs.length ? UrlFetchApp.fetchAll(reqs) : [];
+  };
+  // Gọi song song; ca lỗi TẠM THỜI (model quá tải 503/429…) được gọi lại tối đa ADVISOR_RETRIES lần (mặc định 2), chờ tăng dần.
+  var retries = Number(props.getProperty('ADVISOR_RETRIES') || 2);
+  var pending = todo.slice(), attempt = 0, retried = 0;
+  while (pending.length) {
+    var resps = UrlFetchApp.fetchAll(pending.map(mkReq));
+    var again = [];
+    pending.forEach(function (x, i) {
+      var p = parseDify_(resps[i]);
+      x.raw = p.raw; x.diag = p.diag;
+      if (!p.raw && p.transient && attempt < retries) again.push(x);
+    });
+    if (!again.length) break;
+    attempt++; retried += again.length;
+    Utilities.sleep(2500 * attempt);
+    pending = again;
+  }
   var counts = {};
-  todo.forEach(function (x, i) {
-    var raw = null;
-    try {
-      var r = resps[i];
-      if (r.getResponseCode() >= 200 && r.getResponseCode() < 300) {
-        var d = JSON.parse(r.getContentText());
-        raw = d && d.data && d.data.status === 'succeeded' && d.data.outputs ? d.data.outputs.result : null;
-      }
-    } catch (e) { raw = null; }
-    x.advice = BM.advisor.guard(raw, x.nc);
+  todo.forEach(function (x) {
+    x.advice = BM.advisor.guard(x.raw, x.nc);
+    if (x.diag) x.advice.diag = x.diag;
     counts[x.advice.ai_status + ':' + x.advice.verdict] = (counts[x.advice.ai_status + ':' + x.advice.verdict] || 0) + 1;
   });
+  if (retried) counts.retried = retried;
   try { logAdvisor_(props, label, items.length, todo.length, counts, Date.now() - t0); } catch (e) {}
 
   return {
@@ -103,6 +112,30 @@ function handleAdviseNames_(payload) {
     }),
     quota: { used: used + todo.length, limit: daily }, ms: Date.now() - t0, engine: BM.ENGINE_VERSION,
   };
+}
+
+/**
+ * Đọc 1 response Dify → { raw (object result | null), diag (chẩn đoán, không tên), transient (lỗi tạm thời → nên gọi lại) }.
+ */
+function parseDify_(r) {
+  var TRANSIENT = /\b(503|429|500|502|504)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand|overloaded|rate limit|timeout|timed out/i;
+  try {
+    var http = r.getResponseCode(), body = r.getContentText();
+    if (http >= 200 && http < 300) {
+      var d = JSON.parse(body);
+      var raw = d && d.data && d.data.status === 'succeeded' && d.data.outputs ? d.data.outputs.result : null;
+      if (raw) return { raw: raw, diag: null, transient: false };
+      // Workflow chạy nhưng lỗi (vd node LLM) → giữ đầu + đuôi traceback để chẩn đoán (không kèm tên).
+      var em = String((d && d.data && d.data.error) || '');
+      return { raw: null, transient: TRANSIENT.test(em),
+        diag: { http: http, status: d && d.data && d.data.status, error: em.length > 600 ? em.slice(0, 120) + ' … ' + em.slice(-480) : em } };
+    }
+    var e1 = {}; try { e1 = JSON.parse(body); } catch (e) {}
+    var msg = String(e1.message || body || '').slice(0, 300);
+    return { raw: null, transient: http === 429 || http >= 500 || TRANSIENT.test(msg), diag: { http: http, code: e1.code || '', error: msg } };
+  } catch (e) {
+    return { raw: null, transient: true, diag: { error: String(e && e.message || e).slice(0, 300) } };
+  }
 }
 
 /** Endpoint Dify của AI tư vấn: ưu tiên DIFY_ADVISOR_*, không có thì dùng DIFY_API_URL/DIFY_API_KEY sẵn có trong project. */

@@ -52,6 +52,20 @@ g = makeGas({ props: { DIFY_API_URL: 'https://api.dify.ai/v1', DIFY_API_KEY: 'ap
 const rf = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', pairs: pairs.slice(0, 1) });
 check('Dùng lại DIFY_API_URL/KEY sẵn có khi chưa có DIFY_ADVISOR_*', !rf.error && g.difyCalls[0].headers.Authorization === 'Bearer app-cu', JSON.stringify(rf).slice(0, 120));
 
+// Google quá tải (503) lần đầu → GAS tự gọi lại → thành công.
+let n503 = 0;
+g = makeGas({ props: PROPS, difyResponder: (inp) => (n503++ < 1 ? { __failed: 'PluginInvokeError ... google.genai.errors.ServerError: 503 UNAVAILABLE. This model is currently experiencing high demand.' } : fakeLlm(inp)) });
+const r503 = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', pairs: pairs.slice(0, 1) });
+check('503 tạm thời → tự gọi lại → OK', r503.advices[0].advice.ai_status === 'OK' && g.difyCalls.length === 2, JSON.stringify(r503.advices[0].advice).slice(0, 160));
+// Lỗi 503 kéo dài → hết lượt thử (1 + 2 lần) → FALLBACK có diag.
+g = makeGas({ props: PROPS, difyResponder: () => ({ __failed: 'ServerError: 503 UNAVAILABLE high demand' }) });
+const r503b = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', pairs: pairs.slice(0, 1) });
+check('503 kéo dài → 3 lần gọi rồi FALLBACK + diag', g.difyCalls.length === 3 && r503b.advices[0].advice.ai_status === 'FALLBACK' && /503/.test(r503b.advices[0].advice.diag.error));
+// Lỗi KHÔNG tạm thời (cấu hình sai) → không gọi lại.
+g = makeGas({ props: PROPS, difyResponder: () => null });
+g.post({ action: 'advise_names', access_code: 'BM-7Q2X', pairs: pairs.slice(0, 1) });
+check('Lỗi 400 cấu hình → không gọi lại', g.difyCalls.length === 1, String(g.difyCalls.length));
+
 g = makeGas({ props: {} });
 const code = g.ctx.taoMaTruyCap();
 const codes = JSON.parse(g.store.ACCESS_CODES);

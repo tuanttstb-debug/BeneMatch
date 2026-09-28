@@ -2,6 +2,14 @@
 
 **Từ phiên:** 2026-09-28 / Claude Code (Opus) · **Cho:** phiên kế tiếp
 
+## Delta phiên (2026-09-28 #4 — Test Production AI tư vấn: phát hiện key Gemini free tier; GAS tự gọi lại khi quá tải, Claude Code)
+- **Task completed:** [TT] cập nhật Dify (Gemini 3.8 Flash) + tạo mã truy cập → smoke Production 22 ca: FALLBACK toàn bộ. Thêm chẩn đoán lỗi Dify vào proxy (diag: HTTP + đầu/đuôi traceback, không tên) → nguyên nhân: Google 503 "high demand" rồi **429 quota free tier**. Thêm tự gọi lại lỗi tạm thời (503/429/5xx, tối đa 2 lần, chờ tăng dần) · smoke không còn tính FALLBACK là đạt.
+- **Files changed:** `gas/Code.gs` (parseDify_ + retry + diag; GAS deploy @10→@12 bằng clasp), `test/{gas_harness.mjs, gas_advisor.test.mjs}` (23/23), `tools/eval/advisor_smoke.mjs`, AI_CONTEXT.
+- **Decision made:** Dừng test ngay khi thấy free tier; chỉ dữ liệu giả lập đã đi qua. Chưa mở "Hỏi AI" cho dữ liệu thật tới khi có key trả phí (TD-BM-12).
+- **Blocker:** 🔴 [TT] bật billing / đổi key Gemini trả phí trên Dify.
+- **Next step:** [TT] đổi key → báo em → [CC] chạy lại `advisor_smoke` + test Prod bấm "Hỏi AI" → đánh giá theo §5. Mã test `Team So hoa` (BM-0211…) thu hồi sau khi test xong.
+- **Regression risk:** Thấp — chỉ đổi phần gọi Dify trong proxy; engine 133/133 · GAS 23/23; live @12 ≡ repo; kết luận hồ sơ không phụ thuộc AI.
+
 ## Delta phiên (2026-09-28 #3 — Đổi model AI tư vấn GPT-5 → Gemini 3.8 Flash, Claude Code)
 - **Task completed:** [TT] yêu cầu đổi sang Gemini 3.8 Flash + đánh giá ảnh hưởng trước → xác minh model (`gemini-3.8-flash`, GA 02/09/2026, thinking low/medium/high, bỏ temperature), đánh giá 8 hạng mục (`ADVISOR_SPEC §4b`) → [TT] duyệt (key trả phí, thinking medium) → generator sinh 2 bản DSL.
 - **Files changed:** `dify/build_advisor_dsl.py` (VARIANTS), `dify/BeneMatch_Name_Advisor_v3.yml` (Gemini), MỚI `dify/BeneMatch_Name_Advisor_v3_gpt5.yml`, `AI_CONTEXT/ADVISOR_SPEC.md`, `CLAUDE.md`, `README.md`, `fe/index.template.html` (+ build), AI_CONTEXT.

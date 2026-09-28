@@ -4,6 +4,9 @@ Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `
 
 **Trạng thái (2026-09-28 #2):** TD-BM-06 thay bằng TD-BM-10 (workflow advisor mới, bỏ temperature, sửa cú pháp biến). Nợ mới:
 
+## TD-BM-12 — 🔴 Key Gemini trên Dify là GÓI MIỄN PHÍ (2026-09-28)
+Smoke Production (GAS @12): 22/22 FALLBACK — lần 1 Google 503 "high demand", lần 2 **429 quota `generate_content_free_tier`** ⇒ key Gemini gắn trong Dify thuộc **free tier**. Vi phạm điều kiện đã duyệt (gói miễn phí: Google dùng dữ liệu cải tiến sản phẩm + người duyệt đọc). Test chỉ gửi tên **giả lập**. **Hướng:** [TT] bật billing cho project Google AI Studio của key (hoặc tạo key trong project có billing / Vertex AI) → cập nhật key trong Dify → [CC] chạy lại smoke. **KHÔNG dùng "Hỏi AI" với dữ liệu thật trước khi đóng nợ này.**
+
 ## TD-BM-10 — AI tư vấn chưa đo trên LLM thật (2026-09-28)
 Workflow `BeneMatch_Name_Advisor_v3` + GAS proxy mới test với Dify giả lập. Chưa biết độ đúng/độ trễ của GPT-5, chưa kiểm import DSL trên workspace thật (định dạng lấy từ V2 export). **Hướng:** [TT] import + `advisor_smoke` → đo GNOL (`tools/eval`). Đóng khi đạt chỉ tiêu `ADVISOR_SPEC §5`.
 

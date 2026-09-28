@@ -16,7 +16,7 @@ export function makeGas({ props = {}, difyResponder, logRows = [], difyCalls = [
     console,
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (k in store ? store[k] : null), setProperty: (k, v) => { store[k] = String(v); } }) },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
-    Utilities: { formatDate: (d) => d.toISOString().slice(0, 10).replace(/-/g, ''), getUuid: () => 'a1b2c3d4-e5f6-4711-8899-aabbccddeeff' },
+    Utilities: { formatDate: (d) => d.toISOString().slice(0, 10).replace(/-/g, ''), getUuid: () => 'a1b2c3d4-e5f6-4711-8899-aabbccddeeff', sleep: () => {} },
     Logger: { log: () => {} },
     ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (t) => ({ text: t, setMimeType() { return this; } }) },
     SpreadsheetApp: { openById: () => ({ getSheetByName: () => null, insertSheet: () => ({ getLastRow: () => logRows.length, appendRow: (r) => logRows.push(r) }) }) },
@@ -24,9 +24,11 @@ export function makeGas({ props = {}, difyResponder, logRows = [], difyCalls = [
       fetchAll: (reqs) => reqs.map((r) => {
         const body = JSON.parse(r.payload);
         difyCalls.push({ url: r.url, headers: r.headers, body });
-        const out = difyResponder ? difyResponder(body.inputs) : null;
+        const out = difyResponder ? difyResponder(body.inputs, difyCalls.length) : null;
+        // out.__failed → giả lập workflow chạy nhưng node LLM lỗi (HTTP 200, status failed) — vd Google 503.
+        if (out && out.__failed) return { getResponseCode: () => 200, getContentText: () => JSON.stringify({ data: { status: 'failed', error: out.__failed } }) };
         const ok = out != null;
-        return { getResponseCode: () => (ok ? 200 : 500), getContentText: () => JSON.stringify(ok ? { data: { status: 'succeeded', outputs: { result: out } } } : { error: 'x' }) };
+        return { getResponseCode: () => (ok ? 200 : 400), getContentText: () => JSON.stringify(ok ? { data: { status: 'succeeded', outputs: { result: out } } } : { code: 'invalid_param', message: 'x' }) };
       }),
     },
   };
