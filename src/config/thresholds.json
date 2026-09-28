@@ -1,26 +1,15 @@
 {
-  "config_version": "1.0",
-  "amount": {
-    "abs_tolerance_vnd": 1000,
-    "rel_tolerance": 0.001
+  "config_version": "3.0",
+  "amount": { "abs_tolerance_vnd": 1000, "rel_tolerance": 0.001 },
+  "ocr": { "min_confidence": 0.85 },
+  "grouping": { "mst_min_digits": 10 },
+  "pairing": { "conflict_min_core_sequence": 0.82, "ambiguity_margin": 0.02 },
+  "name": {
+    "weights": { "full_sequence": 0.15, "full_token": 0.15, "core_sequence": 0.25, "core_token": 0.30, "core_containment": 0.15 },
+    "strong_match": { "core_sequence": 0.96, "core_token": 0.90, "core_containment": 0.90, "min_core_tokens": 3 },
+    "review": { "name_similarity": 0.82, "core_sequence": 0.82, "core_token": 0.75 },
+    "distinctive_different_max_sequence": 0.75,
+    "truncation_min_chars": 20
   },
-  "ocr": {
-    "min_confidence": 0.85
-  },
-  "grouping": {
-    "key": "mst_then_name",
-    "mst_min_digits": 10
-  },
-  "severity": {
-    "AMOUNT_MATCH": 0,
-    "POSSIBLE_OCR_ERROR": 1,
-    "AMOUNT_UNDER_TOLERANCE": 1,
-    "TRANSFER_MISSING_FOR_GROUP": 1,
-    "BENEFICIARY_NAME_REVIEW": 1,
-    "GROUP_KEY_FALLBACK_NAME": 1,
-    "AMOUNT_OVER_TOLERANCE": 1,
-    "DUPLICATE_INVOICE": 1,
-    "INVOICE_MISSING_FOR_TRANSFER": 1,
-    "BENEFICIARY_NAME_MISMATCH": 2
-  }
+  "severity": {}
 }

@@ -1,75 +1,137 @@
 [
   {
     "id": "khop-sach",
-    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
-    "title": "Khớp sạch",
+    "title": "Khớp sạch — 2 hóa đơn, 1 UNC",
     "risk": "LOW",
     "expect": "MATCH",
-    "story": "Tên người thụ hưởng và số tiền trên hóa đơn khớp lệnh chuyển tiền. Đây là ca lý tưởng — hệ thống cho qua (ALLOW).",
+    "story": "KH vay thanh toán 2 hóa đơn của cùng nhà cung cấp bằng 1 UNC. Tên UNC viết tắt, không dấu (CTY … VN) nhưng cùng pháp nhân; tổng tiền khớp; nội dung UNC nhắc đúng số hóa đơn. Hệ thống cho qua.",
+    "case": { "case_id": "GNOL-DEMO-0101", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền hàng hóa theo hợp đồng mua bán (đã có hóa đơn).", "disbursement_date": "2026-09-28", "disbursement_amount": 150000000 },
     "invoices": [
-      { "invoice_id": "INV-101", "invoice_date": "2026-08-03", "beneficiary_name": "CÔNG TY TNHH ABC VIỆT NAM", "beneficiary_mst": "0101234567", "amount_total": 100000000, "source_file": "abc_hd101.jpg", "ocr_confidence": 0.99 }
+      { "invoice_no": "0000101", "invoice_series": "1C26TAA", "invoice_date": "2026-09-03", "seller_name": "CÔNG TY TNHH ABC VIỆT NAM", "seller_mst": "0101234565", "buyer_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "buyer_mst": "0310000017", "amount_total": 100000000, "source": "XML" },
+      { "invoice_no": "0000102", "invoice_series": "1C26TAA", "invoice_date": "2026-09-07", "seller_name": "CÔNG TY TNHH ABC VIỆT NAM", "seller_mst": "0101234565", "buyer_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "buyer_mst": "0310000017", "amount_total": 50000000, "source": "XML" }
     ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCTY TNHH ABC VIET NAM,0101234567,0123456789,100000000"
+    "transfers": [
+      { "beneficiary_name": "CTY TNHH ABC VN", "account_number": "0123456789", "bank": "Vietcombank", "amount": 150000000, "content": "TT HD 101 102 CTY MINH AN" }
+    ]
   },
   {
     "id": "sai-phap-nhan",
-    "request": { "dvkd": "TPBank Chi nhánh Sài Gòn – 015", "purpose": "Vay thanh toán tiền mua thiết bị theo hợp đồng." },
-    "title": "Sai người thụ hưởng (khác pháp nhân)",
+    "title": "Sai pháp nhân (CP ↔ TNHH)",
     "risk": "HIGH",
     "expect": "NOT_MATCH",
-    "story": "Hóa đơn ghi CÔNG TY CỔ PHẦN, nhưng lệnh chuyển tiền lại đứng tên CÔNG TY TNHH — khác loại hình pháp nhân dù trùng mã số thuế. Đây là rủi ro nặng nhất: chuyển tiền cho sai thực thể. Hệ thống CHẶN (BLOCK).",
+    "story": "Hóa đơn do CÔNG TY CỔ PHẦN DELTA MEKONG xuất, nhưng UNC chuyển cho CÔNG TY TNHH DELTA MEKONG — phần tên giống hệt nhưng khác loại hình ⇒ hai pháp nhân khác nhau. Rủi ro nặng nhất: chuyển tiền cho sai thực thể. Hệ thống CHẶN.",
+    "case": { "case_id": "GNOL-DEMO-0102", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Chi nhánh Sài Gòn – 015", "purpose": "Thanh toán tiền mua thiết bị theo hợp đồng.", "disbursement_date": "2026-09-28", "disbursement_amount": 45000000 },
     "invoices": [
-      { "invoice_id": "INV-201", "invoice_date": "2026-08-08", "beneficiary_name": "CÔNG TY CỔ PHẦN ĐẦU TƯ DELTA MEKONG", "beneficiary_mst": "0107000007", "amount_total": 45000000, "source_file": "delta_hd201.jpg", "ocr_confidence": 0.98 }
+      { "invoice_no": "0000201", "invoice_series": "1C26TDM", "invoice_date": "2026-09-08", "seller_name": "CÔNG TY CỔ PHẦN DELTA MEKONG", "seller_mst": "0107000002", "buyer_mst": "0310000017", "amount_total": 45000000, "source": "XML" }
     ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH DELTA MEKONG,0107000007,0122334455,45000000"
+    "transfers": [
+      { "beneficiary_name": "CONG TY TNHH DELTA MEKONG", "account_number": "0122334455", "bank": "BIDV", "amount": 45000000, "content": "Thanh toan HD 201" }
+    ]
   },
   {
-    "id": "lech-tien",
-    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
-    "title": "Lệch tiền (thừa chi)",
+    "id": "chi-sai-nguoi",
+    "title": "Chi cho người không có hóa đơn",
+    "risk": "HIGH",
+    "expect": "NOT_MATCH",
+    "story": "Hóa đơn của CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA nhưng UNC lại chuyển cho CÔNG TY TNHH THƯƠNG MẠI MINH ANH — chỉ trùng từ ngành nghề 'Thương mại', phần tên riêng khác hẳn. Tiền đi tới một bên không có hóa đơn trong hồ sơ. Hệ thống CHẶN.",
+    "case": { "case_id": "GNOL-DEMO-0103", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền hàng hóa (đã có hóa đơn).", "disbursement_date": "2026-09-28", "disbursement_amount": 40000000 },
+    "invoices": [
+      { "invoice_no": "0000301", "invoice_series": "1C26THG", "invoice_date": "2026-09-06", "seller_name": "CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA", "seller_mst": "0103000001", "buyer_mst": "0310000017", "amount_total": 40000000, "source": "XML" }
+    ],
+    "transfers": [
+      { "beneficiary_name": "CONG TY TNHH THUONG MAI MINH ANH", "account_number": "0155667788", "bank": "Techcombank", "amount": 40000000, "content": "Thanh toan tien hang" }
+    ]
+  },
+  {
+    "id": "thua-chi",
+    "title": "Thừa chi so với hóa đơn",
     "risk": "HIGH",
     "expect": "REVIEW",
-    "story": "Tên khớp, nhưng lệnh chuyển 50.000.000 đ trong khi hóa đơn chỉ 40.000.000 đ — thừa 10 triệu vượt dung sai. Hệ thống đưa vào diện kiểm tra (WARN).",
+    "story": "Tên khớp nhưng UNC chuyển 90.000.000 đ trong khi hóa đơn chỉ 80.000.000 đ — thừa 10 triệu, vượt dung sai. Hệ thống đưa vào diện kiểm tra.",
+    "case": { "case_id": "GNOL-DEMO-0104", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền thi công.", "disbursement_date": "2026-09-28", "disbursement_amount": 90000000 },
     "invoices": [
-      { "invoice_id": "INV-301", "invoice_date": "2026-08-06", "beneficiary_name": "CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA", "beneficiary_mst": "0103000003", "amount_total": 40000000, "source_file": "hoanggia_hd301.jpg", "ocr_confidence": 0.98 }
+      { "invoice_no": "0000401", "invoice_series": "1C26TBM", "invoice_date": "2026-09-05", "seller_name": "CÔNG TY CỔ PHẦN XÂY DỰNG BÌNH MINH", "seller_mst": "0102000009", "buyer_mst": "0310000017", "amount_total": 80000000, "source": "XML" }
     ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA,0103000003,0111222333,50000000"
+    "transfers": [
+      { "beneficiary_name": "CTCP XAY DUNG BINH MINH", "account_number": "0987654321", "bank": "VietinBank", "amount": 90000000, "content": "TT HD 401" }
+    ]
   },
   {
-    "id": "trung-hoa-don",
-    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa nhập khẩu." },
-    "title": "Hóa đơn trùng",
-    "risk": "HIGH",
-    "expect": "REVIEW",
-    "story": "Hai hóa đơn cùng số tiền, cùng ngày, cùng mã số thuế — nghi thanh toán hai lần cho một khoản. Tổng lệnh 40 triệu có nguy cơ trả gấp đôi. Hệ thống gắn cờ nghi trùng (WARN).",
-    "invoices": [
-      { "invoice_id": "INV-401", "invoice_date": "2026-08-05", "beneficiary_name": "CÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH", "beneficiary_mst": "0105000005", "amount_total": 20000000, "source_file": "phuthinh_hd401.jpg", "ocr_confidence": 0.97 },
-      { "invoice_id": "INV-402", "invoice_date": "2026-08-05", "beneficiary_name": "CÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH", "beneficiary_mst": "0105000005", "amount_total": 20000000, "source_file": "phuthinh_hd402.jpg", "ocr_confidence": 0.97 }
-    ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH XUẤT NHẬP KHẨU PHÚ THỊNH,0105000005,0444555666,40000000"
-  },
-  {
-    "id": "thieu-chung-tu",
-    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
-    "title": "Thiếu chứng từ",
-    "risk": "HIGH",
-    "expect": "REVIEW",
-    "story": "Một lệnh chuyển tiền không có hóa đơn kèm theo — chi mà thiếu chứng từ, cần bổ sung trước khi chi (WARN). Chiều ngược lại (hóa đơn chưa có lệnh chi) nay KHÔNG tính rủi ro.",
-    "invoices": [
-      { "invoice_id": "INV-501", "invoice_date": "2026-08-08", "beneficiary_name": "DOANH NGHIỆP TƯ NHÂN THÀNH ĐẠT", "beneficiary_mst": "0104000004", "amount_total": 60000000, "source_file": "thanhdat_hd501.jpg", "ocr_confidence": 0.95 }
-    ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH CƠ KHÍ TIẾN PHÁT,0106000006,0777888999,40000000"
-  },
-  {
-    "id": "ten-gan-giong",
-    "request": { "dvkd": "TPBank Tân Thuận – 239", "purpose": "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn)." },
-    "title": "Tên gần giống, chưa kết luận",
+    "id": "ten-cat-cut",
+    "title": "Tên UNC bị cắt cụt",
     "risk": "MEDIUM",
     "expect": "REVIEW",
-    "story": "Hóa đơn ghi thêm cụm \"ĐẦU TƯ\" so với lệnh chuyển tiền (cùng mã số thuế). Tên gần giống nhưng chưa đủ căn cứ khẳng định cùng một pháp nhân — hệ thống chuyển cho người kiểm tra (đây là ~<10% ca mà AI diễn giải cảnh báo).",
+    "story": "Tên bên bán dài; hệ thống chuyển tiền cắt tên người thụ hưởng theo giới hạn ký tự. Phần còn lại khớp, nhưng không kiểm được phần bị cắt ⇒ cần cán bộ đối chiếu STK/tên đăng ký.",
+    "case": { "case_id": "GNOL-DEMO-0105", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền nguyên vật liệu.", "disbursement_date": "2026-09-28", "disbursement_amount": 25000000 },
     "invoices": [
-      { "invoice_id": "INV-601", "invoice_date": "2026-08-10", "beneficiary_name": "CÔNG TY TNHH ĐẦU TƯ THƯƠNG MẠI HOÀNG GIA", "beneficiary_mst": "0109000009", "amount_total": 30000000, "source_file": "hoanggia_hd601.jpg", "ocr_confidence": 0.98 }
+      { "invoice_no": "0000501", "invoice_series": "1C26TPT", "invoice_date": "2026-09-10", "seller_name": "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ XUẤT NHẬP KHẨU PHÚ THỊNH PHÁT", "seller_mst": "0105000007", "buyer_mst": "0310000017", "amount_total": 25000000, "source": "XML" }
     ],
-    "transfers_csv": "beneficiary_name,beneficiary_mst,account_number,amount\nCÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA,0109000009,0133445566,30000000"
+    "transfers": [
+      { "beneficiary_name": "CONG TY TNHH TM DV XUAT NHAP KHAU PHU THINH P", "account_number": "0444555666", "bank": "ACB", "amount": 25000000, "content": "TT HD 501" }
+    ]
+  },
+  {
+    "id": "chi-nhanh",
+    "title": "Hóa đơn chi nhánh, chuyển công ty mẹ",
+    "risk": "MEDIUM",
+    "expect": "REVIEW",
+    "story": "Hóa đơn do CHI NHÁNH HÀ NỘI xuất (MST 13 số) nhưng UNC chuyển cho công ty mẹ. Cùng pháp nhân nhưng khác đơn vị nhận tiền ⇒ cần kiểm tra.",
+    "case": { "case_id": "GNOL-DEMO-0106", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Hoàn Kiếm – 101", "purpose": "Thanh toán tiền máy móc.", "disbursement_date": "2026-09-28", "disbursement_amount": 20000000 },
+    "invoices": [
+      { "invoice_no": "0000601", "invoice_series": "1C26TTP", "invoice_date": "2026-09-04", "seller_name": "CÔNG TY TNHH CƠ KHÍ TIẾN PHÁT - CHI NHÁNH HÀ NỘI", "seller_mst": "0106000017001", "buyer_mst": "0310000017", "amount_total": 20000000, "source": "XML" }
+    ],
+    "transfers": [
+      { "beneficiary_name": "CONG TY TNHH CO KHI TIEN PHAT", "account_number": "0777888999", "bank": "MB", "amount": 20000000, "content": "TT HD 601" }
+    ]
+  },
+  {
+    "id": "hoa-don-trung",
+    "title": "Hóa đơn trùng (trả 2 lần)",
+    "risk": "HIGH",
+    "expect": "REVIEW",
+    "story": "Cùng một hóa đơn (cùng MST, ký hiệu, số) được đưa vào hồ sơ 2 lần (1 bản XML, 1 dòng bảng kê), UNC chi cho cả 2 ⇒ nguy cơ trả hai lần. Hệ thống loại bản trùng khỏi tổng được chi ⇒ lộ ra thừa chi 20 triệu.",
+    "case": { "case_id": "GNOL-DEMO-0107", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền hàng.", "disbursement_date": "2026-09-28", "disbursement_amount": 40000000 },
+    "invoices": [
+      { "invoice_no": "0000701", "invoice_series": "1C26TSV", "invoice_date": "2026-09-04", "seller_name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ SAO VIỆT", "seller_mst": "0108000005", "buyer_mst": "0310000017", "amount_total": 20000000, "source": "XML", "source_file": "saoviet_701.xml" },
+      { "invoice_no": "701", "invoice_series": "1C26TSV", "invoice_date": "2026-09-04", "seller_name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ SAO VIỆT", "seller_mst": "0108000005", "buyer_mst": "0310000017", "amount_total": 20000000, "source": "EXCEL" }
+    ],
+    "transfers": [
+      { "beneficiary_name": "CONG TY CP CONG NGHE SAO VIET", "account_number": "0133445566", "bank": "Vietcombank", "amount": 40000000, "content": "TT HD 701" }
+    ]
+  },
+  {
+    "id": "nguoi-mua-khac",
+    "title": "Hóa đơn xuất cho người mua khác",
+    "risk": "HIGH",
+    "expect": "REVIEW",
+    "story": "Tên người thụ hưởng khớp, tiền khớp — nhưng hóa đơn xuất cho một doanh nghiệp khác (MST người mua ≠ MST khách hàng vay). Hóa đơn không chứng minh được mục đích vốn của KH ⇒ cần kiểm tra.",
+    "case": { "case_id": "GNOL-DEMO-0108", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền dịch vụ.", "disbursement_date": "2026-09-28", "disbursement_amount": 12000000 },
+    "invoices": [
+      { "invoice_no": "0000801", "invoice_series": "1C26TMA", "invoice_date": "2026-09-11", "seller_name": "CÔNG TY TNHH DỊCH VỤ MINH ANH", "seller_mst": "0109000008", "buyer_name": "CÔNG TY TNHH ĐẦU TƯ PHƯƠNG NAM", "buyer_mst": "0112000008", "amount_total": 12000000, "source": "XML" }
+    ],
+    "transfers": [
+      { "beneficiary_name": "CONG TY TNHH DICH VU MINH ANH", "account_number": "0155667788", "bank": "Techcombank", "amount": 12000000, "content": "TT HD 801" }
+    ]
+  },
+  {
+    "id": "ho-so-tong-hop",
+    "title": "Hồ sơ tổng hợp — 4 nhà cung cấp",
+    "risk": "HIGH",
+    "expect": "NOT_MATCH",
+    "story": "Một khoản giải ngân trả cho 4 nhà cung cấp: 1 khớp sạch (2 đợt UNC), 1 thừa chi, 1 tên tiếng Anh trên UNC, 1 UNC chuyển cho bên không có hóa đơn. Hệ thống tự ghép từng UNC với đúng bên bán theo tên + số hóa đơn trong nội dung, rồi xếp rủi ro cao lên đầu.",
+    "case": { "case_id": "GNOL-DEMO-0109", "borrower_name": "CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN", "borrower_mst": "0310000017", "dvkd": "TPBank Tân Thuận – 239", "purpose": "Thanh toán tiền hàng hóa, dịch vụ theo các hợp đồng (đã có hóa đơn).", "disbursement_date": "2026-09-28", "disbursement_amount": 250000000 },
+    "invoices": [
+      { "invoice_no": "0000901", "invoice_series": "1C26TAA", "invoice_date": "2026-09-02", "seller_name": "CÔNG TY TNHH ABC VIỆT NAM", "seller_mst": "0101234565", "buyer_mst": "0310000017", "amount_total": 100000000, "source": "XML" },
+      { "invoice_no": "0000902", "invoice_series": "1C26TBM", "invoice_date": "2026-09-03", "seller_name": "CÔNG TY CỔ PHẦN XÂY DỰNG BÌNH MINH", "seller_mst": "0102000009", "buyer_mst": "0310000017", "amount_total": 60000000, "source": "XML" },
+      { "invoice_no": "0000903", "invoice_series": "1C26THG", "invoice_date": "2026-09-04", "seller_name": "CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA", "seller_mst": "0103000001", "buyer_mst": "0310000017", "amount_total": 50000000, "source": "XML" },
+      { "invoice_no": "0000904", "invoice_series": "1C26TPN", "invoice_date": "2026-09-05", "seller_name": "CÔNG TY TNHH NÔNG SẢN PHƯƠNG NAM", "seller_mst": "0111000005", "buyer_mst": "0310000017", "amount_total": 30000000, "source": "XML" }
+    ],
+    "transfers": [
+      { "beneficiary_name": "CTY TNHH ABC VIET NAM", "account_number": "0123456789", "bank": "Vietcombank", "amount": 60000000, "content": "TT dot 1 HD 901" },
+      { "beneficiary_name": "CTY TNHH ABC VIET NAM", "account_number": "0123456789", "bank": "Vietcombank", "amount": 40000000, "content": "TT dot 2 HD 901" },
+      { "beneficiary_name": "CTCP XAY DUNG BINH MINH", "account_number": "0987654321", "bank": "VietinBank", "amount": 70000000, "content": "TT HD 902" },
+      { "beneficiary_name": "HOANG GIA TRADING CO., LTD", "account_number": "0111222333", "bank": "HSBC", "amount": 50000000, "content": "Payment invoice 903" },
+      { "beneficiary_name": "NGUYEN VAN BINH", "account_number": "1903555777", "bank": "Techcombank", "amount": 30000000, "content": "chuyen tien" }
+    ]
   }
 ]

@@ -1,5 +1,7 @@
 # DECISION_RULES — BeneMatch (Rule Engine)
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 **Node:** Decision Engine (`1786420410096`). **Nguyên tắc:** quyết định cuối **luôn deterministic**; AI/fuzzy không override. Luật xét **theo thứ tự trên xuống**, trúng luật nào trả luật đó.
 
 ## Kết cục & ánh xạ

@@ -1,5 +1,7 @@
 # DIFY_OPTIMIZATION — BeneMatch (rule-first, minimize AI)
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 Kế hoạch tối ưu workflow Dify V2 theo hướng **rule tự xử lý tối đa, chỉ call AI khi thực sự cần** (chốt [TT] 2026-08-22: *Rule 100%, LLM chỉ khi REVIEW & `ai_eligible=true`*). Đồng thời trả 2 nợ **TD-BM-01** + **TD-BM-02**.
 
 **Nguồn sự thật:** `Beneficiary Legal Entity Verification V2.yml` (backup: `*.BACKUP-20260822.yml`).

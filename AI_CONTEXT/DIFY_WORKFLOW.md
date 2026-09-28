@@ -1,5 +1,7 @@
 # DIFY_WORKFLOW — BeneMatch (as-built)
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 **Nguồn sự thật:** `Beneficiary Legal Entity Verification V2.yml` (app version 0.7.0, workflow mode, Dify Cloud).
 Tài liệu này mô tả **đúng canvas hiện tại**. Chỗ lệch thiết kế được đánh dấu ⚠ và tham chiếu `TECH_DEBT.md`.
 

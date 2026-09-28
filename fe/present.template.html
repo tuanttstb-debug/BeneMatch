@@ -65,22 +65,22 @@
 <div class="wrap">
   <p class="eyebrow">PoC · Khối Ngân hàng Doanh nghiệp · TPBank</p>
   <h1>BeneMatch — Đối chiếu hóa đơn và lệnh chuyển tiền</h1>
-  <p class="thesis">Nhập nhiều hóa đơn và lệnh chuyển tiền, hệ thống bóc dữ liệu, gộp theo người thụ hưởng, đối chiếu tổng tiền và cảnh báo rủi ro — <b>quyết định bằng luật, không phụ thuộc AI</b>.</p>
+  <p class="thesis">Nhập hóa đơn và lệnh chuyển tiền của một hồ sơ giải ngân, hệ thống ghép từng lệnh với đúng bên bán, chấm độ tương đồng tên pháp nhân, đối chiếu tiền &amp; chứng từ và cảnh báo rủi ro — <b>quyết định bằng luật, không AI, dữ liệu không rời máy</b>.</p>
 
   <div class="verdict" id="verdict"></div>
 
   <div class="flow">
-    <div class="step"><div class="n">01 · NHẬP</div><div class="t">Hóa đơn + lệnh CT</div><div class="d">Nhiều file đính kèm + CSV</div></div>
-    <div class="step"><div class="n">02 · BÓC</div><div class="t">OCR dữ liệu</div><div class="d">Tên · MST · số tiền · số HĐ</div></div>
-    <div class="step"><div class="n">03 · GỘP</div><div class="t">Theo người thụ hưởng</div><div class="d">Khóa nhóm = MST</div></div>
+    <div class="step"><div class="n">01 · NHẬP</div><div class="t">Hóa đơn + UNC</div><div class="d">XML HĐĐT · PDF · ảnh · Excel</div></div>
+    <div class="step"><div class="n">02 · ĐỌC</div><div class="t">Trích dữ liệu</div><div class="d">Tên · MST · số tiền · số HĐ</div></div>
+    <div class="step"><div class="n">03 · GHÉP</div><div class="t">UNC ↔ bên bán</div><div class="d">Theo tên + số HĐ trong nội dung</div></div>
     <div class="step"><div class="n">04 · ĐỐI CHIẾU</div><div class="t">Tổng tiền + duplicate</div><div class="d">Deterministic · dung sai</div></div>
-    <div class="step ai"><div class="n">05 · KHỚP TÊN</div><div class="t">Rule-first + AI</div><div class="d">AI chỉ ~&lt;10% ca mơ hồ</div></div>
+    <div class="step ai"><div class="n">05 · KHỚP TÊN</div><div class="t">Luật + độ tương đồng</div><div class="d">100% deterministic · không AI</div></div>
   </div>
 
   <h2>Đối chiếu theo người thụ hưởng</h2>
   <div class="scroll">
     <table>
-      <thead><tr><th>Người thụ hưởng</th><th>Nhóm (MST)</th><th class="num">Σ Hóa đơn</th><th class="num">Σ Lệnh CT</th><th class="num">Chênh lệch</th><th>Kết luận</th></tr></thead>
+      <thead><tr><th>Bên bán / người thụ hưởng</th><th>MST</th><th class="num">Σ Hóa đơn</th><th class="num">Σ UNC</th><th class="num">Chênh lệch</th><th>Kết luận</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
@@ -90,57 +90,45 @@
 
   <footer>
     <span class="pill">RULE_ENGINE</span>
-    <span>Tổng tiền, duplicate, thiếu/thừa chứng từ: <b>deterministic</b>. Khớp tên qua Dify V2 — AI chỉ diễn giải cảnh báo, không ra quyết định. Dữ liệu trên trang là <b>synthetic</b>.</span>
+    <span>Tổng tiền, duplicate, thiếu/thừa chứng từ: <b>deterministic</b>. Khớp tên bằng engine luật v3 chạy trong trình duyệt — không AI, không gửi dữ liệu đi. Dữ liệu trên trang là <b>synthetic</b>.</span>
   </footer>
 </div>
 
 <script>
-/*__RECON_ENGINE__*/
-function feVerify(pair){
-  var invN=reconNormalizeName(pair.invoice_beneficiary_name), payN=reconNormalizeName(pair.payment_beneficiary_name);
-  if(!invN||!payN) return {decision:'REVIEW',reason_codes:['INSUFFICIENT_DATA'],source:'STUB'};
-  function fam(s){ if(/\bTNHH\b/.test(s))return'TNHH'; if(/\bCONG TY CO PHAN\b/.test(s))return'CO_PHAN'; if(/\bDOANH NGHIEP TU NHAN\b/.test(s))return'DNTN'; if(/\bHOP TAC XA\b/.test(s))return'HTX'; return'UNKNOWN'; }
-  var fi=fam(invN),fp=fam(payN);
-  if(fi!=='UNKNOWN'&&fp!=='UNKNOWN'&&fi!==fp) return {decision:'NOT_MATCH',reason_codes:['LEGAL_ENTITY_TYPE_CONFLICT'],source:'STUB'};
-  if(invN===payN) return {decision:'MATCH',reason_codes:['NORMALIZED_NAME_EXACT_MATCH'],source:'STUB'};
-  var a=reconExtractCoreName(invN).split(' ').filter(Boolean), b=reconExtractCoreName(payN).split(' ').filter(Boolean);
-  if(a.join(' ')===b.join(' ')) return {decision:'MATCH',reason_codes:['LEGAL_TYPE_AND_CORE_NAME_EXACT_MATCH'],source:'STUB'};
-  var setA={},inter=0; a.forEach(function(t){setA[t]=1;}); b.forEach(function(t){if(setA[t])inter++;});
-  var uni=a.length+b.length-inter, sim=uni?inter/uni:1;
-  return sim>=0.6?{decision:'REVIEW',reason_codes:['NAME_SIMILAR_BUT_NOT_CONCLUSIVE'],source:'STUB'}:{decision:'NOT_MATCH',reason_codes:['LOW_NAME_SIMILARITY'],source:'STUB'};
-}
-var INVOICES = /*__SYNTHETIC_INVOICES__*/ [];
-var TRANSFERS_CSV = /*__SYNTHETIC_TRANSFERS_CSV__*/ "";
+/*__BM_ENGINE__*/
+</script>
+<script>
+var SCENARIOS = /*__SCENARIOS__*/ [];
 var CONFIG = /*__CONFIG__*/ {};
+var DEC = { MATCH:'KHỚP', REVIEW:'CẦN KIỂM TRA', NOT_MATCH:'KHÔNG KHỚP' };
 var vnd=function(n){return (Number(n)||0).toLocaleString('vi-VN');};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
-
-var res = reconcileBatch(INVOICES, reconParseTransferCsv(TRANSFERS_CSV), CONFIG, feVerify, {batch_id:'BM-BATCH-DEMO'});
+var sc = SCENARIOS.filter(function(x){ return x.id==='ho-so-tong-hop'; })[0] || SCENARIOS[0];
+var res = BM.reconcileCase(sc, CONFIG);
 var s = res.summary;
 var diffCls = s.grand_diff>0?'over':(s.grand_diff<0?'under':'');
 document.getElementById('verdict').innerHTML =
   tile('Σ Hóa đơn', vnd(s.grand_total_invoices)+' đ')
 + tile('Σ Lệnh chuyển tiền', vnd(s.grand_total_transfers)+' đ')
 + tile('Chênh lệch', '<span class="'+diffCls+'">'+(s.grand_diff>0?'+':'')+vnd(s.grand_diff)+' đ</span>')
-+ tile('Quyết định lô', '<span class="badge b-'+s.decision+'">'+s.decision+'</span>');
++ tile('Kết luận hồ sơ', '<span class="badge b-'+s.decision+'">'+DEC[s.decision]+'</span>');
 function tile(l,v){return '<div class="tile"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>';}
-
 document.getElementById('rows').innerHTML = res.groups.map(function(g){
   var dcls = g.diff>0?'over':(g.diff<0?'under':'');
-  return '<tr><td><div class="who">'+esc(g.beneficiary_display)+'</div><div class="sub">'+g.invoices.length+' hóa đơn · '+g.transfers.length+' lệnh CT</div>'
-    + (g.warnings.length?'<ul class="warns">'+g.warnings.map(function(w){return '<li><span class="dot d-'+w.risk+'"></span>'+esc(w.message)+'</li>';}).join('')+'</ul>':'')
-    + '</td><td>'+esc(g.group_key)+'</td>'
+  var ws = g.warnings.filter(function(w){ return w.severity>0; });
+  return '<tr><td><div class="who">'+esc(g.beneficiary_display)+'</div><div class="sub">'+g.invoices.length+' hóa đơn · '+g.transfers.length+' UNC</div>'
+    + (ws.length?'<ul class="warns">'+ws.map(function(w){return '<li><span class="dot d-'+w.risk+'"></span>'+esc(w.title)+'</li>';}).join('')+'</ul>':'')
+    + '</td><td>'+esc(g.seller_mst||'—')+'</td>'
     + '<td class="num">'+vnd(g.sum_invoices)+'</td><td class="num">'+vnd(g.sum_transfers)+'</td>'
     + '<td class="num '+dcls+'">'+(g.diff>0?'+':'')+vnd(g.diff)+'</td>'
-    + '<td><span class="badge b-'+g.decision+'">'+g.decision+'</span></td></tr>';
+    + '<td><span class="badge b-'+g.decision+'">'+DEC[g.decision]+'</span></td></tr>';
 }).join('');
-
-var amountOk = res.groups.filter(function(g){return g.amount_status==='AMOUNT_MATCH' && g.decision!=='MATCH';});
-var nameBad = res.groups.filter(function(g){return g.name_decision==='NOT_MATCH';});
-var dup = res.groups.filter(function(g){return g.warnings.some(function(w){return w.code==='DUPLICATE_INVOICE';});});
+var orphan = res.groups.filter(function(g){ return g.key_type==='ORPHAN_TRANSFER'; }).length;
+var nameRv = res.pairs.filter(function(p){ return p.name_check && p.name_check.decision==='REVIEW'; }).length;
+var over = res.groups.filter(function(g){ return g.amount_status==='OVER'; }).length;
 document.getElementById('insights').innerHTML =
-  insight('Tiền khớp vẫn rủi ro', amountOk.length+' nhóm có tổng tiền khớp nhưng vẫn bị REVIEW/BLOCK — do khác pháp nhân, hóa đơn trùng hoặc nghi lỗi OCR. So tổng tiền đơn thuần sẽ bỏ sót.')
-+ insight('Chặn khác pháp nhân', nameBad.length+' nhóm tên bên thụ hưởng khác loại hình pháp nhân giữa hóa đơn và lệnh CT → BLOCK, dù số tiền trùng khớp.')
-+ insight('Bắt thanh toán trùng', dup.length+' nhóm phát hiện hóa đơn nghi trùng — nguy cơ chi hai lần cho cùng một hóa đơn.');
+  insight('Mọi UNC đều được check tên', res.pairs.length+' lệnh chuyển tiền được ghép với đúng bên bán theo tên + số hóa đơn trong nội dung (UNC không có MST) và chấm độ tương đồng từng lệnh — không chỉ lệnh đầu tiên.')
++ insight('Chặn chi sai người', orphan+' UNC chuyển cho người không có trên hóa đơn → CHẶN. Khác loại hình pháp nhân (TNHH ↔ CP) cũng luôn CHẶN dù tên giống.')
++ insight('Tiền & chứng từ', over+' bên bán bị thừa chi · '+nameRv+' tên cần kiểm tra (tiếng Anh / cắt cụt / chi nhánh). Hóa đơn trùng không được cộng vào tổng được chi.');
 function insight(t,d){return '<div class="insight"><h3>'+t+'</h3><p>'+esc(d)+'</p></div>';}
 </script>

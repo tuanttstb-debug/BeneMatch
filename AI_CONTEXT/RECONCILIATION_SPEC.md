@@ -1,5 +1,7 @@
 # RECONCILIATION_SPEC — BeneMatch (Batch Reconciliation)
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 Tầng **đối chiếu lô**: nhiều hóa đơn ↔ nhiều lệnh chuyển tiền, gộp theo người thụ hưởng, kiểm tổng tiền + duplicate + khớp tên (qua lõi verify V2). **Deterministic 100%** — không dùng AI ở tầng này; AI (nếu có) chỉ nằm trong verify tên từng cặp (Dify V2, nhánh REVIEW+`ai_eligible`).
 
 **Nguồn:** module `src/recon/` (JS thuần, test offline). Chốt scope 2026-08-22 (phỏng vấn [TT]).

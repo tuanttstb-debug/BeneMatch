@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hóa đơn điện tử GIẢ LẬP theo cấu trúc TT78/NĐ123 — chỉ để test đọc XML. Không phải dữ liệu thật. -->
+<HDon>
+  <DLHDon Id="data">
+    <TTChung>
+      <PBan>2.0.0</PBan>
+      <THDon>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</THDon>
+      <KHMSHDon>1</KHMSHDon>
+      <KHHDon>C26TKL</KHHDon>
+      <SHDon>1205</SHDon>
+      <NLap>2026-09-15</NLap>
+      <DVTTe>VND</DVTTe>
+    </TTChung>
+    <NDHDon>
+      <NBan>
+        <Ten>CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ KIM LONG</Ten>
+        <MST>0110000002</MST>
+        <DChi>Số 1 Đường Giả Lập, Hà Nội</DChi>
+        <STKNHang>0201999888</STKNHang>
+        <TNHang>Ngân hàng Giả lập</TNHang>
+      </NBan>
+      <NMua>
+        <Ten>CÔNG TY CỔ PHẦN SẢN XUẤT MINH AN</Ten>
+        <MST>0310000017</MST>
+      </NMua>
+      <TToan>
+        <TgTCThue>50000000</TgTCThue>
+        <TgTThue>5000000</TgTThue>
+        <TgTTTBSo>55000000</TgTTTBSo>
+      </TToan>
+    </NDHDon>
+  </DLHDon>
+</HDon>

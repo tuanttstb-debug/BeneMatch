@@ -1,469 +1,881 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BeneMatch — Đối chiếu hóa đơn ↔ lệnh chuyển tiền</title>
-<meta name="description" content="Demo đối chiếu lô hóa đơn với lệnh chuyển tiền, phát hiện sai người thụ hưởng, lệch tiền, hóa đơn trùng — deterministic-first. Dữ liệu mẫu.">
+<title>BeneMatch — Kiểm tra người thụ hưởng</title>
+<meta name="description" content="Công cụ offline kiểm tra tên người thụ hưởng và chứng từ trước giải ngân: đối chiếu hóa đơn ↔ lệnh chuyển tiền, deterministic, dữ liệu không rời máy.">
 <style>
   :root{
-    --purple:#7B2CBF; --purple-deep:#5A189A; --purple-soft:#EEE4FA;
-    --ink:#1b1330; --muted:#6b6580; --line:#e7e2f0; --bg:#faf8ff; --card:#ffffff;
-    --green:#16a34a; --green-bg:#e9f9ef; --amber:#d97706; --amber-bg:#fef4e6; --red:#dc2626; --red-bg:#fdeaea;
-    --shadow:0 2px 10px rgba(90,24,154,.08);
+    --purple:#7B2CBF; --purple-deep:#5A189A; --purple-soft:#F1E8FC; --purple-ink:#4A1486;
+    --ink:#1b1330; --sub:#4d4663; --muted:#6f6886; --line:#e6e0ef; --bg:#f7f5fb; --card:#ffffff; --field:#ffffff; --band:#faf8fe;
+    --green:#15803d; --green-bg:#e8f7ee; --green-line:#b7e4c7;
+    --amber:#b45309; --amber-bg:#fdf3e3; --amber-line:#f3d19c;
+    --red:#c81e1e; --red-bg:#fdecec; --red-line:#f3b4b4;
+    --shadow:0 1px 2px rgba(27,19,48,.04),0 6px 18px rgba(90,24,154,.06);
+    --radius:14px;
   }
   @media (prefers-color-scheme: dark){
-    :root{ --ink:#f3eefb; --muted:#b3a9c9; --line:#2c2440; --bg:#151022; --card:#1e1733; --purple-soft:#2a1f45; --shadow:0 2px 12px rgba(0,0,0,.4); }
+    :root:not([data-theme="light"]){
+      --purple-soft:#2a2046; --purple-ink:#d9c6f5;
+      --ink:#f2ecfb; --sub:#cfc5e3; --muted:#a79dbd; --line:#2e2645; --bg:#130f1d; --card:#1c1630; --field:#231c3a; --band:#1f1935;
+      --green:#4ade80; --green-bg:#11291c; --green-line:#1f5134; --amber:#fbbf24; --amber-bg:#2e210b; --amber-line:#5b4413;
+      --red:#f87171; --red-bg:#351313; --red-line:#6b2525; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --purple-soft:#2a2046; --purple-ink:#d9c6f5;
+    --ink:#f2ecfb; --sub:#cfc5e3; --muted:#a79dbd; --line:#2e2645; --bg:#130f1d; --card:#1c1630; --field:#231c3a; --band:#1f1935;
+    --green:#4ade80; --green-bg:#11291c; --green-line:#1f5134; --amber:#fbbf24; --amber-bg:#2e210b; --amber-line:#5b4413;
+    --red:#f87171; --red-bg:#351313; --red-line:#6b2525; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box} html,body{margin:0}
-  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-  .wrap{max-width:1120px;margin:0 auto;padding:20px}
-  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-  .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;box-shadow:var(--shadow)}
-  .brand h1{font-size:20px;margin:0} .brand p{margin:0;color:var(--muted);font-size:13px}
-  .tag{margin-left:auto;background:var(--purple-soft);color:var(--purple-deep);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
-  @media (prefers-color-scheme: dark){ .tag{color:#d9c6f5} }
-  .demo-banner{display:flex;gap:10px;align-items:flex-start;background:var(--amber-bg);color:var(--amber);border:1px solid #f5d9a8;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px}
-  @media (prefers-color-scheme: dark){ .demo-banner{border-color:#5a4620} }
-  .hero{background:linear-gradient(135deg,rgba(123,44,191,.09),rgba(90,24,154,.04));border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:16px}
-  .hero h2{margin:0 0 6px;font-size:18px}
-  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:80ch}
-  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .legend .badge{font-size:11.5px}
-  .legend .lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-  .grid{display:grid;grid-template-columns:1fr;gap:16px}
-  @media(min-width:900px){ .grid{grid-template-columns:440px 1fr} }
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-  .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--purple-deep);margin:0 0 12px}
-  @media (prefers-color-scheme: dark){ .card h2{color:#c9b3ee} }
-  .scn{display:grid;grid-template-columns:1fr;gap:9px}
-  .scn button{text-align:left;cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;color:var(--ink);transition:border-color .12s,transform .08s}
-  .scn button:hover{border-color:var(--purple)}
-  .scn button.active{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-soft)}
-  .scn .t{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:space-between}
-  .scn .d{font-size:12px;color:var(--muted);margin-top:3px}
-  label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
-  textarea,input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
-  textarea{min-height:130px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;resize:vertical}
-  .btn{cursor:pointer;border:0;border-radius:11px;padding:10px 16px;font-weight:700;font-size:14px}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;font-size:14px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 16px 48px}
+  a{color:var(--purple-ink)}
+  /* header */
+  header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;box-shadow:var(--shadow);flex:0 0 auto}
+  .brand h1{font-size:19px;margin:0;letter-spacing:-.01em} .brand p{margin:0;color:var(--muted);font-size:12.5px}
+  .tag{margin-left:auto;background:var(--purple-soft);color:var(--purple-ink);padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .privacy{display:flex;gap:10px;align-items:flex-start;background:var(--green-bg);color:var(--green);border:1px solid var(--green-line);border-radius:12px;padding:9px 13px;font-size:12.5px;font-weight:600;margin-bottom:14px}
+  /* tabs */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+  .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .tabs button.on{color:var(--purple-ink);border-bottom-color:var(--purple)}
+  .tabpane{display:none} .tabpane.on{display:block}
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;min-width:0}
+  .card-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .card-hd h2{font-size:14.5px;margin:0;display:flex;align-items:center;gap:8px}
+  .step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--purple);color:#fff;font-size:12px;font-weight:800}
+  .card-hd .sp{flex:1}
+  .count{background:var(--purple-soft);color:var(--purple-ink);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800}
+  label.f{display:block;font-size:11.5px;color:var(--muted);margin:0 0 3px;font-weight:600}
+  input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:9px;padding:7px 9px;width:100%}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--purple);outline-offset:-1px;border-color:transparent}
+  textarea{min-height:120px;font-family:ui-monospace,Consolas,monospace;font-size:12px;resize:vertical}
+  .grid-case{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+  .grid-case .wide{grid-column:span 2} @media(max-width:520px){ .grid-case .wide{grid-column:auto} }
+  .btn{cursor:pointer;border:1px solid transparent;border-radius:10px;padding:8px 13px;font:inherit;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
   .btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff}
-  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .btn-ghost{background:var(--card);border-color:var(--line);color:var(--ink)} .btn-ghost:hover{border-color:var(--purple)}
+  .btn-big{padding:12px 22px;font-size:15px;border-radius:12px}
+  .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .muted{color:var(--muted);font-size:12.5px}
-  .story{background:var(--purple-soft);border-radius:12px;padding:11px 13px;font-size:13px;margin-bottom:14px;color:var(--ink)}
-  @media (prefers-color-scheme: dark){ .story{background:#241a3d} }
-  .story b{color:var(--purple-deep)} @media (prefers-color-scheme: dark){ .story b{color:#d9c6f5} }
-  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-  @media(min-width:620px){ .kpis{grid-template-columns:repeat(4,1fr)} }
-  .kpi{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px}
-  .kpi .lab{font-size:11px;color:var(--muted)} .kpi .val{font-size:17px;font-weight:800;margin-top:3px}
-  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:12px;text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:10px;transition:.15s}
+  .drop.hot{border-color:var(--purple);background:var(--purple-soft);color:var(--purple-ink)}
+  .paste{display:none;margin-bottom:10px;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--band)}
+  .paste.on{display:block}
+  /* editable tables */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{width:100%;border-collapse:collapse}
+  table.edit th,table.edit td{padding:5px 5px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.edit th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;background:var(--band);white-space:nowrap;padding:8px 6px}
+  table.edit tr:last-child td{border-bottom:0}
+  table.edit input{padding:5px 7px;font-size:13px;border-radius:7px;min-width:70px}
+  table.edit input.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.edit td.idx{color:var(--muted);font-size:12px;text-align:center;width:28px}
+  table.edit tr.needs td{background:var(--amber-bg)}
+  .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:4px 6px;border-radius:6px} .del:hover{background:var(--red-bg);color:var(--red)}
+  .src{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 6px;white-space:nowrap}
+  .src-XML{background:var(--green-bg);color:var(--green)} .src-OCR{background:var(--amber-bg);color:var(--amber)}
+  .src-EXCEL,.src-MANUAL{background:var(--purple-soft);color:var(--purple-ink)}
+  .empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+  .runbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:var(--shadow);z-index:50;max-width:92vw;display:none}
+  .toast.on{display:block}
+  /* results */
+  .verdict{border-radius:var(--radius);padding:16px 18px;border:1px solid;display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .verdict .big{font-size:22px;font-weight:900;letter-spacing:-.01em}
+  .verdict .act{font-weight:700;font-size:13.5px}
+  .v-MATCH{background:var(--green-bg);border-color:var(--green-line);color:var(--green)}
+  .v-REVIEW{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+  .v-NOT_MATCH{background:var(--red-bg);border-color:var(--red-line);color:var(--red)}
+  .verdict .ic{font-size:30px;line-height:1}
+  .verdict .meta{color:var(--sub);font-size:12.5px;font-weight:500}
+  .verdict .tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+  @media(min-width:760px){ .kpis{grid-template-columns:repeat(4,1fr)} }
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .kpi .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .kpi .val{font-size:18px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+  .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap}
   .b-MATCH{background:var(--green-bg);color:var(--green)} .b-REVIEW{background:var(--amber-bg);color:var(--amber)} .b-NOT_MATCH{background:var(--red-bg);color:var(--red)}
-  table{width:100%;border-collapse:collapse;font-size:13.5px} .scroll{overflow-x:auto}
-  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
-  td.num{text-align:right;font-variant-numeric:tabular-nums}
-  .warns{margin:2px 0 0;padding:0;list-style:none}
-  .warns li{font-size:12px;color:var(--muted);padding:2px 0}
-  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
-  .d-HIGH{background:var(--red)} .d-MEDIUM{background:var(--amber)} .d-LOW{background:var(--green)}
-  .over{color:var(--red);font-weight:700} .under{color:var(--amber);font-weight:700} .ok{color:var(--green)}
-  .foot{margin-top:14px;font-size:12px;color:var(--muted)}
-  .pill{display:inline-block;background:var(--purple-soft);color:var(--purple-deep);border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:6px}
-  @media (prefers-color-scheme: dark){ .pill{color:#d9c6f5} }
-  details summary{cursor:pointer;color:var(--purple-deep);font-size:12.5px;font-weight:600}
-  @media (prefers-color-scheme: dark){ details summary{color:#c9b3ee} }
-  .sitefoot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
-  .sitefoot a{color:var(--purple-deep);font-weight:700;text-decoration:none} @media (prefers-color-scheme: dark){ .sitefoot a{color:#c9b3ee} }
-  /* ==== Form tự nhập nhanh (1↔1 · nhiều HĐ↔1 lệnh) ==== */
-  .quick{margin-top:14px;border:1px solid var(--purple-soft);border-radius:12px}
-  .quick > summary{padding:11px 13px;background:var(--purple-soft);border-radius:11px;color:var(--purple-deep);font-weight:800;font-size:13px}
-  @media (prefers-color-scheme: dark){ .quick > summary{color:#d9c6f5} }
-  .quick[open] > summary{border-radius:11px 11px 0 0}
-  .quick .qbody{padding:12px 13px}
-  .qmode{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
-  .qmode label{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink);margin:0}
-  .qmode input{width:auto}
-  .qsec{border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin-bottom:10px;background:var(--bg)}
-  .qsec-t{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:8px}
-  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .qgrid .qf-name{grid-column:1/-1}
-  .qgrid label{margin:0 0 3px}
-  .qinv{position:relative;border:1px dashed var(--line);border-radius:9px;padding:9px;margin-bottom:8px}
-  .qinv .q_i_del{position:absolute;top:7px;right:7px;width:22px;height:22px;border:0;border-radius:6px;background:var(--red-bg);color:var(--red);font-weight:800;cursor:pointer;line-height:1;font-size:14px;padding:0}
-  .qaddbtn{padding:7px 12px;font-size:13px}
-  .mode-1v1 .q_i_del,.mode-1v1 #q_add{display:none}
-  /* ==== Email cảnh báo gửi ĐVKD (xem trước) ==== */
-  .grid > .card{min-width:0} /* cho cột 1fr co đúng, không nở theo min-content thẻ email */
-  .emails{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
-  .emails > h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--purple-deep);margin:0 0 12px}
-  @media (prefers-color-scheme: dark){ .emails > h3{color:#c9b3ee} }
-  .email-card{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;background:var(--card);margin-bottom:14px;overflow:hidden}
-  .email-card.sev-0{border-left-color:var(--green)} .email-card.sev-1{border-left-color:var(--amber)} .email-card.sev-2{border-left-color:var(--red)}
-  .email-hd{background:var(--bg);border-bottom:1px solid var(--line);padding:8px 14px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .email-body{padding:14px 16px;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere}
-  .email-body p{margin:0 0 9px} .email-body ol{margin:0 0 9px;padding-left:22px} .email-body li{margin:2px 0}
-  .email-ai{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
-  .email-ai-hd{font-weight:800;margin-bottom:9px;font-size:13px}
-  .email-line{margin:7px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .act,.rsk{display:inline-block;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:800}
-  .act-0,.rsk-LOW{background:var(--green-bg);color:var(--green)}
-  .act-1,.rsk-MEDIUM{background:var(--amber-bg);color:var(--amber)}
-  .act-2,.rsk-HIGH{background:var(--red-bg);color:var(--red)}
-  .email-warns{margin:8px 0}
-  .email-warns .wlab{font-size:12px;color:var(--muted);margin-bottom:4px}
-  .cal{display:flex;gap:9px;align-items:flex-start;border-radius:9px;padding:8px 11px;margin:6px 0;font-size:13px;font-weight:600;border:1px solid transparent}
-  .cal .ic{font-size:14px;line-height:1.35;flex:0 0 auto}
-  .cal-LOW{background:var(--green-bg);color:var(--green);border-color:rgba(22,163,74,.28)}
-  .cal-MEDIUM{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.28)}
-  .cal-HIGH{background:var(--red-bg);color:var(--red);border-color:rgba(220,38,38,.3)}
-  .email-att a{color:var(--purple-deep);font-weight:700;text-decoration:none}
-  @media (prefers-color-scheme: dark){ .email-att a{color:#c9b3ee} }
+  .b-info{background:var(--purple-soft);color:var(--purple-ink)}
+  .cal{display:flex;gap:9px;align-items:flex-start;border-radius:10px;padding:8px 11px;margin:6px 0;font-size:13px;border:1px solid transparent}
+  .cal .ic{flex:0 0 auto;line-height:1.4}
+  .cal b{font-weight:800}
+  .cal-2{background:var(--red-bg);color:var(--red);border-color:var(--red-line)}
+  .cal-1{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line)}
+  .cal-0{background:var(--band);color:var(--sub);border-color:var(--line)}
+  .cal .msg{color:var(--ink);font-weight:500}
+  .grp{border:1px solid var(--line);border-left:5px solid var(--green);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--card)}
+  .grp.s1{border-left-color:var(--amber)} .grp.s2{border-left-color:var(--red)}
+  .grp-hd{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .grp-hd .nm{font-weight:800;font-size:14.5px}
+  .grp-hd .sub{color:var(--muted);font-size:12px}
+  .grp-hd .right{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px}
+  .amt-OVER{color:var(--red);font-weight:800} .amt-UNDER{color:var(--amber);font-weight:700} .amt-MATCH{color:var(--green);font-weight:700}
+  .pair{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+  .pair-hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--sub)}
+  .names{display:grid;grid-template-columns:1fr;gap:6px;margin:8px 0}
+  @media(min-width:760px){ .names{grid-template-columns:1fr 1fr} }
+  .nbox{background:var(--band);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .nbox .lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .nbox .raw{font-weight:700;font-size:13.5px;overflow-wrap:anywhere}
+  .nbox .ty{font-size:11.5px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .chip{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;font-family:ui-monospace,Consolas,monospace}
+  .c-common{background:var(--green-bg);color:var(--green)} .c-diff{background:var(--red-bg);color:var(--red);text-decoration:line-through} .c-extra{background:var(--amber-bg);color:var(--amber)}
+  .score{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0}
+  .bar{flex:1 1 180px;max-width:320px;height:10px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+  .bar .th{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.6}
+  .score .pct{font-weight:900;font-size:16px;font-variant-numeric:tabular-nums;min-width:48px}
+  .expl{font-size:13px;margin:4px 0 0}
+  details.more summary{cursor:pointer;color:var(--purple-ink);font-size:12px;font-weight:700;margin-top:6px}
+  table.mini{font-size:12px;margin-top:6px} table.mini th,table.mini td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
+  table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.mini th{color:var(--muted);font-weight:700;font-size:11px}
+  .section-t{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--purple-ink);font-weight:800;margin:16px 0 8px}
+  /* quick check */
+  .qc-grid{display:grid;grid-template-columns:1fr;gap:10px} @media(min-width:760px){ .qc-grid{grid-template-columns:1fr 1fr} }
+  .qc-ex{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .qc-ex button{font-size:11.5px}
+  .qc-res{margin-top:14px}
+  /* rules */
+  table.rules{font-size:13px} table.rules th,table.rules td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.rules th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--band);border:1px solid var(--line);padding:0 4px;border-radius:5px}
+  .email-wrap{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+  .email-wrap.on{display:block}
+  .email-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--band);border-bottom:1px solid var(--line);padding:8px 12px}
+  .email-bar .subj{font-size:12.5px;font-weight:700;overflow-wrap:anywhere;flex:1 1 280px}
+  .email-body{background:#fff;color:#1b1330;padding:16px}
+  .sitefoot{margin-top:20px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;font-size:12px;color:var(--muted)}
+  #printArea{display:none}
+  @media print{
+    @page{size:A4;margin:12mm}
+    body{background:#fff;color:#000;font-size:11.5px}
+    .wrap{display:none!important}
+    #printArea{display:block!important;color:#000}
+    #printArea h1{font-size:15px;text-align:center;margin:0 0 2px}
+    #printArea .ptop{display:flex;justify-content:space-between;font-size:10.5px;color:#444;margin-bottom:8px}
+    #printArea table{width:100%;border-collapse:collapse;margin:6px 0}
+    #printArea th,#printArea td{border:1px solid #999;padding:4px 5px;text-align:left;vertical-align:top;font-size:10.5px}
+    #printArea th{background:#eee}
+    #printArea td.num{text-align:right}
+    #printArea .pverdict{border:2px solid #000;padding:6px 10px;margin:8px 0;font-weight:800;font-size:13px}
+    #printArea .sign{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px;text-align:center}
+    #printArea .sign div{min-height:90px}
+    #printArea .pfoot{margin-top:10px;font-size:9.5px;color:#555}
+    #printArea h2{font-size:12px;margin:10px 0 2px}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="logo">B</div>
-    <div class="brand"><h1>BeneMatch</h1><p>Đối chiếu hóa đơn ↔ lệnh chuyển tiền · deterministic-first</p></div>
-    <span class="tag">Demo · TPBank</span>
+    <div class="brand"><h1>BeneMatch</h1><p>Kiểm tra người thụ hưởng &amp; chứng từ trước giải ngân</p></div>
+    <span class="tag" id="verTag">Engine v3 · Offline</span>
   </header>
 
-  <div class="demo-banner">
-    <span>⚠️</span>
-    <span>Đây là trang <b>DEMO</b> chạy hoàn toàn trong trình duyệt với <b>dữ liệu mẫu (synthetic)</b>. Vui lòng <b>KHÔNG nhập hóa đơn, số tài khoản hay dữ liệu khách hàng thật</b>.</span>
-  </div>
+  <div class="privacy"><span>🔒</span><span>Mọi xử lý chạy <b>ngay trên trình duyệt của máy này</b> — hóa đơn, lệnh chuyển tiền, thông tin khách hàng <b>không được gửi đi đâu</b> và không được lưu lại; đóng tab là xóa. Thư viện đọc Excel/PDF/ảnh chỉ được tải khi cần (không gửi file lên mạng).</span></div>
 
-  <section class="hero">
-    <h2>BeneMatch làm gì?</h2>
-    <p>Khi chi một lô nhiều hóa đơn, BeneMatch tự động <b>gộp theo người thụ hưởng</b> rồi đối chiếu với lệnh chuyển tiền để bắt bốn nhóm rủi ro: <b>chuyển sai người thụ hưởng</b> (khác pháp nhân), <b>lệch số tiền</b> (thừa/thiếu ngoài dung sai), <b>hóa đơn trùng</b> (trả hai lần), và <b>thiếu chứng từ</b>. Phần quyết định về tiền & trùng là <b>deterministic</b> (theo luật, không AI); chỉ khớp tên mới cần AI diễn giải cho số ít ca mơ hồ.</p>
-    <div class="legend">
-      <span class="lg"><span class="badge b-MATCH">MATCH</span> cho qua</span>
-      <span class="lg"><span class="badge b-REVIEW">REVIEW</span> cần kiểm tra</span>
-      <span class="lg"><span class="badge b-NOT_MATCH">NOT_MATCH</span> chặn lại</span>
+  <nav class="tabs" role="tablist">
+    <button class="on" data-tab="case">① Kiểm tra hồ sơ</button>
+    <button data-tab="quick">② Check nhanh tên</button>
+    <button data-tab="rules">③ Quy tắc &amp; hướng dẫn</button>
+  </nav>
+
+  <!-- ================== TAB 1: HỒ SƠ ================== -->
+  <section class="tabpane on" id="tab-case">
+    <div class="card">
+      <div class="card-hd">
+        <h2><span class="step">1</span> Thông tin hồ sơ giải ngân</h2><span class="sp"></span>
+        <select id="scnSel" style="width:auto;max-width:280px" aria-label="Nạp kịch bản mẫu"><option value="">▸ Nạp kịch bản mẫu (dữ liệu giả lập)…</option></select>
+        <button class="btn btn-ghost btn-sm" id="btnReset">↺ Hồ sơ mới</button>
+      </div>
+      <div class="grid-case">
+        <div><label class="f" for="c_id">Số GNOL / mã hồ sơ</label><input id="c_id" placeholder="GNOL…"></div>
+        <div class="wide"><label class="f" for="c_bname">Khách hàng vay (bên mua)</label><input id="c_bname" placeholder="CÔNG TY …"></div>
+        <div><label class="f" for="c_bmst">MST khách hàng vay</label><input id="c_bmst" inputmode="numeric" placeholder="10 hoặc 13 số"></div>
+        <div><label class="f" for="c_dvkd">ĐVKD</label><input id="c_dvkd" placeholder="TPBank …"></div>
+        <div><label class="f" for="c_date">Ngày giải ngân</label><input id="c_date" type="date"></div>
+        <div><label class="f" for="c_amt">Số tiền giải ngân (VND)</label><input id="c_amt" class="amt" inputmode="numeric" placeholder="không bắt buộc"></div>
+        <div><label class="f" for="c_checker">Cán bộ kiểm tra</label><input id="c_checker" placeholder="Họ tên / User ID"></div>
+        <div class="wide"><label class="f" for="c_purpose">Mục đích giải ngân</label><input id="c_purpose" placeholder="Thanh toán tiền hàng hóa theo hợp đồng…"></div>
+      </div>
+      <p class="muted" id="scnStory" style="margin:10px 0 0"></p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <h2><span class="step">2</span> Hóa đơn <span class="count" id="invCount">0</span></h2><span class="sp"></span>
+        <div class="toolbar">
+          <label class="btn btn-primary btn-sm" for="fInv">📂 Tải hóa đơn</label>
+          <input type="file" id="fInv" multiple accept=".xml,.pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.txt" hidden>
+          <button class="btn btn-ghost btn-sm" data-paste="inv">📋 Dán từ Excel</button>
+          <button class="btn btn-ghost btn-sm" id="addInv">＋ Thêm dòng</button>
+          <button class="btn btn-ghost btn-sm" id="tplInv">⬇ File mẫu</button>
+        </div>
+      </div>
+      <div class="drop" id="dropInv">Kéo-thả file vào đây · <b>XML hóa đơn điện tử</b> (chính xác nhất) · PDF · ảnh chụp/scan · Excel/CSV bảng kê — chọn được nhiều file cùng lúc</div>
+      <div class="paste" id="paste-inv">
+        <label class="f">Dán bảng kê hóa đơn (copy từ Excel, có hoặc không có dòng tiêu đề)</label>
+        <textarea id="pasteInvTxt" placeholder="Số hóa đơn	Ngày	Tên người bán	MST người bán	Tổng tiền thanh toán"></textarea>
+        <div class="toolbar" style="margin-top:8px"><button class="btn btn-primary btn-sm" data-paste-do="inv">Nhập vào bảng</button><button class="btn btn-ghost btn-sm" data-paste="inv">Đóng</button><span class="muted">Tự nhận cột theo tiêu đề tiếng Việt; dòng “Tổng cộng” được bỏ qua.</span></div>
+      </div>
+      <div class="tbl-wrap"><table class="edit" id="invTbl"></table></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <h2><span class="step">3</span> Lệnh chuyển tiền (UNC) <span class="count" id="trCount">0</span></h2><span class="sp"></span>
+        <div class="toolbar">
+          <label class="btn btn-primary btn-sm" for="fTr">📂 Tải Excel/CSV</label>
+          <input type="file" id="fTr" accept=".xlsx,.xls,.csv,.txt" hidden>
+          <button class="btn btn-ghost btn-sm" data-paste="tr">📋 Dán từ Excel</button>
+          <button class="btn btn-ghost btn-sm" id="addTr">＋ Thêm dòng</button>
+          <button class="btn btn-ghost btn-sm" id="tplTr">⬇ File mẫu</button>
+        </div>
+      </div>
+      <div class="paste" id="paste-tr">
+        <label class="f">Dán danh sách UNC (copy từ Excel)</label>
+        <textarea id="pasteTrTxt" placeholder="Tên người thụ hưởng	Số tài khoản	Ngân hàng	Số tiền	Nội dung"></textarea>
+        <div class="toolbar" style="margin-top:8px"><button class="btn btn-primary btn-sm" data-paste-do="tr">Nhập vào bảng</button><button class="btn btn-ghost btn-sm" data-paste="tr">Đóng</button><span class="muted">Nội dung có ghi số hóa đơn (vd “TT HD 101”) giúp ghép đúng bên bán.</span></div>
+      </div>
+      <div class="tbl-wrap"><table class="edit" id="trTbl"></table></div>
+    </div>
+
+    <div class="runbar">
+      <button class="btn btn-primary btn-big" id="btnRun">🔍 Kiểm tra hồ sơ</button>
+      <span class="muted" id="totals"></span>
+    </div>
+
+    <div id="result"></div>
+  </section>
+
+  <!-- ================== TAB 2: CHECK NHANH TÊN ================== -->
+  <section class="tabpane" id="tab-quick">
+    <div class="card">
+      <div class="card-hd"><h2>Check nhanh mức độ tương đồng 2 tên pháp nhân</h2></div>
+      <div class="qc-grid">
+        <div><label class="f" for="qInv">Tên bên bán trên HÓA ĐƠN</label><input id="qInv" placeholder="CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ HOÀNG GIA"></div>
+        <div><label class="f" for="qPay">Tên người thụ hưởng trên UNC</label><input id="qPay" placeholder="CTY TNHH TM DV HOANG GIA"></div>
+      </div>
+      <div class="qc-ex" id="qcEx"><span class="muted" style="align-self:center">Ví dụ:</span></div>
+      <div class="qc-res" id="qcRes"><p class="muted">Gõ 2 tên — kết quả cập nhật ngay.</p></div>
     </div>
   </section>
 
-  <div class="grid">
-    <!-- SCENARIOS -->
-    <section class="card">
-      <h2>Chọn tình huống demo</h2>
-      <div class="scn" id="scnList"></div>
-
-      <details class="quick" open>
-        <summary>✍️ Tự nhập nhanh — đối chiếu thử</summary>
-        <div class="qbody mode-1v1" id="qBody">
-          <div class="qmode">
-            <label><input type="radio" name="qmode" value="1v1" checked> 1 hóa đơn ↔ 1 lệnh</label>
-            <label><input type="radio" name="qmode" value="1vN"> Nhiều hóa đơn ↔ 1 lệnh</label>
-          </div>
-          <div class="qsec">
-            <div class="qsec-t">Lệnh chuyển tiền</div>
-            <div class="qgrid">
-              <div class="qf-name"><label>Tên người thụ hưởng</label><input id="q_t_name" placeholder="CÔNG TY TNHH ..."></div>
-              <div><label>Mã số thuế</label><input id="q_t_mst" inputmode="numeric" placeholder="0101234567"></div>
-              <div><label>Số tiền (VND)</label><input id="q_t_amt" inputmode="numeric" placeholder="0"></div>
-              <div class="qf-name"><label>Số tài khoản (tùy chọn)</label><input id="q_t_acc" inputmode="numeric" placeholder="0123456789"></div>
-            </div>
-          </div>
-          <div class="qsec">
-            <div class="qsec-t">Hóa đơn <span id="q_inv_hint" class="muted" style="font-weight:400;text-transform:none;letter-spacing:0"></span></div>
-            <div id="q_inv_list"></div>
-            <button type="button" class="btn btn-ghost qaddbtn" id="q_add">+ Thêm hóa đơn</button>
-          </div>
-          <div class="row">
-            <button type="button" class="btn btn-primary" id="q_run">Đối chiếu thử</button>
-            <button type="button" class="btn btn-ghost" id="q_sample">Điền mẫu</button>
-          </div>
-          <p class="foot">Chỉ dùng dữ liệu <b>mẫu</b>. Đối chiếu chạy tại chỗ trong trình duyệt — không gửi đi đâu.</p>
-        </div>
-      </details>
-
-      <details style="margin-top:14px">
-        <summary>Nâng cao — tự nhập dữ liệu mẫu (JSON/CSV)</summary>
-        <label>Hóa đơn (JSON — mô phỏng đã OCR)</label>
-        <textarea id="invoices"></textarea>
-        <label>Lệnh chuyển tiền (CSV)</label>
-        <textarea id="transfers"></textarea>
-        <div class="row">
-          <button class="btn btn-primary" id="run">Chạy đối chiếu</button>
-          <button class="btn btn-ghost" id="reset">Nạp lô tổng hợp</button>
-        </div>
-        <p class="foot">Chỉ dùng dữ liệu <b>mẫu</b>. Đối chiếu chạy tại chỗ trong trình duyệt — không gửi đi đâu.</p>
-      </details>
-    </section>
-
-    <!-- RESULT -->
-    <section class="card">
-      <h2>Kết quả đối chiếu</h2>
-      <div id="story"></div>
-      <div id="result"><p class="muted">Chọn một tình huống bên trái để xem BeneMatch xử lý.</p></div>
-    </section>
-  </div>
-
-  <p class="foot" style="text-align:center;margin-top:18px">
-    <span class="pill">RULE_ENGINE</span> Quyết định tổng tiền &amp; hóa đơn trùng là <b>deterministic</b> (không AI). Khớp tên đi qua workflow xác thực pháp nhân — AI chỉ diễn giải cảnh báo cho ~&lt;10% ca REVIEW mơ hồ.
-  </p>
+  <!-- ================== TAB 3: QUY TẮC ================== -->
+  <section class="tabpane" id="tab-rules">
+    <div class="card">
+      <div class="card-hd"><h2>Quy trình sử dụng</h2></div>
+      <ol style="margin:0;padding-left:20px">
+        <li><b>Thông tin hồ sơ</b>: nhập số GNOL, khách hàng vay + MST (để kiểm hóa đơn có xuất đúng cho KH vay không), ngày &amp; số tiền giải ngân (tùy chọn).</li>
+        <li><b>Hóa đơn</b>: ưu tiên kéo-thả <b>file XML hóa đơn điện tử</b> (đọc chính xác tên/MST/số tiền). PDF/ảnh được đọc tự động → dòng tô vàng, <b>phải đối chiếu bản gốc rồi tick “Đã đối chiếu”</b>. Có thể dán bảng kê từ Excel hoặc nhập tay.</li>
+        <li><b>Lệnh chuyển tiền</b>: dán danh sách UNC (tên người thụ hưởng, STK, ngân hàng, số tiền, nội dung). UNC không cần MST — hệ thống tự ghép với bên bán theo <b>tên</b> và <b>số hóa đơn trong nội dung</b>.</li>
+        <li>Bấm <b>Kiểm tra hồ sơ</b> → xem kết luận, xử lý từng cảnh báo → <b>In phiếu / Xuất Excel</b> lưu hồ sơ, <b>Email ĐVKD</b> nếu cần bổ sung.</li>
+      </ol>
+      <p class="muted" style="margin-top:10px">Kết luận hồ sơ = mức nặng nhất trong các cảnh báo: <span class="badge b-MATCH">KHỚP</span> cho qua · <span class="badge b-REVIEW">CẦN KIỂM TRA</span> kiểm soát, hoàn thiện hồ sơ trước khi chi · <span class="badge b-NOT_MATCH">KHÔNG KHỚP</span> dừng giải ngân. <b>Không có AI trên đường quyết định</b> — mọi kết luận theo luật cố định, tái lập được.</p>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h2>Luật khớp tên (xét từ trên xuống, trúng luật nào dừng ở luật đó)</h2></div>
+      <div class="tbl-wrap"><table class="rules" id="rulesName"></table></div>
+      <p class="muted" style="margin-top:8px">“Mức độ tương đồng %” là độ giống kỹ thuật sau chuẩn hóa (trọng số: chuỗi đầy đủ 15% · từ đầy đủ 15% · chuỗi tên lõi 25% · từ tên lõi 30% · độ bao phủ 15%) — <b>không phải xác suất cùng pháp nhân</b>. Kết luận do luật quyết định, không do con số %.</p>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h2>Danh mục cảnh báo hồ sơ</h2></div>
+      <div class="tbl-wrap"><table class="rules" id="rulesWarn"></table></div>
+    </div>
+  </section>
 
   <div class="sitefoot">
-    <span>BeneMatch — bản demo dữ liệu mẫu để giới thiệu &amp; lấy góp ý. Không dùng cho dữ liệu thật.</span>
-    <a id="feedback" href="#">✉︎ Gửi góp ý</a>
+    <span>BeneMatch <span id="engVer"></span> — công cụ hỗ trợ kiểm soát; kết luận cuối cùng thuộc cán bộ có thẩm quyền theo quy định giải ngân.</span>
+    <a id="feedback" href="#">✉︎ Góp ý</a>
   </div>
 </div>
 
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+
 <script>
-/* ====== RECON ENGINE (nạp từ gas/Recon.gs qua fe/build.mjs — nguồn logic duy nhất) ====== */
-/*__RECON_ENGINE__*/
-
-/* ====== Verify tên offline (deterministic) — bản FE của gasStubVerify_ ====== */
-function feVerify(pair){
-  var invN=reconNormalizeName(pair.invoice_beneficiary_name), payN=reconNormalizeName(pair.payment_beneficiary_name);
-  if(!invN||!payN) return {decision:'REVIEW',reason_codes:['INSUFFICIENT_DATA'],source:'STUB_FE'};
-  function fam(s){ if(/\bTNHH\b/.test(s))return'TNHH'; if(/\bCONG TY CO PHAN\b/.test(s))return'CO_PHAN'; if(/\bDOANH NGHIEP TU NHAN\b/.test(s))return'DNTN'; if(/\bHOP TAC XA\b/.test(s))return'HTX'; return'UNKNOWN'; }
-  var fi=fam(invN),fp=fam(payN);
-  if(fi!=='UNKNOWN'&&fp!=='UNKNOWN'&&fi!==fp) return {decision:'NOT_MATCH',reason_codes:['LEGAL_ENTITY_TYPE_CONFLICT'],source:'STUB_FE'};
-  if(invN===payN) return {decision:'MATCH',reason_codes:['NORMALIZED_NAME_EXACT_MATCH'],source:'STUB_FE'};
-  var a=reconExtractCoreName(invN).split(' ').filter(Boolean), b=reconExtractCoreName(payN).split(' ').filter(Boolean);
-  if(a.join(' ')===b.join(' ')) return {decision:'MATCH',reason_codes:['LEGAL_TYPE_AND_CORE_NAME_EXACT_MATCH'],source:'STUB_FE'};
-  var setA={},inter=0; a.forEach(function(t){setA[t]=1;}); b.forEach(function(t){if(setA[t])inter++;});
-  var uni=a.length+b.length-inter, sim=uni?inter/uni:1;
-  return sim>=0.6?{decision:'REVIEW',reason_codes:['NAME_SIMILAR_BUT_NOT_CONCLUSIVE'],source:'STUB_FE'}
-                :{decision:'NOT_MATCH',reason_codes:['LOW_NAME_SIMILARITY'],source:'STUB_FE'};
-}
-
-/* ====== Dữ liệu mẫu (nạp từ data/synthetic qua build) ====== */
-var SAMPLE_INVOICES = /*__SYNTHETIC_INVOICES__*/ [];
-var SAMPLE_TRANSFERS_CSV = /*__SYNTHETIC_TRANSFERS_CSV__*/ "";
-var CONFIG = /*__CONFIG__*/ {};
+/* ====== ENGINE (nạp từ src/engine/bm-engine.js qua fe/build.mjs — nguồn logic duy nhất) ====== */
+/*__BM_ENGINE__*/
+</script>
+<script>
+(function(){
+'use strict';
 var SCENARIOS = /*__SCENARIOS__*/ [];
-var FEEDBACK_EMAIL = "tuantt.stb@gmail.com"; // đổi sang email công việc nếu cần
+var CONFIG = /*__CONFIG__*/ {};
+var FEEDBACK_EMAIL = "tuantt.stb@gmail.com";
+var CDN = {
+  xlsx: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  pdfWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+  tesseract: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'
+};
 
-/* ==== Email cảnh báo gửi ĐVKD — cấu hình demo (synthetic) ==== */
-var DVKD_DEFAULT = "TPBank Tân Thuận – 239";
-var PURPOSE_DEFAULT = "Vay thanh toán tiền hàng hóa trả sau (Đã có hóa đơn).";
-var DEC_LABEL  = { MATCH:"KHỚP", REVIEW:"CẦN KIỂM TRA", NOT_MATCH:"KHÔNG KHỚP" };
-var ACT_LABEL  = { ALLOW:"Cho qua — tiếp tục giải ngân", WARN:"Kiểm soát & hoàn thiện hồ sơ trước khi chi", BLOCK:"Chặn — dừng giải ngân, chuyển kiểm tra" };
-var RISK_LABEL = { LOW:"Thấp", MEDIUM:"Trung bình", HIGH:"Cao" };
-var SEV_OF_DEC = { MATCH:0, REVIEW:1, NOT_MATCH:2 };
-var CUR_REQUEST = null; // metadata hồ sơ của kịch bản đang chọn (dvkd/purpose), null = tự nhập
+var DEC_LABEL = { MATCH:'KHỚP', REVIEW:'CẦN KIỂM TRA', NOT_MATCH:'KHÔNG KHỚP' };
+var NAME_LABEL = { MATCH:'Cùng pháp nhân', REVIEW:'Cần kiểm tra', NOT_MATCH:'Khác pháp nhân' };
+var ACT_LABEL = { ALLOW:'Cho qua — tiếp tục giải ngân', WARN:'Kiểm soát & hoàn thiện hồ sơ trước khi chi', BLOCK:'Chặn — dừng giải ngân, chuyển kiểm tra' };
+var RISK_LABEL = { LOW:'Thấp', MEDIUM:'Trung bình', HIGH:'Cao' };
+var AMT_LABEL = { MATCH:'Khớp tiền', OVER:'Thừa chi', UNDER:'Chi ít hơn hóa đơn', NOT_PAID:'Chưa có UNC', NO_INVOICE:'Không có hóa đơn' };
+var BY_LABEL = { NAME:'ghép theo tên', INVOICE_REF:'ghép theo số HĐ trong nội dung', MST:'ghép theo MST', NAME_NEAR:'ghép theo tên gần (khác loại hình)', NONE:'không ghép được' };
+var SRC_LABEL = { XML:'XML', OCR:'Tự đọc', EXCEL:'Excel', MANUAL:'Nhập tay' };
+var SEV_IC = ['ℹ️','⚠️','⛔'];
 
-var vnd = function(n){ return (Number(n)||0).toLocaleString('vi-VN'); };
 var $ = function(id){ return document.getElementById(id); };
-var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+var vnd = function(n){ return (Math.round(Number(n)||0)).toLocaleString('vi-VN'); };
+var digits = function(s){ return String(s==null?'':s).replace(/\D/g,''); };
 
-function riskBadge(r){ var m={HIGH:'b-NOT_MATCH',MEDIUM:'b-REVIEW',LOW:'b-MATCH'}; return '<span class="badge '+(m[r]||'b-REVIEW')+'" style="font-size:10.5px">'+r+'</span>'; }
+var state = { invoices: [], transfers: [], result: null, scenario: null };
+var rid = 0; function newId(p){ rid++; return p + rid; }
 
-function buildScnList(){
-  var full = { id:'lo-tong-hop', title:'Lô tổng hợp (nhiều nhóm)', risk:'HIGH',
-    story:'Một lô thực tế gồm nhiều người thụ hưởng với đủ loại tình huống trộn lẫn — BeneMatch xếp nhóm rủi ro cao lên trước để xử lý.' };
-  var items = SCENARIOS.concat([full]);
-  $('scnList').innerHTML = items.map(function(sc,i){
-    return '<button data-i="'+i+'"><div class="t">'+esc(sc.title)+' '+riskBadge(sc.risk)+'</div><div class="d">'+esc((sc.story||'').slice(0,80))+(sc.story&&sc.story.length>80?'…':'')+'</div></button>';
-  }).join('');
-  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){
-    b.addEventListener('click', function(){ selectScenario(items[+b.dataset.i], b); });
+function toast(msg, ms){ var t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); if(ms!==0) toast._t=setTimeout(function(){ t.classList.remove('on'); }, ms||3200); }
+
+/* ---------- lazy load thư viện ---------- */
+var loaded = {};
+function loadScript(url){
+  if(loaded[url]) return loaded[url];
+  loaded[url] = new Promise(function(res, rej){
+    var s=document.createElement('script'); s.src=url; s.async=true;
+    s.onload=function(){ res(); }; s.onerror=function(){ delete loaded[url]; rej(new Error('Không tải được thư viện (cần Internet lần đầu): '+url)); };
+    document.head.appendChild(s);
   });
-  return items;
+  return loaded[url];
 }
 
-function selectScenario(sc, btn){
-  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){ b.classList.remove('active'); });
-  if(btn) btn.classList.add('active');
-  CUR_REQUEST = sc.request || null;
-  var invoices = sc.invoices || SAMPLE_INVOICES;
-  var csv = sc.transfers_csv || SAMPLE_TRANSFERS_CSV;
-  $('invoices').value = JSON.stringify(invoices, null, 2);
-  $('transfers').value = csv.trim();
-  $('story').innerHTML = sc.story ? '<div class="story"><b>'+esc(sc.title)+'.</b> '+esc(sc.story)+'</div>' : '';
-  runOffline();
-}
-
-/* Sinh chuỗi số deterministic từ seed (để GNOL/số khoản vay ổn định theo nhóm). */
-function bmHash(s){ var h=5381; s=String(s==null?'':s); for(var i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return h>>>0; }
-function bmDigits(seed, len){ var out='', x=seed>>>0; while(out.length<len){ x=(x*1103515245+12345)>>>0; out+=String(x%10); } return out.slice(0,len); }
-
-/* Metadata hồ sơ giải ngân (synthetic) cho 1 nhóm người thụ hưởng. */
-function genRequestMeta(g, batchReq){
-  var dvkd = (batchReq && batchReq.dvkd) || DVKD_DEFAULT;
-  var purpose = (batchReq && batchReq.purpose) || PURPOSE_DEFAULT;
-  var bm = dvkd.match(/(\d{2,4})\s*$/); var branch = bm ? bm[1] : '239';
-  var seed = bmHash(g.group_key);
-  return {
-    dvkd: dvkd, purpose: purpose,
-    gnol: 'GNOL' + bmDigits(seed, 17),
-    loan_no: branch + 'M9PA' + bmDigits(bmHash(g.group_key + '|L'), 9),
-    company: g.beneficiary_display,
-    amount: g.sum_transfers || g.sum_invoices,
-  };
-}
-
-/* Render các email cảnh báo (1 email / mỗi nhóm người thụ hưởng), xếp chồng. */
-function renderEmails(res, batchReq){
-  var cards = res.groups.map(function(g){
-    var meta = genRequestMeta(g, batchReq);
-    var sev = SEV_OF_DEC[g.decision] || 0;
-    var warnHtml;
-    if(g.warnings.length){
-      warnHtml = g.warnings.map(function(w){
-        var ic = w.risk==='HIGH' ? '⛔' : (w.risk==='MEDIUM' ? '⚠️' : '●');
-        return '<div class="cal cal-'+w.risk+'"><span class="ic">'+ic+'</span><span>'+esc(w.message)+'</span></div>';
-      }).join('');
-    } else {
-      warnHtml = '<div class="cal cal-LOW"><span class="ic">✓</span><span>Không phát hiện bất thường — đề nghị cho qua theo quy định GNOL.</span></div>';
-    }
-    return '<div class="email-card sev-'+sev+'">'
-      + '<div class="email-hd">📧 Email cảnh báo — gửi ĐVKD</div>'
-      + '<div class="email-body">'
-      +   '<p>Kính gửi <b>'+esc(meta.dvkd)+'</b>,</p>'
-      +   '<p>Hệ thống DCB tiếp nhận và xử lý yêu cầu giải ngân số <b>'+esc(meta.gnol)+'</b> của công ty <b>'+esc(meta.company)+'</b>.</p>'
-      +   '<p><b>Thông tin chi tiết:</b></p>'
-      +   '<ol><li>Số tiền đề nghị giải ngân: <b>'+vnd(meta.amount)+' VND</b></li>'
-      +     '<li>Mục đích giải ngân: '+esc(meta.purpose)+'</li>'
-      +     '<li>Số khoản vay '+esc(meta.loan_no)+'</li></ol>'
-      +   '<p>ĐVKD thực hiện việc kiểm tra và hoàn thiện hồ sơ giải ngân theo quy định Giải Ngân Online dành cho KHDN.</p>'
-      +   '<div class="email-ai">'
-      +     '<div class="email-ai-hd">Kiểm tra thông tin thụ hưởng tự động bằng AI</div>'
-      +     '<div class="email-line">Kết quả: <span class="badge b-'+g.decision+'">'+(DEC_LABEL[g.decision]||g.decision)+'</span></div>'
-      +     '<div class="email-line">Hành động đề xuất: <span class="act act-'+sev+'">'+esc(ACT_LABEL[g.action]||g.action)+'</span></div>'
-      +     '<div class="email-warns"><div class="wlab">Chi tiết cảnh báo:</div>'+warnHtml+'</div>'
-      +     '<div class="email-line">Mức độ rủi ro: <span class="rsk rsk-'+g.risk_level+'">'+(RISK_LABEL[g.risk_level]||g.risk_level)+'</span></div>'
-      +   '</div>'
-      +   '<p class="email-att">Danh mục Hồ sơ đính kèm: <a href="#" onclick="return false">Tại đây</a></p>'
-      +   '<p>Trân trọng cảm ơn!</p>'
-      + '</div></div>';
-  }).join('');
-  return '<div class="emails"><h3>📧 Email cảnh báo gửi ĐVKD (xem trước · '+res.groups.length+' email)</h3>'+cards+'</div>';
-}
-
-function render(res){
-  var s = res.summary;
-  var diffCls = s.grand_diff>0?'over':(s.grand_diff<0?'under':'ok');
-  var html = '<div class="kpis">'
-    + kpi('Σ Hóa đơn', vnd(s.grand_total_invoices)+' đ')
-    + kpi('Σ Lệnh CT', vnd(s.grand_total_transfers)+' đ')
-    + kpi('Chênh lệch', '<span class="'+diffCls+'">'+(s.grand_diff>0?'+':'')+vnd(s.grand_diff)+' đ</span>')
-    + kpi('Quyết định lô', '<span class="badge b-'+s.decision+'">'+s.decision+'</span>')
-    + '</div>';
-  html += '<div class="scroll"><table><thead><tr><th>Người thụ hưởng</th><th>Nhóm</th><th class="num">Σ HĐ</th><th class="num">Σ CT</th><th class="num">Lệch</th><th>Kết luận</th></tr></thead><tbody>';
-  res.groups.forEach(function(g){
-    var dcls = g.diff>0?'over':(g.diff<0?'under':'ok');
-    html += '<tr><td>'+esc(g.beneficiary_display)+'<div class="muted">'+g.invoices.length+' HĐ · '+g.transfers.length+' CT</div>'
-      + (g.warnings.length?'<ul class="warns">'+g.warnings.map(function(w){return '<li><span class="dot d-'+w.risk+'"></span>'+esc(w.message)+'</li>';}).join('')+'</ul>':'')
-      + '</td>'
-      + '<td>'+g.key_type+'<div class="muted">'+esc(g.group_key)+'</div></td>'
-      + '<td class="num">'+vnd(g.sum_invoices)+'</td>'
-      + '<td class="num">'+vnd(g.sum_transfers)+'</td>'
-      + '<td class="num '+dcls+'">'+(g.diff>0?'+':'')+vnd(g.diff)+'</td>'
-      + '<td><span class="badge b-'+g.decision+'">'+g.decision+'</span></td></tr>';
+/* ================= TABS ================= */
+Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
+  b.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.toggle('on', x===b); });
+    Array.prototype.forEach.call(document.querySelectorAll('.tabpane'), function(p){ p.classList.toggle('on', p.id==='tab-'+b.dataset.tab); });
   });
-  html += '</tbody></table></div>';
-  html += '<p class="foot">Nguồn khớp tên: <b>'+res.audit.name_verify_source+'</b> · '+s.warning_count+' cảnh báo · lô <code>'+esc(res.batch_id)+'</code>.'
-    + ' <details><summary>Xem JSON kết quả</summary><textarea style="margin-top:8px" readonly>'+esc(JSON.stringify(res,null,2))+'</textarea></details></p>';
-  html += renderEmails(res, CUR_REQUEST);
-  $('result').innerHTML = html;
+});
+
+/* ================= Ô SỐ TIỀN (dấu chấm nghìn) ================= */
+function fmtAmtInput(inp){
+  var start = inp.selectionStart, before = inp.value.slice(0, start).replace(/\D/g,'').length;
+  var d = digits(inp.value); var f = d ? Number(d).toLocaleString('vi-VN') : '';
+  inp.value = f;
+  var pos=0, cnt=0; while(pos<f.length && cnt<before){ if(/\d/.test(f.charAt(pos))) cnt++; pos++; }
+  try{ inp.setSelectionRange(pos,pos); }catch(e){}
 }
+document.addEventListener('input', function(e){ if(e.target.classList && e.target.classList.contains('amt')) fmtAmtInput(e.target); });
+
+/* ================= BẢNG HÓA ĐƠN ================= */
+var INV_COLS = [
+  { k:'invoice_no', t:'Số HĐ', w:90 }, { k:'invoice_series', t:'Ký hiệu', w:84 }, { k:'invoice_date', t:'Ngày HĐ', w:130, type:'date' },
+  { k:'seller_name', t:'Tên bên bán (người bán)', w:280 }, { k:'seller_mst', t:'MST bên bán', w:120, num:1 },
+  { k:'buyer_mst', t:'MST người mua', w:120, num:1 }, { k:'amount_total', t:'Tổng tiền thanh toán', w:140, amt:1 }, { k:'seller_account', t:'STK bên bán', w:120, num:1 }
+];
+var TR_COLS = [
+  { k:'beneficiary_name', t:'Tên người thụ hưởng', w:280 }, { k:'account_number', t:'Số tài khoản', w:130, num:1 },
+  { k:'bank', t:'Ngân hàng', w:110 }, { k:'amount', t:'Số tiền', w:140, amt:1 }, { k:'content', t:'Nội dung chuyển tiền', w:220 }
+];
+
+function cellInput(row, c, kind){
+  var v = row[c.k]; if(c.amt) v = v ? vnd(v) : '';
+  return '<input data-kind="'+kind+'" data-id="'+row.row_id+'" data-k="'+c.k+'" style="min-width:'+c.w+'px"'
+    + (c.type==='date'?' type="date"':'') + (c.amt?' class="amt num" inputmode="numeric"':'') + (c.num&&!c.amt?' inputmode="numeric"':'')
+    + ' value="'+esc(v==null?'':v)+'">';
+}
+function renderInv(){
+  var rows = state.invoices;
+  $('invCount').textContent = rows.length;
+  var h = '<thead><tr><th>#</th><th>Nguồn</th>' + INV_COLS.map(function(c){ return '<th>'+c.t+'</th>'; }).join('') + '<th>Đã đối chiếu</th><th></th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr><td colspan="'+(INV_COLS.length+4)+'" class="empty">Chưa có hóa đơn — tải file XML/PDF/ảnh/Excel, dán từ Excel hoặc thêm dòng.</td></tr>';
+  rows.forEach(function(r, i){
+    var needs = r.source==='OCR' && !r.confirmed;
+    h += '<tr class="'+(needs?'needs':'')+'"><td class="idx">'+(i+1)+'</td><td><span class="src src-'+r.source+'" title="'+esc(r.source_file||'')+'">'+(SRC_LABEL[r.source]||r.source)+(r.source_detail?' · '+esc(r.source_detail):'')+'</span></td>'
+      + INV_COLS.map(function(c){ return '<td>'+cellInput(r, c, 'inv')+'</td>'; }).join('')
+      + '<td style="text-align:center">'+(r.source==='OCR'?'<input type="checkbox" style="width:auto" data-kind="inv" data-id="'+r.row_id+'" data-k="confirmed"'+(r.confirmed?' checked':'')+' title="Đã đối chiếu với bản gốc">':'<span class="muted">—</span>')+'</td>'
+      + '<td><button class="del" data-del="inv" data-id="'+r.row_id+'" title="Xóa dòng">×</button></td></tr>';
+  });
+  $('invTbl').innerHTML = h + '</tbody>';
+  updateTotals();
+}
+function renderTr(){
+  var rows = state.transfers;
+  $('trCount').textContent = rows.length;
+  var h = '<thead><tr><th>#</th>' + TR_COLS.map(function(c){ return '<th>'+c.t+'</th>'; }).join('') + '<th></th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr><td colspan="'+(TR_COLS.length+2)+'" class="empty">Chưa có lệnh chuyển tiền — dán từ Excel, tải file hoặc thêm dòng.</td></tr>';
+  rows.forEach(function(r, i){
+    h += '<tr><td class="idx">'+(i+1)+'</td>' + TR_COLS.map(function(c){ return '<td>'+cellInput(r, c, 'tr')+'</td>'; }).join('')
+      + '<td><button class="del" data-del="tr" data-id="'+r.row_id+'" title="Xóa dòng">×</button></td></tr>';
+  });
+  $('trTbl').innerHTML = h + '</tbody>';
+  updateTotals();
+}
+function findRow(kind, id){ var arr = kind==='inv'?state.invoices:state.transfers; for(var i=0;i<arr.length;i++) if(arr[i].row_id===id) return arr[i]; return null; }
+function onCell(e){
+  var t = e.target; if(!t.dataset || !t.dataset.kind) return;
+  var row = findRow(t.dataset.kind, t.dataset.id); if(!row) return;
+  var k = t.dataset.k;
+  if(t.type==='checkbox'){ row[k] = t.checked; renderInv(); return; }
+  if(k==='amount_total' || k==='amount') row[k] = BM.toAmount(t.value);
+  else row[k] = t.value;
+  updateTotals();
+}
+document.addEventListener('input', onCell);
+document.addEventListener('change', onCell);
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('[data-del]'); if(!b) return;
+  var kind=b.dataset.del, id=b.dataset.id;
+  if(kind==='inv') state.invoices = state.invoices.filter(function(r){ return r.row_id!==id; });
+  else state.transfers = state.transfers.filter(function(r){ return r.row_id!==id; });
+  kind==='inv'?renderInv():renderTr();
+});
+function blankInv(o){ o=o||{}; return { row_id:newId('HD'), source:o.source||'MANUAL', source_detail:o.source_detail||'', source_file:o.source_file||'', ocr_confidence:o.ocr_confidence!=null?o.ocr_confidence:null, confirmed:!!o.confirmed,
+  invoice_no:o.invoice_no||'', invoice_series:o.invoice_series||'', invoice_date:BM.toIsoDate(o.invoice_date)||'', seller_name:o.seller_name||'', seller_mst:digits(o.seller_mst),
+  buyer_name:o.buyer_name||'', buyer_mst:digits(o.buyer_mst), amount_total:BM.toAmount(o.amount_total), seller_account:o.seller_account||'' }; }
+function blankTr(o){ o=o||{}; return { row_id:newId('UNC'), beneficiary_name:o.beneficiary_name||'', account_number:String(o.account_number||'').replace(/\s/g,''), bank:o.bank||'', amount:BM.toAmount(o.amount), content:o.content||'' }; }
+$('addInv').addEventListener('click', function(){ state.invoices.push(blankInv()); renderInv(); });
+$('addTr').addEventListener('click', function(){ state.transfers.push(blankTr()); renderTr(); });
+
+function updateTotals(){
+  var si = state.invoices.reduce(function(a,x){ return a+(x.amount_total||0); },0), st = state.transfers.reduce(function(a,x){ return a+(x.amount||0); },0);
+  $('totals').innerHTML = 'Σ hóa đơn <b>'+vnd(si)+' đ</b> · Σ UNC <b>'+vnd(st)+' đ</b>' + (state.result ? ' · <span style="color:var(--amber)">dữ liệu đã đổi — bấm Kiểm tra lại</span>' : '');
+}
+
+/* ================= DÁN TỪ EXCEL ================= */
+Array.prototype.forEach.call(document.querySelectorAll('[data-paste]'), function(b){
+  b.addEventListener('click', function(){ $('paste-'+b.dataset.paste).classList.toggle('on'); var ta=$('paste-'+b.dataset.paste).querySelector('textarea'); if($('paste-'+b.dataset.paste).classList.contains('on')) ta.focus(); });
+});
+Array.prototype.forEach.call(document.querySelectorAll('[data-paste-do]'), function(b){
+  b.addEventListener('click', function(){
+    var kind=b.dataset.pasteDo, ta = kind==='inv'?$('pasteInvTxt'):$('pasteTrTxt');
+    var n = importRows(BM.io.parseDelimited(ta.value), kind==='inv'?'invoice':'transfer', 'EXCEL', 'dán');
+    if(n){ ta.value=''; $('paste-'+kind).classList.remove('on'); }
+  });
+});
+function importRows(rows, kind, source, from){
+  var r = BM.io.rowsToRecords(rows, kind);
+  if(!r.records.length){ toast('Không đọc được dòng dữ liệu nào — kiểm tra lại bảng.'); return 0; }
+  if(kind==='invoice'){ r.records.forEach(function(x){ x.source=source; state.invoices.push(blankInv(x)); }); renderInv(); }
+  else { r.records.forEach(function(x){ state.transfers.push(blankTr(x)); }); renderTr(); }
+  toast('Đã nhập '+r.records.length+' dòng từ '+from+(r.header_found?' (nhận cột theo tiêu đề)':' (không thấy tiêu đề — đọc theo thứ tự cột mặc định, vui lòng rà lại)'), 4500);
+  return r.records.length;
+}
+
+/* ================= FILE: XML / PDF / ẢNH / EXCEL ================= */
+$('fInv').addEventListener('change', function(e){ handleInvFiles(e.target.files); e.target.value=''; });
+$('fTr').addEventListener('change', function(e){ handleTrFile(e.target.files[0]); e.target.value=''; });
+var drop = $('dropInv');
+['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('hot'); }); });
+['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('hot'); }); });
+drop.addEventListener('drop', function(e){ handleInvFiles(e.dataTransfer.files); });
+
+function extOf(f){ var m = /\.([a-z0-9]+)$/i.exec(f.name||''); return m ? m[1].toLowerCase() : ''; }
+function readText(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=rej; r.readAsText(f,'utf-8'); }); }
+function readBuf(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=rej; r.readAsArrayBuffer(f); }); }
+
+async function handleInvFiles(files){
+  files = Array.prototype.slice.call(files||[]);
+  var ok=0, fail=[];
+  for(var i=0;i<files.length;i++){
+    var f=files[i], ext=extOf(f);
+    toast('Đang đọc '+(i+1)+'/'+files.length+': '+f.name+' …', 0);
+    try{
+      if(ext==='xml'){ var x = parseInvoiceXml(await readText(f)); x.source='XML'; x.source_file=f.name; fillBorrower(x); state.invoices.push(blankInv(x)); ok++; }
+      else if(ext==='pdf'){ state.invoices.push(blankInv(await readPdfInvoice(f))); ok++; }
+      else if(/^(png|jpe?g|webp|bmp)$/.test(ext)){ state.invoices.push(blankInv(await ocrImageInvoice(f, 'ảnh'))); ok++; }
+      else if(/^(xlsx|xls|csv|txt)$/.test(ext)){ var rows = await readSheetRows(f); ok += importRows(rows, 'invoice', 'EXCEL', f.name) ? 1 : 0; continue; }
+      else fail.push(f.name+' (định dạng chưa hỗ trợ)');
+    }catch(err){ fail.push(f.name+' — '+(err && err.message || err)); }
+    renderInv();
+  }
+  renderInv();
+  toast('Đã đọc '+ok+'/'+files.length+' file'+(fail.length?' · Lỗi: '+fail.join('; '):''), fail.length?9000:3500);
+}
+/* Ô KH vay còn trống → lấy từ thông tin bên mua trên hóa đơn XML (cán bộ vẫn rà lại). */
+function fillBorrower(x){
+  if(!$('c_bname').value.trim() && x.buyer_name) $('c_bname').value = x.buyer_name;
+  if(!$('c_bmst').value.trim() && x.buyer_mst) $('c_bmst').value = digits(x.buyer_mst);
+}
+async function handleTrFile(f){
+  if(!f) return;
+  try{ importRows(await readSheetRows(f), 'transfer', 'EXCEL', f.name); }
+  catch(err){ toast('Lỗi đọc '+f.name+': '+(err && err.message || err), 8000); }
+}
+async function readSheetRows(f){
+  var ext = extOf(f);
+  if(ext==='csv' || ext==='txt') return BM.io.parseDelimited(await readText(f));
+  await loadScript(CDN.xlsx);
+  var wb = XLSX.read(await readBuf(f), { type:'array', cellDates:true });
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws, { header:1, raw:false, dateNF:'yyyy-mm-dd', defval:'' });
+}
+
+/* XML hóa đơn điện tử — chuẩn TT78/ND123 (HDon/DLHDon) + dự phòng vài định dạng cũ. */
+function parseInvoiceXml(text){
+  var doc = new DOMParser().parseFromString(text, 'application/xml');
+  if(doc.getElementsByTagName('parsererror').length) throw new Error('XML không hợp lệ');
+  function all(ctx, name){ var out=[], els=(ctx||doc).getElementsByTagName('*'); for(var i=0;i<els.length;i++) if(els[i].localName===name) out.push(els[i]); return out; }
+  function first(ctx, names){ for(var i=0;i<names.length;i++){ var e=all(ctx, names[i]); if(e.length) return e[0]; } return null; }
+  function txt(ctx, names){ var e=first(ctx, names); return e ? String(e.textContent||'').trim() : ''; }
+  var nban = first(doc, ['NBan']), nmua = first(doc, ['NMua']), ttc = first(doc, ['TTChung']), tto = first(doc, ['TToan']);
+  var o;
+  if(nban){
+    var mau = ttc ? txt(ttc, ['KHMSHDon']) : '', kh = ttc ? txt(ttc, ['KHHDon']) : '';
+    o = { invoice_no: ttc ? txt(ttc, ['SHDon']) : txt(doc,['SHDon']), invoice_series: (mau+kh) || kh, invoice_date: ttc ? txt(ttc, ['NLap']) : txt(doc,['NLap']),
+      seller_name: txt(nban, ['Ten']), seller_mst: txt(nban, ['MST']), seller_account: txt(nban, ['STKNHang']),
+      buyer_name: nmua ? txt(nmua, ['Ten']) : '', buyer_mst: nmua ? txt(nmua, ['MST']) : '',
+      amount_total: tto ? txt(tto, ['TgTTTBSo']) : txt(doc, ['TgTTTBSo']) };
+  } else {
+    o = { invoice_no: txt(doc, ['InvoiceNo','InvNo','InvoiceNumber','SoHoaDon']), invoice_series: txt(doc, ['InvoiceSeries','Serial','KyHieu','InvSeries']),
+      invoice_date: txt(doc, ['ArisingDate','InvoiceDate','IssuedDate','NgayHoaDon']),
+      seller_name: txt(doc, ['SellerLegalName','ComName','SellerName','TenNguoiBan']), seller_mst: txt(doc, ['SellerTaxCode','ComTaxCode','MSTNguoiBan']),
+      seller_account: txt(doc, ['SellerBankAccount','ComBankNo']), buyer_name: txt(doc, ['BuyerLegalName','CusName','BuyerName']), buyer_mst: txt(doc, ['BuyerTaxCode','CusTaxCode']),
+      amount_total: txt(doc, ['TotalAmountWithVAT','TotalAmount','TotalPayment','Amount','TongTienThanhToan']) };
+  }
+  if(!o.seller_name && !o.seller_mst) throw new Error('không tìm thấy thông tin người bán trong XML');
+  return o;
+}
+
+async function readPdfInvoice(f){
+  await loadScript(CDN.pdf);
+  var lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = CDN.pdfWorker;
+  var pdf = await lib.getDocument({ data: new Uint8Array(await readBuf(f)) }).promise;
+  var text = '';
+  for(var p=1; p<=Math.min(pdf.numPages, 3); p++){
+    var page = await pdf.getPage(p), tc = await page.getTextContent(), lastY=null;
+    tc.items.forEach(function(it){ var y = it.transform ? Math.round(it.transform[5]) : null; if(lastY!==null && y!==null && Math.abs(y-lastY)>3) text+='\n'; else if(text && !/\s$/.test(text)) text+=' '; text+=it.str; lastY=y; });
+    text += '\n';
+  }
+  if(text.replace(/\s/g,'').length < 60){                      // PDF scan → OCR trang 1
+    var pg = await pdf.getPage(1), vp = pg.getViewport({ scale: 2.2 }), cv = document.createElement('canvas');
+    cv.width=vp.width; cv.height=vp.height; await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    return ocrImageInvoice(cv, 'PDF scan', f.name);
+  }
+  var x = BM.io.parseInvoiceText(text);
+  x.source='OCR'; x.source_detail='PDF'; x.source_file=f.name; x.ocr_confidence = x.missing.length ? 0.6 : 0.9;
+  return x;
+}
+async function ocrImageInvoice(img, detail, fname){
+  await loadScript(CDN.tesseract);
+  toast('Đang nhận dạng chữ (OCR tiếng Việt) — lần đầu tải dữ liệu ngôn ngữ ~10MB…', 0);
+  var worker = await Tesseract.createWorker('vie');
+  try{
+    var r = await worker.recognize(img);
+    var x = BM.io.parseInvoiceText(r.data.text);
+    x.source='OCR'; x.source_detail=detail; x.source_file=fname || img.name || ''; x.ocr_confidence = Math.max(0, Math.min(1, (r.data.confidence||0)/100));
+    return x;
+  } finally { await worker.terminate(); }
+}
+
+/* ================= FILE MẪU ================= */
+function downloadBlob(name, content, type){
+  var b = content instanceof Blob ? content : new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+  var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function csvLine(arr){ return arr.map(function(v){ v=String(v==null?'':v); return /[",\n;]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }).join(','); }
+$('tplInv').addEventListener('click', function(){
+  downloadBlob('BeneMatch_mau_bang_ke_hoa_don.csv', '﻿'+[
+    csvLine(['Số hóa đơn','Ký hiệu','Ngày hóa đơn','Tên người bán','MST người bán','MST người mua','Tổng tiền thanh toán','STK người bán']),
+    csvLine(['0000101','1C26TAA','03/09/2026','CÔNG TY TNHH ABC VIỆT NAM','0101234565','0310000017','100000000','0123456789'])
+  ].join('\r\n'), 'text/csv;charset=utf-8');
+});
+$('tplTr').addEventListener('click', function(){
+  downloadBlob('BeneMatch_mau_UNC.csv', '﻿'+[
+    csvLine(['Tên người thụ hưởng','Số tài khoản','Ngân hàng','Số tiền','Nội dung']),
+    csvLine(['CTY TNHH ABC VN','0123456789','Vietcombank','100000000','TT HD 101'])
+  ].join('\r\n'), 'text/csv;charset=utf-8');
+});
+
+/* ================= HỒ SƠ ================= */
+var CASE_FIELDS = { case_id:'c_id', borrower_name:'c_bname', borrower_mst:'c_bmst', dvkd:'c_dvkd', disbursement_date:'c_date', disbursement_amount:'c_amt', checker:'c_checker', purpose:'c_purpose' };
+function readCase(){ var o={}; for(var k in CASE_FIELDS){ var v=$(CASE_FIELDS[k]).value.trim(); o[k] = k==='disbursement_amount' ? BM.toAmount(v) : (k==='borrower_mst'?digits(v):v); } return o; }
+function writeCase(o){ o=o||{}; for(var k in CASE_FIELDS){ var v=o[k]; if(k==='disbursement_amount') v = v ? vnd(v) : ''; if(k==='disbursement_date') v = BM.toIsoDate(v); $(CASE_FIELDS[k]).value = v==null?'':v; } }
+function resetAll(){ state.invoices=[]; state.transfers=[]; state.result=null; state.scenario=null; writeCase({}); $('c_date').value = new Date().toISOString().slice(0,10); $('scnStory').textContent=''; $('scnSel').value=''; $('result').innerHTML=''; renderInv(); renderTr(); }
+$('btnReset').addEventListener('click', function(){ if(!state.invoices.length && !state.transfers.length || confirmReset()) resetAll(); });
+function confirmReset(){ return window.confirm ? window.confirm('Xóa toàn bộ dữ liệu hồ sơ đang nhập?') : true; }
+
+SCENARIOS.forEach(function(s, i){ var o=document.createElement('option'); o.value=i; o.textContent=(i+1)+'. '+s.title+' → '+DEC_LABEL[s.expect]; $('scnSel').appendChild(o); });
+$('scnSel').addEventListener('change', function(){
+  var s = SCENARIOS[this.value]; if(!s) return;
+  state.scenario = s; writeCase(s.case);
+  state.invoices = (s.invoices||[]).map(blankInv); state.transfers = (s.transfers||[]).map(blankTr);
+  $('scnStory').innerHTML = '<b>Kịch bản mẫu:</b> '+esc(s.story)+' <i>(dữ liệu giả lập)</i>';
+  renderInv(); renderTr(); run();
+});
+
+/* ================= CHẠY & HIỂN THỊ ================= */
+$('btnRun').addEventListener('click', run);
+function run(){
+  if(!state.invoices.length && !state.transfers.length){ toast('Chưa có hóa đơn hoặc UNC để kiểm tra.'); return; }
+  // Mã dòng theo đúng số thứ tự trên bảng (HĐ 1.., UNC 1..) để cảnh báo/phiếu dễ đối chiếu.
+  var input = { case: readCase(),
+    invoices: state.invoices.map(function(r, i){ return assign({}, r, { row_id: 'HĐ#'+(i+1) }); }),
+    transfers: state.transfers.map(function(r, i){ return assign({}, r, { row_id: '#'+(i+1) }); }) };
+  state.result = BM.reconcileCase(input, CONFIG);
+  renderResult(state.result);
+  updateTotals(); $('totals').innerHTML = $('totals').innerHTML.replace(/ · <span[^]*$/, '');
+  $('result').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function scoreColor(d){ return d==='MATCH'?'var(--green)':d==='REVIEW'?'var(--amber)':'var(--red)'; }
+function nameCheckHtml(v, opts){
+  opts = opts||{};
+  if(!v) return '<p class="muted">Không có dữ liệu check tên.</p>';
+  var f = v.features, th = Math.round((CONFIG.name && CONFIG.name.review ? CONFIG.name.review.name_similarity : 0.82)*100);
+  var chips = function(list, cls){ return list.map(function(t){ return '<span class="chip '+cls+'">'+esc(t)+'</span>'; }).join(''); };
+  var inv = v.invoice, pay = v.payment;
+  var h = '<div class="names">'
+    + '<div class="nbox"><div class="lab">'+(opts.invLabel||'Tên trên hóa đơn')+'</div><div class="raw">'+esc(inv.raw||'—')+'</div>'
+    +   '<div class="ty">Loại hình: <b>'+esc(inv.legal_label)+'</b>'+(inv.branch.is_branch?' · <b>Chi nhánh</b>'+(inv.branch.label?' '+esc(inv.branch.label):''):'')+(inv.translated?' · tên tiếng Anh':'')+'</div>'
+    +   '<div class="chips">'+chips(v.tokens.common,'c-common')+chips(v.tokens.only_invoice,'c-diff')+'</div></div>'
+    + '<div class="nbox"><div class="lab">'+(opts.payLabel||'Tên người thụ hưởng trên UNC')+'</div><div class="raw">'+esc(pay.raw||'—')+'</div>'
+    +   '<div class="ty">Loại hình: <b>'+esc(pay.legal_label)+'</b>'+(pay.branch.is_branch?' · <b>Chi nhánh</b>'+(pay.branch.label?' '+esc(pay.branch.label):''):'')+(pay.translated?' · tên tiếng Anh':'')+'</div>'
+    +   '<div class="chips">'+chips(v.tokens.common,'c-common')+chips(v.tokens.only_payment,'c-extra')+'</div></div>'
+    + '</div>'
+    + '<div class="score"><span class="badge b-'+v.decision+'">'+NAME_LABEL[v.decision]+'</span>'
+    +   '<span class="pct" style="color:'+scoreColor(v.decision)+'">'+v.score_pct+'%</span>'
+    +   '<span class="bar" title="Mức độ tương đồng kỹ thuật (vạch = ngưỡng '+th+'%)"><i style="width:'+v.score_pct+'%;background:'+scoreColor(v.decision)+'"></i><span class="th" style="left:'+th+'%"></span></span>'
+    +   '<span class="muted">tương đồng kỹ thuật · luật <code>'+esc(v.reason_code)+'</code></span></div>'
+    + '<p class="expl">'+esc(v.explanation)+'</p>'
+    + '<details class="more"'+(opts.open?' open':'')+'><summary>Chi tiết chấm điểm</summary><div class="tbl-wrap" style="margin-top:6px"><table class="mini">'
+    +   '<tr><th></th><th>Hóa đơn</th><th>UNC</th></tr>'
+    +   '<tr><td>Sau chuẩn hóa</td><td>'+esc(inv.normalized)+'</td><td>'+esc(pay.normalized)+'</td></tr>'
+    +   '<tr><td>Tên lõi (bỏ loại hình)</td><td>'+esc(inv.core)+'</td><td>'+esc(pay.core)+'</td></tr>'
+    +   '<tr><td>Phần tên riêng</td><td>'+esc(inv.distinctive||'—')+'</td><td>'+esc(pay.distinctive||'—')+'</td></tr>'
+    +   '<tr><td>Họ loại hình</td><td>'+esc(inv.legal_family)+'</td><td>'+esc(pay.legal_family)+'</td></tr>'
+    + '</table></div><div class="tbl-wrap" style="margin-top:6px"><table class="mini"><tr><th>Chỉ số</th><th class="num">Giá trị</th><th>Chỉ số</th><th class="num">Giá trị</th></tr>'
+    +   '<tr><td>Chuỗi đầy đủ</td><td class="num">'+pc(f.sequence_similarity)+'</td><td>Chuỗi tên lõi</td><td class="num">'+pc(f.core_sequence_similarity)+'</td></tr>'
+    +   '<tr><td>Từ đầy đủ</td><td class="num">'+pc(f.token_similarity)+'</td><td>Từ tên lõi</td><td class="num">'+pc(f.core_token_similarity)+'</td></tr>'
+    +   '<tr><td>Độ bao phủ tên lõi</td><td class="num">'+pc(f.core_containment_score)+'</td><td>Trùng phần tên riêng</td><td class="num">'+pc(f.distinctive_overlap)+'</td></tr>'
+    + '</table></div><p class="muted" style="margin:6px 0 0">'+esc(v.reason_codes.join(' · '))+' · engine '+esc(v.engine_version)+' · không dùng AI</p></details>';
+  return h;
+}
+function pc(x){ return Math.round((x||0)*100)+'%'; }
+
+function warnHtml(w){
+  return '<div class="cal cal-'+w.severity+'"><span class="ic">'+SEV_IC[w.severity]+'</span><span><b>'+esc(w.title)+'</b> — <span class="msg">'+esc(w.message)+'</span></span></div>';
+}
+
+function renderResult(res){
+  var s = res.summary, sev = { MATCH:0, REVIEW:1, NOT_MATCH:2 }[s.decision];
+  var ic = ['✅','⚠️','⛔'][sev];
+  var h = '<div class="verdict v-'+s.decision+'"><span class="ic">'+ic+'</span><div><div class="big">'+DEC_LABEL[s.decision]+'</div>'
+    + '<div class="act">'+esc(ACT_LABEL[s.action])+' · rủi ro '+RISK_LABEL[s.risk_level]+'</div>'
+    + '<div class="meta">'+s.invoice_count+' hóa đơn · '+s.transfer_count+' UNC · '+s.supplier_count+' bên bán · '+s.warning_count+' cảnh báo'+(s.blocking_count?' ('+s.blocking_count+' chặn)':'')+'</div></div>'
+    + '<div class="tools"><button class="btn btn-ghost btn-sm" id="btnXlsx">⬇ Xuất Excel</button><button class="btn btn-ghost btn-sm" id="btnPrint">🖨 In phiếu / PDF</button><button class="btn btn-ghost btn-sm" id="btnEmail">✉ Email ĐVKD</button></div></div>';
+  h += '<div class="kpis">'+kpi('Σ Hóa đơn', vnd(s.grand_total_invoices)+' đ')+kpi('Σ UNC', vnd(s.grand_total_transfers)+' đ')
+    + kpi('Chênh lệch (UNC − HĐ)', '<span class="'+(s.grand_diff>0?'amt-OVER':s.grand_diff<0?'amt-UNDER':'amt-MATCH')+'">'+(s.grand_diff>0?'+':'')+vnd(s.grand_diff)+' đ</span>')
+    + kpi('Kết luận', '<span class="badge b-'+s.decision+'">'+DEC_LABEL[s.decision]+'</span>')+'</div>';
+  h += '<div id="emailBox" class="email-wrap"></div>';
+
+  var act = res.warnings.filter(function(w){ return w.severity>0; });
+  h += '<div class="card"><div class="card-hd"><h2>Cảnh báo cần xử lý</h2><span class="count">'+act.length+'</span></div>';
+  h += act.length ? act.map(function(w){ return warnHtml(assign({}, w, { message: (w.beneficiary && w.group_key!=='CASE' ? '['+w.beneficiary+'] ' : '') + w.message })); }).join('')
+    : '<div class="cal cal-0" style="background:var(--green-bg);color:var(--green);border-color:var(--green-line)"><span class="ic">✓</span><span><b>Không phát hiện bất thường.</b> Tên người thụ hưởng, số tiền và chứng từ khớp — đề nghị cho qua theo quy định.</span></div>';
+  h += '</div>';
+
+  h += '<div class="section-t">Chi tiết theo từng bên bán / người thụ hưởng</div>';
+  res.groups.forEach(function(g){ h += groupHtml(g); });
+  var notes = res.warnings.filter(function(w){ return w.severity===0; });
+  if(notes.length) h += '<div class="card"><div class="card-hd"><h2>Ghi chú (không ảnh hưởng kết luận)</h2></div>'+notes.map(warnHtml).join('')+'</div>';
+  h += '<p class="muted">Engine '+esc(res.audit.engine_version)+' · cấu hình '+esc(res.audit.config_version)+' · dung sai '+vnd(res.audit.tolerance.abs_tolerance_vnd)+' đ hoặc '+(res.audit.tolerance.rel_tolerance*100)+'% · không dùng AI · '+new Date(res.audit.computed_at).toLocaleString('vi-VN')+'</p>';
+  $('result').innerHTML = h;
+  $('btnXlsx').addEventListener('click', exportXlsx);
+  $('btnPrint').addEventListener('click', printSheet);
+  $('btnEmail').addEventListener('click', toggleEmail);
+}
+function assign(t){ for(var i=1;i<arguments.length;i++) for(var k in arguments[i]) t[k]=arguments[i][k]; return t; }
 function kpi(l,v){ return '<div class="kpi"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>'; }
 
-function runOffline(){
-  var invoices;
-  try{ invoices = JSON.parse($('invoices').value||'[]'); }catch(e){ $('result').innerHTML='<p class="over">Lỗi JSON hóa đơn: '+esc(e.message)+'</p>'; return; }
-  var transfers = reconParseTransferCsv($('transfers').value||'');
-  var res = reconcileBatch(invoices, transfers, CONFIG, feVerify, {batch_id:'BM-BATCH-DEMO'});
-  render(res);
-}
-
-var scnItems = buildScnList();
-$('run').addEventListener('click', function(){ CUR_REQUEST=null; $('story').innerHTML=''; runOffline(); });
-$('reset').addEventListener('click', function(){ selectScenario(scnItems[scnItems.length-1], $('scnList').querySelector('button:last-child')); });
-$('feedback').setAttribute('href', 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeURIComponent('[BeneMatch demo] Góp ý'));
-
-/* ====== Form tự nhập nhanh (1↔1 · nhiều HĐ↔1 lệnh) ====== */
-function qMode(){ var r=document.querySelector('input[name="qmode"]:checked'); return r?r.value:'1v1'; }
-function qDigits(s){ return String(s==null?'':s).replace(/[^\d]/g,''); }
-/* CR: chỉ ô SỐ TIỀN tự thêm dấu chấm phân tách nghìn (vi-VN) khi gõ; giữ vị trí con trỏ. */
-function attachAmt(inp){
-  inp.addEventListener('input', function(){
-    var raw=inp.value, caret=inp.selectionStart==null?raw.length:inp.selectionStart;
-    var digitsBefore=raw.slice(0,caret).replace(/[^\d]/g,'').length;
-    var d=raw.replace(/[^\d]/g,'');
-    if(!d){ inp.value=''; return; }
-    var f=Number(d).toLocaleString('vi-VN');
-    inp.value=f;
-    var pos=0,count=0;
-    while(pos<f.length && count<digitsBefore){ if(/\d/.test(f.charAt(pos))) count++; pos++; }
-    try{ inp.setSelectionRange(pos,pos); }catch(e){}
+function groupHtml(g){
+  var orphan = g.key_type==='ORPHAN_TRANSFER';
+  var h = '<div class="grp s'+g.sev+'"><div class="grp-hd"><div><div class="nm">'+(orphan?'⛔ UNC không khớp bên bán nào: ':'')+esc(g.beneficiary_display)+'</div>'
+    + '<div class="sub">'+(g.seller_mst?'MST '+esc(g.seller_mst)+' · ':'')+(orphan?'':g.invoices.length+' hóa đơn · ')+g.transfers.length+' UNC'+(g.key_type==='NAME_FALLBACK'?' · gộp theo tên (thiếu MST)':'')+'</div></div>'
+    + '<div class="right"><span class="badge b-'+g.decision+'">'+DEC_LABEL[g.decision]+'</span><div>'+(orphan?'':'HĐ <b>'+vnd(g.sum_invoices)+'</b> · ')+'UNC <b>'+vnd(g.sum_transfers)+'</b></div>'
+    + (orphan?'':'<div class="amt-'+g.amount_status+'">'+AMT_LABEL[g.amount_status]+(g.amount_status==='OVER'||g.amount_status==='UNDER'?' '+(g.diff>0?'+':'')+vnd(g.diff)+' đ':'')+'</div>')+'</div></div>';
+  var gw = g.warnings.filter(function(w){ return w.severity>0 && !w.transfer; });
+  h += gw.map(warnHtml).join('');
+  g.checks.forEach(function(c){
+    var t = c.transfer;
+    h += '<div class="pair"><div class="pair-hd"><b>UNC '+esc(t.row_id)+'</b> · '+vnd(t.amount)+' đ'+(t.account_number?' · STK '+esc(t.account_number):'')+(t.bank?' · '+esc(t.bank):'')
+      + (t.content?' · “'+esc(t.content)+'”':'')+' · <span class="badge b-info">'+BY_LABEL[c.matched_by]+'</span></div>';
+    if(orphan && c.nearest_supplier) h += '<p class="muted" style="margin:6px 0 0">So với bên bán gần nhất trên hóa đơn: <b>'+esc(c.nearest_supplier)+'</b></p>';
+    h += nameCheckHtml(c.name_check, orphan ? { invLabel:'Bên bán gần nhất trên hóa đơn' } : {});
+    c.warnings.filter(function(w){ return w.code!=='BENEFICIARY_NAME_MISMATCH' && w.code!=='BENEFICIARY_NAME_REVIEW' && w.code!=='BENEFICIARY_NOT_IN_INVOICES'; }).forEach(function(w){ h += warnHtml(w); });
+    h += '</div>';
   });
-}
-function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
-function invRowHtml(){
-  return '<div class="qinv">'
-    + '<div class="qgrid">'
-    +   '<div class="qf-name"><label>Tên người thụ hưởng</label><input class="q_i_name" placeholder="CÔNG TY TNHH ..."></div>'
-    +   '<div><label>Mã số thuế</label><input class="q_i_mst" inputmode="numeric" placeholder="0101234567"></div>'
-    +   '<div><label>Số tiền (VND)</label><input class="q_i_amt" inputmode="numeric" placeholder="0"></div>'
-    +   '<div><label>Số hóa đơn (tùy chọn)</label><input class="q_i_id" placeholder="INV-001"></div>'
-    +   '<div><label>Ngày (tùy chọn)</label><input class="q_i_date" type="date"></div>'
-    + '</div>'
-    + '<button type="button" class="q_i_del" title="Xóa hóa đơn">×</button>'
-    + '</div>';
-}
-function qRows(){ return [].slice.call(document.querySelectorAll('#q_inv_list .qinv')); }
-function addInvRow(){ var d=document.createElement('div'); d.innerHTML=invRowHtml(); var row=d.firstChild; $('q_inv_list').appendChild(row);
-  row.querySelector('.q_i_del').addEventListener('click', function(){ if(qRows().length>1) row.remove(); });
-  attachAmt(row.querySelector('.q_i_amt')); return row; }
-function applyMode(){
-  var mode=qMode(), body=$('qBody');
-  body.className='qbody '+(mode==='1v1'?'mode-1v1':'mode-1vN');
-  if(mode==='1v1'){ var rows=qRows(); for(var i=rows.length-1;i>=1;i--) rows[i].remove(); if(!qRows().length) addInvRow(); }
-  else if(qRows().length<2){ addInvRow(); }
-  $('q_inv_hint').textContent = mode==='1v1' ? '(1 hóa đơn)' : '(gộp nhiều hóa đơn — cùng người thụ hưởng)';
-}
-function setRow(row, o){ row.querySelector('.q_i_name').value=o.name||''; row.querySelector('.q_i_mst').value=o.mst||'';
-  row.querySelector('.q_i_amt').value=o.amt||''; row.querySelector('.q_i_id').value=o.id||''; row.querySelector('.q_i_date').value=o.date||''; }
-function qFillSample(){
-  var mode=qMode();
-  $('q_t_name').value='CÔNG TY TNHH ABC VIỆT NAM'; $('q_t_mst').value='0101234567'; $('q_t_acc').value='0123456789';
-  if(mode==='1v1'){ $('q_t_amt').value='100.000.000'; setRow(qRows()[0], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'100.000.000',id:'INV-001',date:'2026-09-01'}); }
-  else{ $('q_t_amt').value='150.000.000';
-    var rows=qRows(); while(rows.length<2){ addInvRow(); rows=qRows(); }
-    setRow(rows[0], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'90.000.000',id:'INV-001',date:'2026-09-01'});
-    setRow(rows[1], {name:'CÔNG TY TNHH ABC VIỆT NAM',mst:'0101234567',amt:'60.000.000',id:'INV-002',date:'2026-09-02'}); }
-}
-function qRun(){
-  var mode=qMode();
-  var transfers=[{ beneficiary_name:$('q_t_name').value.trim(), beneficiary_mst:qDigits($('q_t_mst').value),
-    account_number:qDigits($('q_t_acc').value), amount:Number(qDigits($('q_t_amt').value))||0 }];
-  var rows=qRows(); if(mode==='1v1') rows=rows.slice(0,1);
-  var invoices=rows.map(function(r,i){ return {
-      invoice_id: r.querySelector('.q_i_id').value.trim() || ('INV-'+String(i+1).padStart(3,'0')),
-      invoice_date: r.querySelector('.q_i_date').value || '',
-      beneficiary_name: r.querySelector('.q_i_name').value.trim(),
-      beneficiary_mst: qDigits(r.querySelector('.q_i_mst').value),
-      amount_total: Number(qDigits(r.querySelector('.q_i_amt').value))||0,
-      ocr_confidence: 0.99
-    }; }).filter(function(x){ return x.beneficiary_name || x.amount_total; });
-  if(!invoices.length || !(transfers[0].beneficiary_name || transfers[0].amount)){
-    $('story').innerHTML='<div class="story"><b>Thiếu dữ liệu.</b> Nhập ít nhất tên/số tiền cho lệnh chuyển tiền và 1 hóa đơn.</div>';
-    $('result').innerHTML='<p class="muted">Điền form rồi bấm “Đối chiếu thử”.</p>'; return;
+  if(g.invoices.length){
+    h += '<details class="more"><summary>Hóa đơn ('+g.invoices.length+')</summary><div class="tbl-wrap" style="margin-top:6px"><table class="mini"><tr><th>Số</th><th>Ký hiệu</th><th>Ngày</th><th>Tên bên bán</th><th>MST người mua</th><th class="num">Tổng tiền</th><th>Nguồn</th></tr>'
+      + g.invoices.map(function(i){ return '<tr><td>'+esc(i.invoice_no)+(i.duplicate_of?' <span class="badge b-REVIEW">trùng</span>':'')+'</td><td>'+esc(i.invoice_series)+'</td><td>'+esc(i.invoice_date)+'</td><td>'+esc(i.seller_name)+'</td><td>'+esc(i.buyer_mst)+'</td><td class="num">'+vnd(i.amount_total)+'</td><td>'+esc(SRC_LABEL[i.source]||i.source)+'</td></tr>'; }).join('')
+      + '</table></div></details>';
   }
-  // Đổ vào ô Nâng cao để dùng chung 1 đường chạy (runOffline) — người dùng xem/chỉnh được JSON/CSV.
-  $('invoices').value = JSON.stringify(invoices, null, 2);
-  var head='beneficiary_name,beneficiary_mst,account_number,amount';
-  $('transfers').value = head+'\n'+transfers.map(function(t){ return [t.beneficiary_name,t.beneficiary_mst,t.account_number,t.amount].map(csvCell).join(','); }).join('\n');
-  Array.prototype.forEach.call($('scnList').querySelectorAll('button'), function(b){ b.classList.remove('active'); });
-  CUR_REQUEST=null;
-  $('story').innerHTML='<div class="story"><b>Đối chiếu thử (tự nhập).</b> '+(mode==='1v1'?'1 hóa đơn ↔ 1 lệnh chuyển tiền.':(invoices.length+' hóa đơn ↔ 1 lệnh chuyển tiền.'))+'</div>';
-  runOffline();
+  return h + '</div>';
 }
-document.querySelectorAll('input[name="qmode"]').forEach(function(r){ r.addEventListener('change', applyMode); });
-$('q_add').addEventListener('click', function(){ addInvRow(); });
-$('q_run').addEventListener('click', qRun);
-$('q_sample').addEventListener('click', qFillSample);
-attachAmt($('q_t_amt'));
-addInvRow(); applyMode();
 
-// Mở sẵn tình huống đầu tiên
-selectScenario(scnItems[0], $('scnList').querySelector('button'));
+/* ================= XUẤT EXCEL ================= */
+function sheetData(res){
+  var c = res.case||{}, s = res.summary;
+  var tq = [['PHIẾU KIỂM TRA NGƯỜI THỤ HƯỞNG & CHỨNG TỪ GIẢI NGÂN (BeneMatch)'],[],
+    ['Số GNOL / hồ sơ', c.case_id||''],['Khách hàng vay', c.borrower_name||''],['MST khách hàng vay', c.borrower_mst||''],['ĐVKD', c.dvkd||''],
+    ['Mục đích', c.purpose||''],['Ngày giải ngân', c.disbursement_date||''],['Số tiền giải ngân', c.disbursement_amount||''],['Cán bộ kiểm tra', c.checker||''],[],
+    ['KẾT LUẬN', DEC_LABEL[s.decision]],['Hành động', ACT_LABEL[s.action]],['Mức rủi ro', RISK_LABEL[s.risk_level]],
+    ['Tổng hóa đơn', s.grand_total_invoices],['Tổng UNC', s.grand_total_transfers],['Chênh lệch (UNC − HĐ)', s.grand_diff],
+    ['Số hóa đơn', s.invoice_count],['Số UNC', s.transfer_count],['Số cảnh báo', s.warning_count],[],
+    ['Engine', res.audit.engine_version],['Cấu hình', res.audit.config_version],['Dùng AI', 'Không'],['Thời điểm kiểm tra', new Date(res.audit.computed_at).toLocaleString('vi-VN')]];
+  var dc = [['Bên bán (hóa đơn)','MST bên bán','Tên người thụ hưởng (UNC)','Số tài khoản','Ngân hàng','Số tiền UNC','Nội dung','Cách ghép','Kết quả tên','Mức tương đồng (%)','Luật','Diễn giải']];
+  res.pairs.forEach(function(p){ var v=p.name_check||{}; dc.push([p.transfer && p.group_key.indexOf('UNC:')===0 ? '(không có) — gần nhất: '+(p.nearest_supplier||'') : p.supplier, p.supplier_mst, p.transfer.beneficiary_name, p.transfer.account_number, p.transfer.bank, p.transfer.amount, p.transfer.content, BY_LABEL[p.matched_by]||'', p.group_key.indexOf('UNC:')===0?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''), v.score_pct!=null?v.score_pct:'', v.reason_code||'', v.explanation||'']); });
+  var nh = [['Bên bán / người thụ hưởng','MST','Số HĐ','Số UNC','Tổng hóa đơn','Tổng UNC','Chênh lệch','Trạng thái tiền','Kết luận','Rủi ro']];
+  res.groups.forEach(function(g){ nh.push([g.beneficiary_display, g.seller_mst, g.invoices.length, g.transfers.length, g.sum_invoices, g.sum_transfers, g.diff, AMT_LABEL[g.amount_status]||g.amount_status, DEC_LABEL[g.decision], RISK_LABEL[g.risk_level]]); });
+  var hd = [['Số HĐ','Ký hiệu','Ngày','Tên bên bán','MST bên bán','Tên người mua','MST người mua','Tổng tiền','STK bên bán','Nguồn','File','Đã đối chiếu','Trùng với']];
+  res.invoices.forEach(function(i){ hd.push([i.invoice_no, i.invoice_series, i.invoice_date, i.seller_name, i.seller_mst, i.buyer_name, i.buyer_mst, i.amount_total, i.seller_account, SRC_LABEL[i.source]||i.source, i.source_file, i.source==='OCR'?(i.confirmed?'Có':'CHƯA'):'', i.duplicate_of||'']); });
+  var cb = [['Mức','Mã','Cảnh báo','Bên liên quan','Chi tiết']];
+  res.warnings.forEach(function(w){ cb.push([['Ghi chú','Cần kiểm tra','Chặn'][w.severity], w.code, w.title, w.beneficiary, w.message]); });
+  return { 'Tong_quan': tq, 'Doi_chieu_UNC': dc, 'Theo_ben_ban': nh, 'Hoa_don': hd, 'Canh_bao': cb };
+}
+function fileBase(){ var c = state.result.case||{}; return 'BeneMatch_'+(String(c.case_id||'hoso').replace(/[^\w.-]+/g,'_'))+'_'+new Date().toISOString().slice(0,10); }
+async function exportXlsx(){
+  var data = sheetData(state.result);
+  try{
+    await loadScript(CDN.xlsx);
+    var wb = XLSX.utils.book_new();
+    Object.keys(data).forEach(function(n){ var ws = XLSX.utils.aoa_to_sheet(data[n]); ws['!cols'] = data[n][0].map(function(_,i){ return { wch: n==='Tong_quan' ? (i?60:26) : 22 }; }); XLSX.utils.book_append_sheet(wb, ws, n); });
+    XLSX.writeFile(wb, fileBase()+'.xlsx');
+  }catch(e){
+    // Không có mạng → xuất CSV (mở được bằng Excel).
+    var rows = []; Object.keys(data).forEach(function(n){ rows.push(['### '+n]); data[n].forEach(function(r){ rows.push(r); }); rows.push([]); });
+    downloadBlob(fileBase()+'.csv', '﻿'+rows.map(csvLine).join('\r\n'), 'text/csv;charset=utf-8');
+    toast('Không tải được thư viện Excel — đã xuất CSV thay thế.', 5000);
+  }
+}
+
+/* ================= IN PHIẾU ================= */
+function printSheet(){
+  var res = state.result, c = res.case||{}, s = res.summary;
+  var h = '<h1>PHIẾU KIỂM TRA NGƯỜI THỤ HƯỞNG &amp; CHỨNG TỪ GIẢI NGÂN</h1>'
+    + '<div class="ptop"><span>Công cụ BeneMatch · engine '+esc(res.audit.engine_version)+' · không dùng AI</span><span>In lúc '+new Date().toLocaleString('vi-VN')+'</span></div>'
+    + '<table><tr><th style="width:22%">Số GNOL / hồ sơ</th><td>'+esc(c.case_id)+'</td><th style="width:18%">ĐVKD</th><td>'+esc(c.dvkd)+'</td></tr>'
+    + '<tr><th>Khách hàng vay</th><td>'+esc(c.borrower_name)+'</td><th>MST</th><td>'+esc(c.borrower_mst)+'</td></tr>'
+    + '<tr><th>Mục đích</th><td colspan="3">'+esc(c.purpose)+'</td></tr>'
+    + '<tr><th>Ngày giải ngân</th><td>'+esc(c.disbursement_date)+'</td><th>Số tiền giải ngân</th><td>'+(c.disbursement_amount?vnd(c.disbursement_amount)+' đ':'')+'</td></tr></table>'
+    + '<div class="pverdict">KẾT LUẬN: '+DEC_LABEL[s.decision]+' — '+esc(ACT_LABEL[s.action])+' · Rủi ro: '+RISK_LABEL[s.risk_level]
+    + '<div style="font-weight:400;font-size:11px;margin-top:3px">Σ hóa đơn '+vnd(s.grand_total_invoices)+' đ · Σ UNC '+vnd(s.grand_total_transfers)+' đ · chênh lệch '+vnd(s.grand_diff)+' đ · '+s.invoice_count+' hóa đơn · '+s.transfer_count+' UNC · '+s.warning_count+' cảnh báo</div></div>'
+    + '<h2>1. Đối chiếu tên người thụ hưởng từng UNC</h2><table><tr><th>#</th><th>Người thụ hưởng (UNC)</th><th>STK</th><th class="num">Số tiền</th><th>Bên bán trên hóa đơn</th><th>Kết quả tên</th><th>Tương đồng</th></tr>'
+    + res.pairs.map(function(p, i){ var v=p.name_check||{}; var orphan=p.group_key.indexOf('UNC:')===0; return '<tr><td>'+(i+1)+'</td><td>'+esc(p.transfer.beneficiary_name)+'</td><td>'+esc(p.transfer.account_number)+'</td><td class="num">'+vnd(p.transfer.amount)+'</td><td>'+(orphan?'(không có) — gần nhất: '+esc(p.nearest_supplier):esc(p.supplier))+'</td><td>'+(orphan?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''))+'</td><td>'+(v.score_pct!=null?v.score_pct+'%':'')+'</td></tr>'; }).join('')
+    + '</table><h2>2. Theo bên bán</h2><table><tr><th>Bên bán / người thụ hưởng</th><th>MST</th><th class="num">Σ hóa đơn</th><th class="num">Σ UNC</th><th>Tiền</th><th>Kết luận</th></tr>'
+    + res.groups.map(function(g){ return '<tr><td>'+esc(g.beneficiary_display)+'</td><td>'+esc(g.seller_mst)+'</td><td class="num">'+vnd(g.sum_invoices)+'</td><td class="num">'+vnd(g.sum_transfers)+'</td><td>'+esc(AMT_LABEL[g.amount_status]||'')+'</td><td>'+DEC_LABEL[g.decision]+'</td></tr>'; }).join('')
+    + '</table><h2>3. Cảnh báo &amp; ghi chú</h2><table><tr><th>Mức</th><th>Cảnh báo</th><th>Chi tiết</th><th style="width:22%">Xử lý / giải trình của cán bộ</th></tr>'
+    + (res.warnings.length ? res.warnings.map(function(w){ return '<tr><td>'+['Ghi chú','Kiểm tra','CHẶN'][w.severity]+'</td><td>'+esc(w.title)+'</td><td>'+esc(w.message)+'</td><td></td></tr>'; }).join('') : '<tr><td colspan="4">Không có cảnh báo.</td></tr>')
+    + '</table><div class="sign"><div><b>CÁN BỘ KIỂM TRA</b><br><i>(ký, ghi rõ họ tên)</i><br><br><br><br>'+esc(c.checker)+'</div><div><b>NGƯỜI PHÊ DUYỆT</b><br><i>(ký, ghi rõ họ tên)</i></div></div>'
+    + '<div class="pfoot">“Tương đồng %” là độ giống kỹ thuật sau chuẩn hóa, không phải xác suất cùng pháp nhân. Kết luận theo luật cố định (deterministic); số tài khoản chỉ là thông tin tham khảo. Phiếu hỗ trợ kiểm soát — quyết định cuối thuộc cấp có thẩm quyền theo quy định giải ngân.</div>';
+  $('printArea').innerHTML = h;
+  window.print();
+}
+
+/* ================= EMAIL ĐVKD ================= */
+function emailParts(res){
+  var c = res.case||{}, s = res.summary;
+  var col = { MATCH:['#15803d','#e8f7ee'], REVIEW:['#b45309','#fdf3e3'], NOT_MATCH:['#c81e1e','#fdecec'] };
+  var pill = function(text, d){ return '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;color:'+col[d][0]+';background:'+col[d][1]+'">'+esc(text)+'</span>'; };
+  var subject = ['[BeneMatch] '+(c.case_id||'Hồ sơ giải ngân'), c.borrower_name, DEC_LABEL[s.decision]].filter(Boolean).join(' — ');
+  var act = res.warnings.filter(function(w){ return w.severity>0; });
+  var wl = act.length ? '<ol style="margin:4px 0 8px;padding-left:20px">'+act.map(function(w){ var d=w.severity===2?'NOT_MATCH':'REVIEW'; return '<li style="margin:3px 0"><b style="color:'+col[d][0]+'">'+esc(w.title)+'</b>'+(w.group_key!=='CASE'?' ['+esc(w.beneficiary)+']':'')+': '+esc(w.message)+'</li>'; }).join('')+'</ol>'
+    : '<p style="margin:4px 0 8px;color:#15803d"><b>Không phát hiện bất thường</b> — tên người thụ hưởng, số tiền và chứng từ khớp.</p>';
+  var rows = res.pairs.map(function(p){ var v=p.name_check||{}; var orphan=p.group_key.indexOf('UNC:')===0; var d = orphan?'NOT_MATCH':(v.decision||'REVIEW');
+    return '<tr><td style="border:1px solid #ccc;padding:4px 6px">'+esc(p.transfer.beneficiary_name)+'</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:right">'+vnd(p.transfer.amount)+'</td><td style="border:1px solid #ccc;padding:4px 6px">'+(orphan?'(không có trên hóa đơn)':esc(p.supplier))+'</td><td style="border:1px solid #ccc;padding:4px 6px">'+pill(orphan?'Không có HĐ':NAME_LABEL[d], d)+(v.score_pct!=null?' '+v.score_pct+'%':'')+'</td></tr>'; }).join('');
+  var body = '<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1b1330;line-height:1.5">'
+    + '<p>Kính gửi <b>'+esc(c.dvkd||'ĐVKD')+'</b>,</p>'
+    + '<p>Bộ phận giải ngân đã kiểm tra thông tin người thụ hưởng và chứng từ của hồ sơ giải ngân số <b>'+esc(c.case_id||'…')+'</b> — khách hàng <b>'+esc(c.borrower_name||'…')+'</b>'+(c.borrower_mst?' (MST '+esc(c.borrower_mst)+')':'')+'.</p>'
+    + '<p style="margin:0 0 4px"><b>Thông tin hồ sơ:</b></p><ol style="margin:0 0 8px;padding-left:20px"><li>Số tiền đề nghị giải ngân: <b>'+vnd(c.disbursement_amount||s.grand_total_transfers)+' VND</b></li><li>Mục đích: '+esc(c.purpose||'')+'</li><li>Số hóa đơn: '+s.invoice_count+' · số lệnh chuyển tiền: '+s.transfer_count+'</li></ol>'
+    + '<div style="border:1px solid #e6e0ef;border-radius:10px;padding:10px 12px;margin:8px 0;background:#faf8fe">'
+    +   '<div style="font-weight:800;margin-bottom:6px">Kết quả kiểm tra người thụ hưởng tự động (BeneMatch)</div>'
+    +   '<div style="margin:4px 0">Kết quả: '+pill(DEC_LABEL[s.decision], s.decision)+' &nbsp; Hành động: '+pill(ACT_LABEL[s.action], s.decision)+' &nbsp; Mức rủi ro: '+pill(RISK_LABEL[s.risk_level], s.decision)+'</div>'
+    +   '<div style="margin-top:6px;font-weight:700">Chi tiết cảnh báo:</div>'+wl
+    +   '<table style="border-collapse:collapse;font-size:13px;margin-top:4px"><tr style="background:#f1e8fc"><th style="border:1px solid #ccc;padding:4px 6px;text-align:left">Người thụ hưởng (UNC)</th><th style="border:1px solid #ccc;padding:4px 6px">Số tiền</th><th style="border:1px solid #ccc;padding:4px 6px;text-align:left">Bên bán trên hóa đơn</th><th style="border:1px solid #ccc;padding:4px 6px;text-align:left">Kết quả tên</th></tr>'+rows+'</table>'
+    + '</div>'
+    + (s.decision==='MATCH' ? '<p>Hồ sơ đủ điều kiện tiếp tục giải ngân theo quy định Giải ngân Online dành cho KHDN.</p>'
+       : '<p>Đề nghị ĐVKD <b>kiểm tra, giải trình và hoàn thiện hồ sơ</b> đối với các nội dung trên (xác nhận đúng người thụ hưởng/tài khoản, bổ sung hoặc điều chỉnh chứng từ) trước khi tiếp tục giải ngân theo quy định Giải ngân Online dành cho KHDN.</p>')
+    + '<p>Trân trọng cảm ơn!</p></div>';
+  return { subject: subject, body: body };
+}
+function toggleEmail(){
+  var box = $('emailBox');
+  if(box.classList.contains('on')){ box.classList.remove('on'); return; }
+  var e = emailParts(state.result);
+  box.innerHTML = '<div class="email-bar"><span class="subj">Tiêu đề: '+esc(e.subject)+'</span><button class="btn btn-ghost btn-sm" id="cpSubj">Copy tiêu đề</button><button class="btn btn-primary btn-sm" id="cpBody">Copy nội dung (dán Outlook)</button></div><div class="email-body" id="emailBody">'+e.body+'</div>';
+  box.classList.add('on');
+  $('cpSubj').addEventListener('click', function(){ copyText(e.subject); });
+  $('cpBody').addEventListener('click', function(){ copyHtml($('emailBody'), e.body); });
+}
+function copyText(t){ (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast('Đã copy tiêu đề'); }, function(){ var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Đã copy tiêu đề'); }); }
+function copyHtml(el, html){
+  try{
+    if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], {type:'text/html'}), 'text/plain': new Blob([el.innerText], {type:'text/plain'}) })])
+        .then(function(){ toast('Đã copy — dán (Ctrl+V) vào Outlook'); }, function(){ selCopy(el); });
+      return;
+    }
+  }catch(e){}
+  selCopy(el);
+}
+function selCopy(el){ var r=document.createRange(); r.selectNodeContents(el); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges(); toast('Đã copy — dán (Ctrl+V) vào Outlook'); }
+
+/* ================= CHECK NHANH TÊN ================= */
+var QC_EX = [
+  ['CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ HOÀNG GIA','CTY TNHH TM DV HOANG GIA'],
+  ['CÔNG TY CỔ PHẦN DELTA MEKONG','CÔNG TY TNHH DELTA MEKONG'],
+  ['CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA','CONG TY TNHH THUONG MAI MINH ANH'],
+  ['CÔNG TY TNHH TM DV XNK PHÚ THỊNH PHÁT','CONG TY TNHH TM DV XUAT NHAP KHAU PHU THINH P'],
+  ['CÔNG TY TNHH ABC - CHI NHÁNH HÀ NỘI','CONG TY TNHH ABC'],
+  ['HỘ KINH DOANH NGUYỄN VĂN AN','NGUYEN VAN AN'],
+  ['CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA','HOANG GIA TRADING CO., LTD'],
+  ['CÔNG TY TNHH XÂY DỰNG SỐ 1','CONG TY TNHH XAY DUNG SO 7']
+];
+QC_EX.forEach(function(p){ var b=document.createElement('button'); b.className='btn btn-ghost btn-sm'; b.textContent=p[1]; b.title=p[0]+' ↔ '+p[1]; b.addEventListener('click', function(){ $('qInv').value=p[0]; $('qPay').value=p[1]; qc(); }); $('qcEx').appendChild(b); });
+var qcT; ['qInv','qPay'].forEach(function(id){ $(id).addEventListener('input', function(){ clearTimeout(qcT); qcT=setTimeout(qc, 120); }); });
+function qc(){
+  var a=$('qInv').value, b=$('qPay').value;
+  if(!a.trim() && !b.trim()){ $('qcRes').innerHTML='<p class="muted">Gõ 2 tên — kết quả cập nhật ngay.</p>'; return; }
+  $('qcRes').innerHTML = nameCheckHtml(BM.verifyName(a, b, CONFIG.name), { open:true });
+}
+
+/* ================= QUY TẮC ================= */
+(function renderRules(){
+  var NR = [
+    ['1','Thiếu tên một phía','CẦN KIỂM TRA','INSUFFICIENT_DATA'],
+    ['2','Khác loại hình pháp nhân (TNHH / Cổ phần / DNTN / HTX / Hợp danh / Hộ KD) — luật cứng','KHÔNG KHỚP','LEGAL_ENTITY_TYPE_CONFLICT'],
+    ['3','Trùng hoàn toàn sau chuẩn hóa (dấu, hoa/thường, viết tắt CTY/CP/TNHH/MTV/TM/DV/XNK…)','KHỚP','NORMALIZED_NAME_EXACT_MATCH'],
+    ['3a','Tên UNC bị cắt cụt (là phần đầu của tên hóa đơn, ≥ 20 ký tự)','CẦN KIỂM TRA','TRUNCATED_BENEFICIARY_NAME'],
+    ['3b','Chi nhánh / VPĐD / địa điểm KD ↔ công ty mẹ; hoặc khác chi nhánh','CẦN KIỂM TRA','BRANCH_VS_PARENT · DIFFERENT_BRANCH'],
+    ['4','Cùng loại hình + trùng tên lõi (≥ 2 từ)','KHỚP','LEGAL_TYPE_AND_CORE_NAME_EXACT_MATCH'],
+    ['5','Cùng loại hình + cùng bộ từ, khác thứ tự','KHỚP','LEGAL_TYPE_AND_CORE_TOKEN_SET_MATCH'],
+    ['6','Cùng loại hình, tên lõi rất giống (chuỗi ≥ 96%, từ ≥ 90%, bao phủ ≥ 90%, ≥ 3 từ), phần tên riêng trùng, không lệch số hiệu','KHỚP','HIGH_CORE_NAME_SIMILARITY'],
+    ['7','Tên quá ngắn, một bên chứa trọn bên kia','CẦN KIỂM TRA','PARTIAL_CORE_NAME_MATCH'],
+    ['8','Trùng tên lõi nhưng một bên không ghi loại hình (vd UNC “ABC VIET NAM”, hộ KD → TK cá nhân)','CẦN KIỂM TRA','LEGAL_TYPE_MISSING_CORE_NAME_MATCH'],
+    ['8a','Phần tên riêng trùng, chỉ khác từ ngành nghề','CẦN KIỂM TRA','INDUSTRY_WORDS_DIFFERENT'],
+    ['8b','Phần tên riêng khác hẳn (chỉ trùng từ ngành nghề như Thương mại, Dịch vụ, Xây dựng…)','KHÔNG KHỚP','DISTINCTIVE_NAME_DIFFERENT'],
+    ['9','Gần giống (tổng ≥ 82% hoặc chuỗi lõi ≥ 82% hoặc từ lõi ≥ 75%) — kể cả khác số hiệu','CẦN KIỂM TRA','NAME_SIMILAR_BUT_NOT_CONCLUSIVE · NUMBER_TOKEN_DIFFERENT'],
+    ['10','Còn lại — khác biệt lớn','KHÔNG KHỚP','LOW_NAME_SIMILARITY'],
+    ['+','Khớp nhờ quy đổi tên tiếng Anh (TRADING → THƯƠNG MẠI, CO., LTD → TNHH…) không bao giờ tự KHỚP','CẦN KIỂM TRA','TRANSLATED_NAME_MATCH']
+  ];
+  var dc = { 'KHỚP':'MATCH', 'CẦN KIỂM TRA':'REVIEW', 'KHÔNG KHỚP':'NOT_MATCH' };
+  $('rulesName').innerHTML = '<tr><th>#</th><th>Điều kiện</th><th>Kết quả</th><th>Mã</th></tr>' + NR.map(function(r){ return '<tr><td>'+r[0]+'</td><td>'+esc(r[1])+'</td><td><span class="badge b-'+dc[r[2]]+'">'+r[2]+'</span></td><td><code>'+esc(r[3])+'</code></td></tr>'; }).join('');
+  var M = BM.WARN_META;
+  $('rulesWarn').innerHTML = '<tr><th>Mức</th><th>Cảnh báo</th><th>Mã</th></tr>' + Object.keys(M).sort(function(a,b){ return M[b].sev-M[a].sev; }).map(function(k){ var d=['MATCH','REVIEW','NOT_MATCH'][M[k].sev]; return '<tr><td><span class="badge '+(M[k].sev?'b-'+d:'b-info')+'">'+['Ghi chú','Cần kiểm tra','Chặn'][M[k].sev]+'</span></td><td>'+esc(M[k].title)+'</td><td><code>'+k+'</code></td></tr>'; }).join('');
+})();
+
+/* ================= KHỞI ĐỘNG ================= */
+$('engVer').textContent = 'engine ' + BM.ENGINE_VERSION;
+$('verTag').textContent = 'Engine v' + BM.ENGINE_VERSION + ' · Offline';
+$('feedback').href = 'mailto:'+FEEDBACK_EMAIL+'?subject='+encodeURIComponent('[BeneMatch] Góp ý');
+window.addEventListener('beforeunload', function(e){ if(state.invoices.length || state.transfers.length){ e.preventDefault(); e.returnValue=''; } });
+resetAll();
+window.__BM_STATE = state; // hỗ trợ kiểm thử
+})();
 </script>
 </body>
 </html>

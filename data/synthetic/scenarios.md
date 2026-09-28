@@ -1,21 +1,15 @@
-# Synthetic scenarios — Batch Reconciliation
+# Kịch bản mẫu (synthetic) — BeneMatch engine v3
 
-Dataset **synthetic** (publish-safe, không dữ liệu KH thật). Mỗi nhóm minh họa 1 tín hiệu.
+Nguồn: `scenarios.json` (nạp vào công cụ qua ô "Nạp kịch bản mẫu"; kiểm ở `test/engine.test.mjs`). Toàn bộ tên/MST/STK là **giả lập** (MST đúng checksum). UNC **không có MST** — đúng thực tế.
 
-| Nhóm (MST) | Người thụ hưởng | Σ HĐ | Σ CT | Tín hiệu minh họa | decision kỳ vọng |
-|---|---|---:|---:|---|---|
-| 0101234567 | ABC Việt Nam | 150.000.000 | 150.000.000 | Khớp hoàn hảo (tên biến thể CTY/VIET) | **MATCH** |
-| 0102000002 | Bình Minh (CP) | 80.000.000 | 90.000.000 | **Thừa chi** +10tr > dung sai | **REVIEW** (HIGH) |
-| 0103000003 | Hoàng Gia | 40.000.000 | 35.000.000 | **Thiếu chi** −5tr | **REVIEW** (MEDIUM) |
-| 0104000004 | Thành Đạt (DNTN) | 60.000.000 | 0 | **Thiếu lệnh CT** cho nhóm có HĐ | **REVIEW** |
-| 0105000005 | Phú Thịnh | 0 | 25.000.000 | **Thiếu HĐ** cho lệnh CT | **REVIEW** |
-| 0106000006 | Tiến Phát | 40.000.000 | 40.000.000 | **Hóa đơn trùng** (INV-0007 ×2); tổng vẫn khớp | **REVIEW** (HIGH) |
-| 0107000007 | Delta Mekong | 45.000.000 | 45.000.000 | **Khác pháp nhân**: HĐ *TNHH* vs CT *CỔ PHẦN* (tiền khớp) | **NOT_MATCH** (BLOCK) |
-| 0108000008 | Sao Việt (CP) | 33.333.333 | 33.333.000 | Lệch 333đ **trong dung sai** (làm tròn) | **MATCH** |
-| 0109000009 | Minh Anh | 12.000.000 | 12.000.000 | **Nghi lỗi OCR** (confidence 0.60); tiền+tên khớp | **REVIEW** (MEDIUM) |
-
-**Grand total:** Σ HĐ = 460.333.333 · Σ CT = 430.333.000 · **grand_diff = −30.000.333** (net thiếu chi, chủ yếu do nhóm Thành Đạt thiếu lệnh CT).
-
-**Batch decision kỳ vọng = NOT_MATCH** (bị kéo bởi nhóm Delta Mekong khác pháp nhân).
-
-> Điểm "kể" cho stakeholder: nhóm **Delta Mekong** và **Tiến Phát** cho thấy *tiền khớp nhưng vẫn rủi ro* (sai pháp nhân / hóa đơn trùng) — giá trị của đối chiếu đa chiều thay vì chỉ so tổng tiền.
+| # | Kịch bản | Kết luận | Nội dung |
+|---|---|---|---|
+| 1 | Khớp sạch — 2 hóa đơn, 1 UNC | KHỚP | KH vay thanh toán 2 hóa đơn của cùng nhà cung cấp bằng 1 UNC. Tên UNC viết tắt, không dấu (CTY … VN) nhưng cùng pháp nhân; tổng tiền khớp; nội dung UNC nhắc đúng số hóa đơn. Hệ thống cho qua. |
+| 2 | Sai pháp nhân (CP ↔ TNHH) | KHÔNG KHỚP | Hóa đơn do CÔNG TY CỔ PHẦN DELTA MEKONG xuất, nhưng UNC chuyển cho CÔNG TY TNHH DELTA MEKONG — phần tên giống hệt nhưng khác loại hình ⇒ hai pháp nhân khác nhau. Rủi ro nặng nhất: chuyển tiền cho sai thực thể. Hệ thống CHẶN. |
+| 3 | Chi cho người không có hóa đơn | KHÔNG KHỚP | Hóa đơn của CÔNG TY TNHH THƯƠNG MẠI HOÀNG GIA nhưng UNC lại chuyển cho CÔNG TY TNHH THƯƠNG MẠI MINH ANH — chỉ trùng từ ngành nghề 'Thương mại', phần tên riêng khác hẳn. Tiền đi tới một bên không có hóa đơn trong hồ sơ. Hệ thống CHẶN. |
+| 4 | Thừa chi so với hóa đơn | CẦN KIỂM TRA | Tên khớp nhưng UNC chuyển 90.000.000 đ trong khi hóa đơn chỉ 80.000.000 đ — thừa 10 triệu, vượt dung sai. Hệ thống đưa vào diện kiểm tra. |
+| 5 | Tên UNC bị cắt cụt | CẦN KIỂM TRA | Tên bên bán dài; hệ thống chuyển tiền cắt tên người thụ hưởng theo giới hạn ký tự. Phần còn lại khớp, nhưng không kiểm được phần bị cắt ⇒ cần cán bộ đối chiếu STK/tên đăng ký. |
+| 6 | Hóa đơn chi nhánh, chuyển công ty mẹ | CẦN KIỂM TRA | Hóa đơn do CHI NHÁNH HÀ NỘI xuất (MST 13 số) nhưng UNC chuyển cho công ty mẹ. Cùng pháp nhân nhưng khác đơn vị nhận tiền ⇒ cần kiểm tra. |
+| 7 | Hóa đơn trùng (trả 2 lần) | CẦN KIỂM TRA | Cùng một hóa đơn (cùng MST, ký hiệu, số) được đưa vào hồ sơ 2 lần (1 bản XML, 1 dòng bảng kê), UNC chi cho cả 2 ⇒ nguy cơ trả hai lần. Hệ thống loại bản trùng khỏi tổng được chi ⇒ lộ ra thừa chi 20 triệu. |
+| 8 | Hóa đơn xuất cho người mua khác | CẦN KIỂM TRA | Tên người thụ hưởng khớp, tiền khớp — nhưng hóa đơn xuất cho một doanh nghiệp khác (MST người mua ≠ MST khách hàng vay). Hóa đơn không chứng minh được mục đích vốn của KH ⇒ cần kiểm tra. |
+| 9 | Hồ sơ tổng hợp — 4 nhà cung cấp | KHÔNG KHỚP | Một khoản giải ngân trả cho 4 nhà cung cấp: 1 khớp sạch (2 đợt UNC), 1 thừa chi, 1 tên tiếng Anh trên UNC, 1 UNC chuyển cho bên không có hóa đơn. Hệ thống tự ghép từng UNC với đúng bên bán theo tên + số hóa đơn trong nội dung, rồi xếp rủi ro cao lên đầu. |

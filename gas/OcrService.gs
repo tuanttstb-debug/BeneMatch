@@ -1,8 +1,7 @@
 /**
  * OcrService.gs — OCR hóa đơn (đường thật, guard bằng USE_OCR). Xem OCR_SPEC.md.
  * ocrInvoices_ chỉ được gọi khi USE_OCR=true; đường synthetic bỏ qua file này.
- * parseInvoiceText_ tách riêng, unit-test bằng gas/verify_ocr.mjs (text mẫu).
- * ⚠ Regex theo mẫu hóa đơn VAT VN — CẦN [TT] cấp ảnh mẫu để hiệu chỉnh.
+ * Trích trường bằng BM.io.parseInvoiceText (Engine.gs) — test ở test/engine.test.mjs.
  *
  * Provider (Script Property OCR_PROVIDER):
  *   'drive'  (MẶC ĐỊNH, MIỄN PHÍ) — Google Drive OCR, không cần key. Cần bật Advanced Service "Drive API".
@@ -19,11 +18,11 @@ function ocrInvoices_(files, cfg, props) {
     var ocr = provider === 'vision'
       ? callVision_(f.data, f.mime, apiKey)          // {text, confidence}
       : callDriveOcr_(f.data, f.mime, f.name);       // {text, confidence} — free
-    var inv = parseInvoiceText_(ocr.text);
+    var inv = BM.io.parseInvoiceText(ocr.text);          // Engine.gs — cùng parser với công cụ offline
+    inv.source = 'OCR';
+    inv.source_detail = provider;
     inv.source_file = f.name || ('file_' + (i + 1));
     inv.ocr_confidence = ocr.confidence;
-    inv.ocr_provider = provider;
-    if (!inv.invoice_id) inv.invoice_id = 'OCR-' + String(i + 1).padStart(4, '0');
     out.push(inv);
   }
   return out;
@@ -94,47 +93,4 @@ function callVision_(base64, mime, apiKey) {
     r.fullTextAnnotation.pages.forEach(function (p) { if (typeof p.confidence === 'number') { conf += p.confidence; n++; } });
   }
   return { text: text, confidence: n ? conf / n : 0.9 };
-}
-
-/**
- * parseInvoiceText_(text) -> { beneficiary_name, beneficiary_mst, amount_total, invoice_id, invoice_date }
- * Heuristic theo nhãn hóa đơn VAT VN (song ngữ). KHÔNG tự sửa OCR (chỉ trích).
- */
-function parseInvoiceText_(text) {
-  var t = String(text || '').replace(/\r/g, '');
-  var out = { beneficiary_name: '', beneficiary_mst: '', amount_total: 0, invoice_id: '', invoice_date: '' };
-
-  // MST: gần nhãn "Mã số thuế" (ưu tiên), else số 10/13.
-  var mst = t.match(/M[ãa]\s*s[ốo]\s*thu[ếe][^\d]{0,20}(\d{10}(?:\s*-\s*\d{3})?)/i);
-  if (!mst) mst = t.match(/\b(\d{10}(?:-\d{3})?)\b/);
-  if (mst) out.beneficiary_mst = mst[1].replace(/\s|-/g, '').length >= 10 ? mst[1].replace(/\s/g, '') : mst[1];
-
-  // Số tiền: gần "Tổng cộng tiền thanh toán" / "Total payment" / "Tổng cộng".
-  var amt = t.match(/(?:t[ổo]ng\s+c[ộo]ng\s+ti[ềe]n\s+thanh\s+to[áa]n|total\s+payment|t[ổo]ng\s+c[ộo]ng)[^\d]{0,30}([\d.,\s]{4,})/i);
-  if (amt) { var digits = amt[1].replace(/[^\d]/g, ''); out.amount_total = digits ? parseInt(digits, 10) : 0; }
-
-  // Số hóa đơn: nhãn "Số" / "No." (thường dạng 00001234 hoặc AA/24E-...).
-  // Giá trị BẮT BUỘC chứa ít nhất 1 chữ số → tránh bắt nhầm "thue" trong "Mã số thuế".
-  var no = t.match(/(?:s[ốo]\s*(?:h[óo]a\s*[đd][ơo]n)?|invoice\s*no\.?|no\.?)\s*[:.]?\s*([A-Z0-9][A-Z0-9/\-]*\d[A-Z0-9/\-]*)/i);
-  if (no) out.invoice_id = no[1].replace(/[.,;]+$/, '');
-
-  // Ngày: "Ngày dd tháng mm năm yyyy" hoặc dd/mm/yyyy.
-  var d1 = t.match(/Ng[àa]y\s*(\d{1,2})\s*th[áa]ng\s*(\d{1,2})\s*n[ăa]m\s*(\d{4})/i);
-  if (d1) out.invoice_date = d1[3] + '-' + pad2_(d1[2]) + '-' + pad2_(d1[1]);
-  else {
-    var d2 = t.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})\b/);
-    if (d2) out.invoice_date = d2[3] + '-' + pad2_(d2[2]) + '-' + pad2_(d2[1]);
-  }
-
-  // Tên bên bán/thụ hưởng: dòng sau nhãn "Đơn vị bán hàng/Tên đơn vị/Người bán".
-  var nm = t.match(/(?:[ĐđDd][ơo]n\s*v[ịi]\s*b[áa]n\s*h[àa]ng|t[êe]n\s*[đd][ơo]n\s*v[ịi]|ng[ưu][ờo]i\s*b[áa]n)\s*[:.]?\s*(.+)/i);
-  if (nm) out.beneficiary_name = nm[1].split('\n')[0].trim().replace(/\s{2,}/g, ' ');
-
-  return out;
-}
-
-function pad2_(s) { s = String(s); return s.length < 2 ? '0' + s : s; }
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseInvoiceText_: parseInvoiceText_ };
 }

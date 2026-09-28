@@ -1,5 +1,7 @@
 # NORMALIZATION_SPEC — BeneMatch
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 Chuẩn hóa & feature extraction cho matching. 3 node: **Normalize Names**, **Extract Legal Type**, **Calculate Similarity**. Nguyên tắc: xử lý tối đa "khác cách viết" nhưng **không** làm mất tính phân biệt pháp nhân (không xóa từ ngành nghề/địa danh).
 
 ## 1) Normalize Names (`1786418729517`)

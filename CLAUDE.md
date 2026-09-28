@@ -19,8 +19,11 @@ Repo này theo chuẩn **AI OS Registry (Hub-and-Spoke)**. Tri thức dự án s
 - Trạng thái đa dự án (tự sinh): `AIOS/00_System/PORTFOLIO_DIGEST.md`.
 
 ## Kiến trúc & bối cảnh
-Xem `AI_CONTEXT/PROJECT_OVERVIEW.md` + design docs: `SYSTEM_ARCHITECTURE.md`, `DIFY_WORKFLOW.md`, `DECISION_RULES.md`, `NORMALIZATION_SPEC.md`, `API_CONTRACT.md`, `INTEGRATION_MAP.md`, `GOLDEN_DATASET.md`, `DATA_MODEL.md`, `DESIGN_SYSTEM.md`.
+Xem `AI_CONTEXT/PROJECT_OVERVIEW.md` + **`ENGINE_V3_SPEC.md` (nguồn chuẩn)** + design docs (lịch sử): `SYSTEM_ARCHITECTURE.md`, `DIFY_WORKFLOW.md`, `DECISION_RULES.md`, `NORMALIZATION_SPEC.md`, `API_CONTRACT.md`, `INTEGRATION_MAP.md`, `GOLDEN_DATASET.md`, `DATA_MODEL.md`, `DESIGN_SYSTEM.md`.
 
-## Nguồn sự thật của lõi verify
-- Workflow Dify: `Beneficiary Legal Entity Verification V2.yml` (Dify Cloud) + bàn giao `Beneficiary_Verification_Dify_V2_Handover.docx`. **Dùng đúng code tuned trong đó làm baseline**, không quay lại prototype cũ.
-- Số tài khoản luôn **String**; Decision Engine cần **đủ 17 input** đúng type; LLM chỉ chạy ở REVIEW+`ai_eligible=true` (lưu ý TD-BM-01).
+## Nguồn sự thật (từ 2026-09-28 — engine v3)
+- **Logic duy nhất:** `src/engine/bm-engine.js` (chạy trình duyệt / GAS / Node). Spec: `AI_CONTEXT/ENGINE_V3_SPEC.md`.
+- `docs/index.html`, `fe/index.html`, `fe/present.html`, `gas/Engine.gs` là **file sinh** bởi `node fe/build.mjs` — không sửa tay.
+- Gate trước khi build/push: `node test/engine.test.mjs` (golden tên, parity Python difflib, kịch bản hồ sơ, IO) phải pass 100%; False Match = 0.
+- Kênh vận hành: **công cụ offline** Prod https://tuanttstb-debug.github.io/BeneMatch/ — dữ liệu KH thật chỉ xử lý trong trình duyệt, không lưu, không gửi đi. Không thêm bất kỳ network call nào mang dữ liệu hồ sơ.
+- Dify V2 (`*.yml`, `*.docx`) chỉ còn là tài liệu tham chiếu baseline — **không** trên đường quyết định, không dùng AI.

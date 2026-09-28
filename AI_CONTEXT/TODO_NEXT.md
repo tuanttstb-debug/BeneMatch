@@ -2,6 +2,16 @@
 
 Ưu tiên trên xuống. Owner: [CC]=Claude Code · [TT]=Tuân.
 
+## ▣ Delta (2026-09-28) — ENGINE v3 (công cụ offline vận hành thật)
+
+XONG [CC] (chưa push): engine v3 hợp nhất + FE mới + GAS mới + 81/81 test — xem `ENGINE_V3_SPEC.md`. Ưu tiên tiếp:
+1. [TT] 🔴 Duyệt → [CC] commit + push `main` → kiểm Prod https://tuanttstb-debug.github.io/BeneMatch/ (hard-refresh).
+2. [TT] Nghiệm thu với 3–5 hồ sơ thật **trên máy** (không gửi dữ liệu thật cho em). Ca kết luận sai → báo em **mẫu tên đã ẩn danh** (vd "CTY TNHH TM [X] ↔ [X] TRADING") + mã luật hiển thị → [CC] thêm vào `test/golden_names.json` rồi chỉnh luật.
+3. [TT] Hỏi ATTT/CNTT: dùng link GitHub Pages công khai cho dữ liệu thật (xử lý local) hay phân phối **file HTML nội bộ** (mở trực tiếp; XML/dán/nhập tay chạy không cần mạng, Excel/PDF/OCR cần tải thư viện CDN lần đầu). Nếu cấm CDN → [CC] nhúng sẵn SheetJS/pdf.js (TD-BM-08).
+4. [TT] Xác nhận chính sách 2 điểm em tự chốt: UNC không khớp bên bán nào = CHẶN · tên chỉ khớp sau khi dịch tiếng Anh = CẦN KIỂM TRA.
+5. [TT] Cấp 2–3 XML HĐĐT (ẩn danh) từ các nhà cung cấp khác (VNPT/Viettel/MISA/BKAV…) → [CC] kiểm parser XML.
+6. [CC] Cập nhật `test/live/*.mjs` theo API GAS mới (chỉ khi [TT] còn dùng đường GAS).
+
 ## ▣ Delta (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro số tiền/chứng từ
 
 XONG [CC] (push origin/main; parity OK + harness 14/14): ✅ **CR1** ô số tiền tự thêm dấu nghìn khi gõ (chỉ số tiền, giữ MST/STK/số HĐ) · ✅ **CR2** engine (`gas/Recon.gs`+`src/recon`): BỎ cảnh báo thiếu-lệnh-CT + BỎ ΣHĐ>ΣCT (không rủi ro); GIỮ thừa chi + chi-thiếu-hóa-đơn; so tổng theo từng bên thụ hưởng · ✅ verify Chrome đủ ca. Ưu tiên tiếp:

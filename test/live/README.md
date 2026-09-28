@@ -1,5 +1,7 @@
 # test/live — smoke-test đường LIVE (chạy tay)
 
+> ⚠️ 2026-09-28: đường chính là công cụ offline (engine v3). GAS nay dùng `gas/Engine.gs` (sinh từ `src/engine`), **không còn Dify** — route `verify_name` trả kết quả engine v3; `reconcile` nhận `{case, invoices, transfers}` (hoặc `transfer_orders_csv`). Các script dưới viết cho API cũ, cần cập nhật trước khi chạy lại.
+
 Kiểm thử end-to-end đường thật GAS → Dify / Drive OCR / reconcile. **Dữ liệu synthetic**, không PII thật.
 
 ## Chuẩn bị

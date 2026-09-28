@@ -1,5 +1,7 @@
 # API_CONTRACT — BeneMatch
 
+> ⚠️ **ĐÃ ĐƯỢC THAY THẾ (2026-09-28)** bởi `ENGINE_V3_SPEC.md` — engine v3 deterministic trong `src/engine/bm-engine.js`. Giữ file này để tra lịch sử baseline Dify V2.
+
 Hợp đồng I/O giữa GAS ↔ Dify Workflow (và FE ↔ GAS). **Ổn định** — đổi phải bump version + ghi handover.
 
 ## Input (START — 5 biến, đều String)

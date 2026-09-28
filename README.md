@@ -1,48 +1,38 @@
 # BeneMatch
 
-**Đối chiếu lô hóa đơn ↔ lệnh chuyển tiền — bắt sai người thụ hưởng, lệch tiền, hóa đơn trùng, thiếu chứng từ.**
-Deterministic-first: quyết định về tiền & trùng theo luật (không AI); AI chỉ diễn giải cảnh báo cho số ít ca khớp tên mơ hồ.
+**Kiểm tra người thụ hưởng & chứng từ trước giải ngân — đối chiếu hóa đơn ↔ lệnh chuyển tiền (UNC) của một hồ sơ.**
+Bắt: **chi sai người thụ hưởng** (khác pháp nhân / không có trên hóa đơn), **thừa chi**, **hóa đơn trùng**, **hóa đơn không xuất cho KH vay**, tên bị cắt cụt / chi nhánh / tên tiếng Anh cần kiểm tra.
+**100% deterministic — không AI, dữ liệu không rời máy.**
 
-## 🔗 Demo trực tuyến
+## 🔗 Công cụ
 
 👉 **https://tuanttstb-debug.github.io/BeneMatch/**
 
-> ⚠️ Trang demo chạy **hoàn toàn trong trình duyệt** với **dữ liệu mẫu (synthetic)**. **Không nhập hóa đơn, số tài khoản hay dữ liệu khách hàng thật.** Đây là bản giới thiệu năng lực để lấy góp ý — chưa phải hệ thống production.
+Chạy hoàn toàn trong trình duyệt: hóa đơn, UNC, thông tin khách hàng **không được gửi đi** và không lưu lại (đóng tab là xóa). Thư viện đọc Excel/PDF/ảnh chỉ được tải khi cần; file không bị upload.
 
-## Demo cho thấy gì?
+## Cách dùng (4 bước)
+1. **Thông tin hồ sơ** — số GNOL, KH vay + MST, ĐVKD, ngày & số tiền giải ngân.
+2. **Hóa đơn** — kéo-thả **XML hóa đơn điện tử** (chính xác nhất) · PDF · ảnh (đọc tự động → phải tick "Đã đối chiếu") · dán bảng kê từ Excel · nhập tay.
+3. **UNC** — dán danh sách từ Excel (tên người thụ hưởng, STK, ngân hàng, số tiền, nội dung). Không cần MST.
+4. **Kiểm tra hồ sơ** → xử lý cảnh báo → **Xuất Excel / In phiếu / Email ĐVKD**.
 
-Chọn một tình huống, BeneMatch gộp theo người thụ hưởng và cho kết luận **MATCH** (cho qua) / **REVIEW** (cần kiểm tra) / **NOT_MATCH** (chặn):
-
-| Tình huống | Kết luận | Bắt được gì |
-|---|---|---|
-| Khớp sạch | MATCH | Tên & tiền khớp — cho qua |
-| Sai người thụ hưởng (khác pháp nhân) | NOT_MATCH | Hóa đơn CỔ PHẦN nhưng lệnh TNHH → chặn chuyển sai thực thể |
-| Lệch tiền (thừa chi) | REVIEW | Chi 50tr cho hóa đơn 40tr — vượt dung sai |
-| Hóa đơn trùng | REVIEW | Hai hóa đơn cùng tiền/ngày — nghi trả hai lần |
-| Thiếu chứng từ | REVIEW | Hóa đơn thiếu lệnh CT (hoặc ngược lại) |
-| Tên gần giống | REVIEW | Tên lệch nhẹ — cần người kiểm (AI diễn giải) |
-| Lô tổng hợp | (trộn) | Một lô thực tế nhiều nhóm, xếp rủi ro cao lên trước |
+Tab **Check nhanh tên**: gõ 2 tên → kết luận + mức tương đồng + chi tiết chấm điểm. Tab **Quy tắc**: toàn bộ luật & mã cảnh báo.
 
 ## Kiến trúc
+| Thành phần | Vai trò |
+|---|---|
+| `src/engine/bm-engine.js` | **Nguồn logic duy nhất** — chuẩn hóa tên, 10+ luật khớp tên (port Dify V2 + nâng cấp), ghép UNC ↔ bên bán, đối chiếu hồ sơ, đọc bảng/text hóa đơn. Spec: `AI_CONTEXT/ENGINE_V3_SPEC.md`. |
+| `fe/index.template.html` → `fe/build.mjs` | Sinh `docs/index.html` (GitHub Pages), `fe/index.html`, `fe/present.html`, `gas/Engine.gs`. |
+| `src/config/thresholds.json` | Ngưỡng tên, dung sai tiền, mức cảnh báo. |
+| `gas/` | Đường API tùy chọn (Google Apps Script) dùng cùng engine; log Sheet chỉ ghi kết luận, không ghi tên/STK. |
+| `Beneficiary Legal Entity Verification V2.yml` | Workflow Dify cũ — **chỉ để tham chiếu**, không còn trên đường quyết định. |
 
-- **Lõi logic** `src/recon/` — engine đối chiếu deterministic (gộp nhóm → tổng nhóm/grand total → dung sai → duplicate → OCR flag → verify tên). Nguồn logic **duy nhất**.
-- **Khớp tên pháp nhân** — workflow Dify "Beneficiary Legal Entity Verification V2" (rule engine + AI chỉ cho ~<10% ca REVIEW mơ hồ). Bản offline dùng stub deterministic tương đương.
-- **Bản port GAS** `gas/Recon.gs` — parity byte-identical với `src/recon` (gate `gas/verify_recon.mjs`), phục vụ gateway live + OCR hóa đơn (Google Drive OCR **miễn phí** / Google Vision).
-- **Trang demo** `docs/index.html` — sinh từ template + engine + dữ liệu synthetic qua `fe/build.mjs`. Tự chứa, tĩnh, host trên GitHub Pages.
-
-## Chạy / build
-
+## Phát triển
 ```bash
-node fe/build.mjs          # sinh fe/index.html + docs/index.html (bản host Pages)
-node test/recon.test.mjs   # regression engine (14 case)
-node gas/verify_recon.mjs  # parity Recon.gs ≡ src/recon
+node test/engine.test.mjs   # regression gate (81 ca: golden tên, parity Python difflib, 9 kịch bản, IO)
+node fe/build.mjs           # sinh docs/ + fe/ + gas/Engine.gs
 ```
+Sửa logic **chỉ** trong `src/engine/bm-engine.js` (không sửa `docs/index.html`, `gas/Engine.gs` — file sinh).
 
-Xem trọn bối cảnh nghiệp vụ, luật quyết định, kiến trúc tích hợp trong `AI_CONTEXT/`.
-
-## Dữ liệu & bảo mật
-
-Toàn bộ dữ liệu trong repo và trang demo là **synthetic** (tên/MST/số tài khoản hư cấu). Không có dữ liệu khách hàng thật. Trang public không lưu trữ đầu vào — đối chiếu chạy tại chỗ trong trình duyệt.
-
----
-*PoC/Demo cho TPBank. Owner: PER-TTT.*
+## Dữ liệu
+Kịch bản mẫu (`data/synthetic/scenarios.json`) và fixtures (`test/fixtures/`) là **giả lập**. Dữ liệu khách hàng thật **không bao giờ** được commit (xem `.gitignore`).

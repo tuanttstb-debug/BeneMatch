@@ -33,3 +33,5 @@ test/live/config.mjs
 test/live/*_response.json
 # EVD synthetic cho test OCR — cho phép commit (ngoại lệ của *.png ở trên)
 !test/live/invoice_synth_01.png
+# Fixtures hóa đơn GIẢ LẬP cho test đọc PDF — cho phép commit
+!test/fixtures/hddt_synth.pdf

@@ -7,14 +7,20 @@ owner: PER-TTT
 tags: [beneficiary, verification, name-matching, legal-entity, dify, gas, poc, tpbank, shtd]
 related: [PRJ-SHTD, SYS-TPBANK, REF-TPBANK-DELIVERY, PRJ-SG, PER-TTT]
 created: 2026-08-19
-updated: 2026-08-27
+updated: 2026-09-28
 version: 2
 source: https://github.com/tuanttstb-debug/BeneMatch
 demo_url: https://tuanttstb-debug.github.io/BeneMatch/
 ---
 
 ## Tóm tắt điều hành
-**BeneMatch** đối chiếu **lô hóa đơn ↔ lệnh chuyển tiền** để bắt bốn nhóm rủi ro chi tiền: **sai người thụ hưởng** (khác pháp nhân), **lệch số tiền** (thừa/thiếu ngoài dung sai), **hóa đơn trùng** (trả hai lần), **thiếu chứng từ**. Lõi khớp tên pháp nhân chạy trên **Dify Cloud** (rule-based deterministic + AI chỉ diễn giải cảnh báo). **Mục tiêu hiện tại (2026-08-27):** một **trang demo public trên GitHub Pages** giới thiệu năng lực cho nhân sự xem/thử và **lấy góp ý** — chạy hoàn toàn trong trình duyệt với **dữ liệu synthetic** (không PII thật). **PoC/Demo cho TPBank — chưa production.**
+**BeneMatch** đối chiếu **lô hóa đơn ↔ lệnh chuyển tiền** để bắt bốn nhóm rủi ro chi tiền: **sai người thụ hưởng** (khác pháp nhân), **lệch số tiền** (thừa/thiếu ngoài dung sai), **hóa đơn trùng** (trả hai lần), **thiếu chứng từ**. Lõi khớp tên pháp nhân chạy trên **Dify Cloud** (rule-based deterministic + AI chỉ diễn giải cảnh báo). **Mục tiêu hiện tại (2026-08-27):** một **trang demo public trên GitHub Pages** giới thiệu năng lực cho nhân sự xem/thử và **lấy góp ý** — chạy hoàn toàn trong trình duyệt với **dữ liệu synthetic** (không PII thật). **Từ 2026-09-28: công cụ offline vận hành thật (engine v3, không AI).**
+
+## Mục tiêu hiện tại (chốt 2026-09-28) — CÔNG CỤ VẬN HÀNH THỰC TẾ
+- **Kênh:** công cụ offline 1 trang https://tuanttstb-debug.github.io/BeneMatch/ — cán bộ giải ngân/ĐVKD dùng với **dữ liệu thật**; mọi xử lý trong trình duyệt, không lưu, không gửi đi.
+- **Đơn vị xử lý:** 1 hồ sơ giải ngân (KH vay, n hóa đơn ↔ m UNC). UNC không có MST → ghép theo tên + số HĐ trong nội dung.
+- **Lõi:** engine v3 deterministic `src/engine/bm-engine.js` — **không AI**. Spec `ENGINE_V3_SPEC.md`.
+- Mục tiêu demo 2026-08-27 bên dưới giữ để tra lịch sử (đã thay thế).
 
 ## Mục tiêu bản demo public (chốt 2026-08-27)
 - **Đối tượng:** nhân sự nghiệp vụ TPBank (không kỹ thuật) — xem/thử qua **link chia sẻ**, phản hồi.

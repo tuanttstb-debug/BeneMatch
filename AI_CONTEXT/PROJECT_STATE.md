@@ -1,6 +1,12 @@
 # PROJECT STATE — BeneMatch
 
-**Cập nhật:** 2026-08-22 · **Version:** 0.2.0-dev · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+**Cập nhật:** 2026-09-28 · **Version:** 0.3.0 (engine 3.0.0) · **Prod:** https://tuanttstb-debug.github.io/BeneMatch/ · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+
+## Delta (2026-09-28) — ENGINE v3: tổng rà soát & nâng cấp lên mức vận hành thực tế
+**Pivot:** từ demo synthetic → **công cụ offline vận hành thật** (Prod https://tuanttstb-debug.github.io/BeneMatch/ — [TT] bật Pages 28/09). Dữ liệu KH thật xử lý trong trình duyệt, không lưu, không gửi đi. Phỏng vấn [TT] chốt 8 điểm (xem `ENGINE_V3_SPEC.md §1`).
+**Rà soát phát hiện:** check tên tồn tại 4 bản lệch nhau (Dify 10 luật vs 3 stub Jaccard ≥ 0.6 ở FE/GAS/src) · gộp nhóm giả định UNC có MST (thực tế không) → biến sai tên thành "thiếu hóa đơn" · mỗi nhóm chỉ so tên HĐ[0] ↔ UNC[0] · Dify/LLM trên đường quyết định (timeout ~93s, data-boundary) · thiếu chi nhánh/HKD/tên tiếng Anh/cắt cụt.
+**Đã làm:** `src/engine/bm-engine.js` = **nguồn logic duy nhất** (FE/GAS/Node) — port 10 luật Dify V2 + `difflib` chuẩn Python (parity 74/74) + luật mới (chi nhánh, cắt cụt, tên riêng khác/trùng, lệch số hiệu, tiếng Anh) · ghép UNC ↔ bên bán theo tên + số HĐ trong nội dung · check **mọi** UNC · HĐ trùng không cộng tổng · MST checksum · người mua ≠ KH vay · UNC trùng · Σ UNC vs số giải ngân. FE viết lại: hồ sơ 4 bước, nhập XML TT78/PDF/ảnh OCR/Excel/dán/tay, xuất Excel 5 sheet, in phiếu có ô ký, email ĐVKD, tab check nhanh tên, tab quy tắc. GAS dùng `gas/Engine.gs` sinh tự động, bỏ Dify. Test **81/81** (golden 37 cặp, False Match = 0).
+**Version:** 0.3.0 (engine 3.0.0). **Blocker:** chưa commit/push — chờ [TT] duyệt.
 
 ## Delta (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro số tiền/chứng từ
 2 CR. **CR1 (FE):** ô **số tiền** tự thêm dấu chấm nghìn khi gõ (chỉ số tiền, không MST/STK/số HĐ). **CR2 (engine `gas/Recon.gs`+`src/recon/reconcile.js`):** BỎ cảnh báo `TRANSFER_MISSING_FOR_GROUP` (hóa đơn chưa chi) + BỎ `AMOUNT_UNDER_TOLERANCE` (ΣHĐ>ΣCT chi ít hơn — không rủi ro); GIỮ thừa chi + `INVOICE_MISSING_FOR_TRANSFER` (chi thiếu hóa đơn). So tổng theo TỪNG bên thụ hưởng (không đổi). Parity OK + harness **14/14** (EXPECT 0103/0104→MATCH). **Blocker:** CR2 chạm engine GAS → [TT] **redeploy `Recon.gs`** cho đường live (demo public offline đã áp qua build).

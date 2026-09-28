@@ -2,6 +2,17 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-09-28) — ENGINE v3:** ✅ **Đóng do lỗi thời** TD-BM-01/02/03/04/06 (Dify/LLM không còn trên đường quyết định). 🔧 TD-BM-05 thay bằng `BM.io.parseInvoiceText` (dùng chung FE/GAS, có test) — vẫn heuristic cho PDF/ảnh, nên ưu tiên XML. Nợ mới:
+
+## TD-BM-07 — Golden dataset tên mới là synthetic (2026-09-28)
+37 cặp trong `test/golden_names.json` do [CC] dựng theo mẫu phổ biến; ngưỡng (0.82/0.75/0.96, cắt cụt ≥ 20 ký tự, tên riêng seq < 0.75) chưa hiệu chỉnh trên dữ liệu thật. **Hướng:** [TT] báo ca sai theo mẫu ẩn danh → thêm golden → chỉnh. Ưu tiên cao trong 2 tuần đầu vận hành.
+
+## TD-BM-08 — Phụ thuộc CDN cho Excel/PDF/OCR (2026-09-28)
+SheetJS 0.18.5 / pdf.js 3.11.174 / Tesseract.js 5.1.1 tải lười từ jsDelivr (Tesseract tải thêm dữ liệu tiếng Việt ~10MB). Mạng nội bộ chặn CDN → 3 đường này lỗi (XML/dán/nhập tay vẫn chạy; xuất Excel tự lùi về CSV). **Hướng:** nếu ATTT yêu cầu → nhúng SheetJS + pdf.js vào file (≈ +1.3MB); OCR giữ tùy chọn.
+
+## TD-BM-09 — test/live/*.mjs viết cho API GAS cũ (2026-09-28)
+Chỉ ảnh hưởng smoke-test GAS (không phải kênh chính). Cập nhật khi cần dùng GAS.
+
 **Trạng thái (2026-09-04 #3) — Định dạng số tiền + đổi quy tắc rủi ro:** Không nợ mới. CR2 chạm engine (`gas/Recon.gs`+`src/recon/reconcile.js`) — **parity OK + harness 14/14** (cập nhật 2 EXPECT). Quy tắc mới: chỉ **thừa chi** (ΣCT>ΣHĐ) + **chi thiếu hóa đơn** là rủi ro; ΣHĐ>ΣCT và hóa-đơn-chưa-chi KHÔNG cảnh báo. **Deploy-gated:** [TT] redeploy `Recon.gs` để áp trên đường GAS live (demo public offline đã áp qua build). Các code `TRANSFER_MISSING_FOR_GROUP`/`AMOUNT_UNDER_TOLERANCE` còn trong `WARN_META` (không push nữa) — vô hại, giữ để tương thích/tham chiếu.
 
 **Trạng thái (2026-09-04 #2) — Form tự nhập nhanh (thuần FE):** Không nợ mới. Form nhập trường đơn dùng chung đường `runOffline` (không tạo path recon thứ 2), 0 đụng engine/GAS (recon 14/14). Ghi chú (không phải nợ): hiện hỗ trợ **1↔1** và **nhiều HĐ↔1 lệnh**; chiều "nhiều lệnh↔1 HĐ" chưa có (tùy chọn tương lai). Số tiền nhập tự do (parse bỏ ký tự lạ).
