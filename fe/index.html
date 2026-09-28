@@ -156,6 +156,18 @@
   .email-bar .subj{font-size:12.5px;font-weight:700;overflow-wrap:anywhere;flex:1 1 280px}
   .email-body{background:#fff;color:#1b1330;padding:16px}
   .sitefoot{margin-top:20px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;font-size:12px;color:var(--muted)}
+  .ai-card{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;background:linear-gradient(135deg,rgba(123,44,191,.07),rgba(90,24,154,.02))}
+  .ai-card h2{font-size:14.5px;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+  .ai-set{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0} @media(min-width:760px){ .ai-set{grid-template-columns:2fr 1fr auto} }
+  .ai-set label.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
+  .ai-set label.chk input{width:auto}
+  .advice{margin-top:8px;border:1px dashed var(--purple);border-radius:10px;padding:8px 11px;background:var(--purple-soft)}
+  .advice .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+  .advice .hd b{color:var(--purple-ink)}
+  .advice ul{margin:4px 0 0;padding-left:18px;font-size:12.5px}
+  .advice p{margin:4px 0 0;font-size:13px}
+  .av-SAME_ENTITY{background:var(--green-bg);color:var(--green)} .av-DIFFERENT_ENTITY{background:var(--red-bg);color:var(--red)}
+  .av-RELATED_ENTITY{background:var(--amber-bg);color:var(--amber)} .av-UNCERTAIN{background:var(--band);color:var(--sub)}
   #printArea{display:none}
   @media print{
     @page{size:A4;margin:12mm}
@@ -184,7 +196,7 @@
     <span class="tag" id="verTag">Engine v3 · Offline</span>
   </header>
 
-  <div class="privacy"><span>🔒</span><span>Mọi xử lý chạy <b>ngay trên trình duyệt của máy này</b> — hóa đơn, lệnh chuyển tiền, thông tin khách hàng <b>không được gửi đi đâu</b> và không được lưu lại; đóng tab là xóa. Thư viện đọc Excel/PDF/ảnh chỉ được tải khi cần (không gửi file lên mạng).</span></div>
+  <div class="privacy"><span>🔒</span><span>Mọi xử lý chạy <b>ngay trên trình duyệt của máy này</b> — hóa đơn, lệnh chuyển tiền, thông tin khách hàng <b>không được gửi đi đâu</b> và không được lưu lại; đóng tab là xóa. Thư viện đọc Excel/PDF/ảnh chỉ được tải khi cần (không gửi file lên mạng). <b>AI tư vấn là tùy chọn</b>: chỉ khi cán bộ bấm “Hỏi AI”, riêng <b>cặp tên</b> của ca cần kiểm tra được gửi qua cổng BeneMatch tới Dify (không gửi số tiền, STK, MST, thông tin KH vay).</span></div>
 
   <nav class="tabs" role="tablist">
     <button class="on" data-tab="case">① Kiểm tra hồ sơ</button>
@@ -283,7 +295,7 @@
         <li><b>Lệnh chuyển tiền</b>: dán danh sách UNC (tên người thụ hưởng, STK, ngân hàng, số tiền, nội dung). UNC không cần MST — hệ thống tự ghép với bên bán theo <b>tên</b> và <b>số hóa đơn trong nội dung</b>.</li>
         <li>Bấm <b>Kiểm tra hồ sơ</b> → xem kết luận, xử lý từng cảnh báo → <b>In phiếu / Xuất Excel</b> lưu hồ sơ, <b>Email ĐVKD</b> nếu cần bổ sung.</li>
       </ol>
-      <p class="muted" style="margin-top:10px">Kết luận hồ sơ = mức nặng nhất trong các cảnh báo: <span class="badge b-MATCH">KHỚP</span> cho qua · <span class="badge b-REVIEW">CẦN KIỂM TRA</span> kiểm soát, hoàn thiện hồ sơ trước khi chi · <span class="badge b-NOT_MATCH">KHÔNG KHỚP</span> dừng giải ngân. <b>Không có AI trên đường quyết định</b> — mọi kết luận theo luật cố định, tái lập được.</p>
+      <p class="muted" style="margin-top:10px">Kết luận hồ sơ = mức nặng nhất trong các cảnh báo: <span class="badge b-MATCH">KHỚP</span> cho qua · <span class="badge b-REVIEW">CẦN KIỂM TRA</span> kiểm soát, hoàn thiện hồ sơ trước khi chi · <span class="badge b-NOT_MATCH">KHÔNG KHỚP</span> dừng giải ngân. <b>Không có AI trên đường quyết định</b> — mọi kết luận theo luật cố định, tái lập được. <b>AI tư vấn</b> (tùy chọn, GPT-5 qua Dify) chỉ đưa ý kiến tham khảo cho ca tên khó (tên tiếng Anh, viết tắt, mẹ ↔ con, đổi tên, lỗi OCR); kết luận không đổi.</p>
     </div>
     <div class="card">
       <div class="card-hd"><h2>Luật khớp tên (xét từ trên xuống, trúng luật nào dừng ở luật đó)</h2></div>
@@ -331,7 +343,7 @@
 (function (root) {
   'use strict';
 
-  var ENGINE_VERSION = '3.0.0';
+  var ENGINE_VERSION = '3.1.0';
 
   // =====================================================================================
   // 1) CHUẨN HÓA
@@ -426,6 +438,9 @@
 
   // Cụm pháp lý bị loại khi lấy "tên lõi" (ở BẤT KỲ vị trí — hỗ trợ tên tiếng Anh hậu tố). Dài → ngắn.
   var LEGAL_PHRASES = [
+    'TONG CONG TY TNHH MOT THANH VIEN',
+    'TONG CONG TY CO PHAN',
+    'TONG CONG TY TNHH',
     'CONG TY TNHH HAI THANH VIEN TRO LEN',
     'CONG TY TNHH MOT THANH VIEN',
     'CONG TY TNHH HAI THANH VIEN',
@@ -576,6 +591,8 @@
       core: core,
       core_tokens: coreTokens,
       distinctive_tokens: distinctiveTokens(coreTokens),
+      // Cấp tập đoàn: "TỔNG CÔNG TY X" ≠ "CÔNG TY X" (thường là mẹ ↔ con = 2 pháp nhân).
+      group_tier: /\bTONG CONG TY\b/.test(br.parent) ? 'TONG_CONG_TY' : '',
     };
   }
 
@@ -730,6 +747,7 @@
     NUMBER_TOKEN_DIFFERENT: 'Tên gần giống nhưng khác số hiệu ({inv_numbers} ≠ {pay_numbers}).',
     NAME_SIMILAR_BUT_NOT_CONCLUSIVE: 'Tên gần giống nhưng chưa đủ căn cứ kết luận cùng pháp nhân.',
     TRANSLATED_NAME_MATCH: 'Khớp sau khi quy đổi tên tiếng Anh sang tiếng Việt — cần đối chiếu tên đăng ký.',
+    GROUP_TIER_DIFFERENT: 'Một bên là TỔNG CÔNG TY, bên kia là CÔNG TY — có thể là công ty mẹ ↔ công ty con (hai pháp nhân khác nhau).',
     LOW_NAME_SIMILARITY: 'Tên khác biệt lớn — không cùng pháp nhân.',
   };
 
@@ -812,6 +830,8 @@
     }
     // Tên có quy đổi tiếng Anh → không bao giờ tự MATCH.
     if (res.decision === 'MATCH' && (A.translated || B.translated)) res = mkName('REVIEW', 'TRANSLATED_NAME_MATCH');
+    // Tổng công ty ↔ công ty (mẹ ↔ con) → không bao giờ tự MATCH.
+    if (res.decision === 'MATCH' && A.group_tier !== B.group_tier) res = mkName('REVIEW', 'GROUP_TIER_DIFFERENT');
 
     var reasonCodes = [res.reason_code];
     if (f.numbers_conflict && res.reason_code !== 'NUMBER_TOKEN_DIFFERENT' && res.decision !== 'NOT_MATCH') reasonCodes.push('NUMBER_TOKEN_DIFFERENT');
@@ -853,6 +873,7 @@
     return {
       raw: P.raw, normalized: P.normalized, core: P.core, legal_type: P.legal_type, legal_family: P.legal_family,
       legal_label: FAMILY_LABEL[P.legal_family], branch: P.branch, distinctive: P.distinctive_tokens.join(' '), translated: P.translated,
+      group_tier: P.group_tier || '',
     };
   }
 
@@ -1408,6 +1429,98 @@
     return s.replace(/^[\s:.\-]+/, '').replace(/\s*(m[ãa]\s*s[ốo]\s*thu[ếe].*|tax\s*code.*|\(seller\).*)$/i, '').replace(/\s{2,}/g, ' ').trim();
   }
 
+  // =====================================================================================
+  // 6) AI TƯ VẤN (LLM qua Dify) — CHỈ THAM KHẢO, KHÔNG ĐỔI KẾT LUẬN
+  //    Chính sách (chốt [TT] 28/09/2026): LLM chỉ đề xuất + giải thích cho cán bộ; kết luận của
+  //    engine giữ nguyên. Chỉ gửi CẶP TÊN + tóm tắt engine (không số tiền/STK/MST/thông tin KH vay).
+  // =====================================================================================
+
+  var ADVISOR_VERDICTS = ['SAME_ENTITY', 'DIFFERENT_ENTITY', 'RELATED_ENTITY', 'UNCERTAIN'];
+  var ADVISOR_RELATIONS = ['IDENTICAL', 'ABBREVIATION', 'TRANSLATION', 'TRANSLITERATION', 'TRUNCATION', 'TYPO_OCR',
+    'BRANCH', 'PARENT_SUBSIDIARY', 'RENAMED', 'UNRELATED', 'UNKNOWN'];
+  var ADVISOR_LABEL = {
+    verdict: { SAME_ENTITY: 'Nhiều khả năng CÙNG pháp nhân', DIFFERENT_ENTITY: 'Nhiều khả năng KHÁC pháp nhân', RELATED_ENTITY: 'Có liên quan nhưng là pháp nhân khác', UNCERTAIN: 'Chưa đủ căn cứ' },
+    relation: { IDENTICAL: 'Cùng tên', ABBREVIATION: 'Viết tắt / tên thương hiệu', TRANSLATION: 'Tên tiếng Anh / tên giao dịch', TRANSLITERATION: 'Phiên âm / không dấu',
+      TRUNCATION: 'Tên bị cắt cụt', TYPO_OCR: 'Lỗi gõ / OCR', BRANCH: 'Chi nhánh / đơn vị phụ thuộc', PARENT_SUBSIDIARY: 'Công ty mẹ ↔ công ty con',
+      RENAMED: 'Đổi tên', UNRELATED: 'Không liên quan', UNKNOWN: 'Không xác định' },
+  };
+  // Ca được hỏi AI: REVIEW (trừ thiếu dữ liệu) + NOT_MATCH "mềm" (khác biệt chữ, có thể do dịch/viết tắt).
+  // KHÔNG hỏi: khác loại hình pháp nhân (luật cứng) · MATCH.
+  var ADVISOR_SOFT_NOT_MATCH = { LOW_NAME_SIMILARITY: 1, DISTINCTIVE_NAME_DIFFERENT: 1 };
+
+  function advisorEligible(nc) {
+    if (!nc || !nc.invoice || !nc.payment || !nc.invoice.raw || !nc.payment.raw) return false;
+    if (nc.decision === 'REVIEW') return nc.reason_code !== 'INSUFFICIENT_DATA';
+    if (nc.decision === 'NOT_MATCH') return !!ADVISOR_SOFT_NOT_MATCH[nc.reason_code];
+    return false;
+  }
+
+  function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, n); }
+
+  /** Payload gửi Dify — chỉ tên + tóm tắt engine. */
+  function advisorPayload(nc) {
+    return {
+      invoice_name: clip(nc.invoice.raw, 300), payment_name: clip(nc.payment.raw, 300),
+      engine_decision: nc.decision, engine_reason: nc.reason_code, engine_explanation: clip(nc.explanation, 400),
+      engine_score: String(nc.score_pct),
+      invoice_legal: nc.invoice.legal_family, payment_legal: nc.payment.legal_family,
+      invoice_core: clip(nc.invoice.core, 200), payment_core: clip(nc.payment.core, 200),
+    };
+  }
+
+  function advisorKey(nc) { return normalizeName(nc.invoice.raw) + '||' + normalizeName(nc.payment.raw); }
+
+  /** Danh sách cặp tên (không trùng) cần hỏi AI từ kết quả reconcileCase. */
+  function advisorCollect(result) {
+    var out = [], seen = {};
+    (result && result.pairs || []).forEach(function (p) {
+      var nc = p.name_check;
+      if (!advisorEligible(nc)) return;
+      var k = advisorKey(nc);
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push({ key: k, payload: advisorPayload(nc) });
+    });
+    return out;
+  }
+
+  /**
+   * Chuẩn hóa + gác ý kiến AI (lớp gác thứ 2, cùng logic với node Validate trên Dify).
+   * Không bao giờ đổi kết luận engine; chỉ làm sạch/hạ mức tự tin của ý kiến AI khi mâu thuẫn luật cứng.
+   */
+  function advisorGuard(raw, nc) {
+    var a = raw && typeof raw === 'object' ? raw : {};
+    var notes = [];
+    var verdict = ADVISOR_VERDICTS.indexOf(a.verdict) >= 0 ? a.verdict : 'UNCERTAIN';
+    var relation = ADVISOR_RELATIONS.indexOf(a.relation) >= 0 ? a.relation : 'UNKNOWN';
+    var conf = Number(a.confidence); conf = isFinite(conf) ? Math.max(0, Math.min(1, conf)) : 0;
+    var ok = !!raw && !a.error && ADVISOR_VERDICTS.indexOf(a.verdict) >= 0;
+    if (nc) {
+      var fi = nc.invoice.legal_family, fp = nc.payment.legal_family;
+      if (verdict === 'SAME_ENTITY' && fi !== 'UNKNOWN' && fp !== 'UNKNOWN' && fi !== fp) {
+        verdict = 'UNCERTAIN'; conf = Math.min(conf, 0.5); notes.push('Hai bên khác loại hình pháp nhân — luật cứng: không thể cùng pháp nhân.');
+      }
+      if (verdict === 'SAME_ENTITY' && (relation === 'PARENT_SUBSIDIARY')) { verdict = 'RELATED_ENTITY'; notes.push('Mẹ ↔ con là hai pháp nhân khác nhau.'); }
+      if (verdict === 'SAME_ENTITY' && nc.invoice.group_tier !== nc.payment.group_tier) {
+        verdict = 'UNCERTAIN'; notes.push('Một bên là Tổng công ty — cần xác minh không phải công ty mẹ ↔ con.');
+      }
+      if (verdict === 'SAME_ENTITY' && relation === 'RENAMED') { conf = Math.min(conf, 0.6); notes.push('AI không tra cứu được lịch sử đổi tên — cần đối chiếu ĐKKD/MST.'); }
+    }
+    var arr = function (x, n) { return (Array.isArray(x) ? x : []).map(function (s) { return clip(s, 300); }).filter(Boolean).slice(0, n); };
+    return {
+      ai_status: ok ? 'OK' : 'FALLBACK',
+      verdict: verdict, verdict_label: ADVISOR_LABEL.verdict[verdict],
+      relation: relation, relation_label: ADVISOR_LABEL.relation[relation],
+      confidence: Math.round(conf * 100) / 100,
+      explanation: clip(a.explanation || (ok ? '' : 'Không nhận được ý kiến AI hợp lệ — xử lý như ca cần kiểm tra thông thường.'), 800),
+      evidence: arr(a.evidence, 4),
+      checks_for_officer: arr(a.checks_for_officer, 3),
+      guard_notes: notes,
+      model: clip(a.model || '', 60),
+      used_for_decision: false,
+    };
+  }
+
   var BM = {
     ENGINE_VERSION: ENGINE_VERSION,
     WARN_META: WARN_META,
@@ -1427,6 +1540,8 @@
     toAmount: toAmount,
     toIsoDate: toIsoDate,
     io: { parseDelimited: parseDelimited, rowsToRecords: rowsToRecords, parseInvoiceText: parseInvoiceText, contentInvoiceRefs: contentInvoiceRefs },
+    advisor: { eligible: advisorEligible, payload: advisorPayload, key: advisorKey, collect: advisorCollect, guard: advisorGuard,
+      VERDICTS: ADVISOR_VERDICTS, RELATIONS: ADVISOR_RELATIONS, LABEL: ADVISOR_LABEL },
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = BM;
@@ -1589,6 +1704,10 @@ var CONFIG = {
   },
   "severity": {}
 };
+var ADVISOR_CFG = {
+  "proxy_url": "https://script.google.com/macros/s/AKfycbwWIUJV77Zigj7WiwyFYMm3FUU6V5RFRuuw9C6ltsFqvT5g-BwXzOFYH0rv-MBiTNMw/exec",
+  "note": "Web App GAS project 152L4fFo…Tkd1L, deployment @9 (2026-09-28, engine 3.1.0 + advise_names). URL không phải bí mật — mã truy cập mới là bí mật (tạo bằng hàm taoMaTruyCap trong editor)."
+};
 var FEEDBACK_EMAIL = "tuantt.stb@gmail.com";
 var CDN = {
   xlsx: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
@@ -1611,7 +1730,7 @@ var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c
 var vnd = function(n){ return (Math.round(Number(n)||0)).toLocaleString('vi-VN'); };
 var digits = function(s){ return String(s==null?'':s).replace(/\D/g,''); };
 
-var state = { invoices: [], transfers: [], result: null, scenario: null };
+var state = { invoices: [], transfers: [], result: null, scenario: null, advice: {} };
 var rid = 0; function newId(p){ rid++; return p + rid; }
 
 function toast(msg, ms){ var t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); if(ms!==0) toast._t=setTimeout(function(){ t.classList.remove('on'); }, ms||3200); }
@@ -1927,8 +2046,21 @@ function nameCheckHtml(v, opts){
     +   '<tr><td>Chuỗi đầy đủ</td><td class="num">'+pc(f.sequence_similarity)+'</td><td>Chuỗi tên lõi</td><td class="num">'+pc(f.core_sequence_similarity)+'</td></tr>'
     +   '<tr><td>Từ đầy đủ</td><td class="num">'+pc(f.token_similarity)+'</td><td>Từ tên lõi</td><td class="num">'+pc(f.core_token_similarity)+'</td></tr>'
     +   '<tr><td>Độ bao phủ tên lõi</td><td class="num">'+pc(f.core_containment_score)+'</td><td>Trùng phần tên riêng</td><td class="num">'+pc(f.distinctive_overlap)+'</td></tr>'
-    + '</table></div><p class="muted" style="margin:6px 0 0">'+esc(v.reason_codes.join(' · '))+' · engine '+esc(v.engine_version)+' · không dùng AI</p></details>';
+    + '</table></div><p class="muted" style="margin:6px 0 0">'+esc(v.reason_codes.join(' · '))+' · engine '+esc(v.engine_version)+' · kết luận không dùng AI</p></details>';
+  var adv = state.advice[BM.advisor.key(v)];
+  if(adv) h += adviceHtml(adv);
   return h;
+}
+function adviceHtml(a){
+  return '<div class="advice"><div class="hd">🧭 <b>Ý kiến AI (tham khảo)</b>'
+    + '<span class="badge av-'+a.verdict+'">'+esc(a.verdict_label)+'</span>'
+    + (a.relation && a.relation!=='UNKNOWN' ? '<span class="badge b-info">'+esc(a.relation_label)+'</span>' : '')
+    + '<span class="muted">độ tin '+Math.round((a.confidence||0)*100)+'%'+(a.ai_status!=='OK'?' · AI không trả lời hợp lệ':'')+'</span></div>'
+    + (a.explanation ? '<p>'+esc(a.explanation)+'</p>' : '')
+    + (a.evidence && a.evidence.length ? '<ul>'+a.evidence.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>' : '')
+    + (a.checks_for_officer && a.checks_for_officer.length ? '<div class="muted" style="margin-top:4px"><b>Cán bộ nên kiểm tra:</b> '+a.checks_for_officer.map(esc).join(' · ')+'</div>' : '')
+    + (a.guard_notes && a.guard_notes.length ? '<div class="muted" style="margin-top:4px">⚖️ Lớp gác: '+a.guard_notes.map(esc).join(' · ')+'</div>' : '')
+    + '<div class="muted" style="margin-top:4px">AI không thay đổi kết luận của hệ thống — dùng làm căn cứ tham khảo khi cán bộ xử lý ca cần kiểm tra.</div></div>';
 }
 function pc(x){ return Math.round((x||0)*100)+'%'; }
 
@@ -1947,6 +2079,7 @@ function renderResult(res){
     + kpi('Chênh lệch (UNC − HĐ)', '<span class="'+(s.grand_diff>0?'amt-OVER':s.grand_diff<0?'amt-UNDER':'amt-MATCH')+'">'+(s.grand_diff>0?'+':'')+vnd(s.grand_diff)+' đ</span>')
     + kpi('Kết luận', '<span class="badge b-'+s.decision+'">'+DEC_LABEL[s.decision]+'</span>')+'</div>';
   h += '<div id="emailBox" class="email-wrap"></div>';
+  h += aiCardHtml(res);
 
   var act = res.warnings.filter(function(w){ return w.severity>0; });
   h += '<div class="card"><div class="card-hd"><h2>Cảnh báo cần xử lý</h2><span class="count">'+act.length+'</span></div>';
@@ -1963,6 +2096,7 @@ function renderResult(res){
   $('btnXlsx').addEventListener('click', exportXlsx);
   $('btnPrint').addEventListener('click', printSheet);
   $('btnEmail').addEventListener('click', toggleEmail);
+  bindAiCard();
 }
 function assign(t){ for(var i=1;i<arguments.length;i++) for(var k in arguments[i]) t[k]=arguments[i][k]; return t; }
 function kpi(l,v){ return '<div class="kpi"><div class="lab">'+l+'</div><div class="val">'+v+'</div></div>'; }
@@ -1992,6 +2126,56 @@ function groupHtml(g){
   return h + '</div>';
 }
 
+/* ================= AI TƯ VẤN (Dify qua GAS proxy) ================= */
+var LS_AI = 'bm_ai_settings';
+function aiSettings(){ var o={ url: ADVISOR_CFG.proxy_url||'', code:'', remember:false }; try{ var x=JSON.parse(localStorage.getItem(LS_AI)||'null'); if(x){ o.url = x.url||o.url; o.code = x.code||''; o.remember = !!x.code; } }catch(e){} return o; }
+function saveAiSettings(url, code, remember){ try{ if(remember) localStorage.setItem(LS_AI, JSON.stringify({ url:url, code:code })); else localStorage.setItem(LS_AI, JSON.stringify({ url:url })); }catch(e){} }
+function aiPending(res){ return BM.advisor.collect(res).filter(function(c){ return !state.advice[c.key]; }); }
+function aiCardHtml(res){
+  var all = BM.advisor.collect(res); if(!all.length) return '';
+  var pend = aiPending(res), st = aiSettings();
+  return '<div class="ai-card" id="aiCard"><h2>🧭 AI tư vấn nhận diện tên <span class="count">'+all.length+' cặp</span></h2>'
+    + '<div class="muted">Dành cho ca <b>cần kiểm tra</b> hoặc <b>khác biệt về chữ</b> (tên tiếng Anh, viết tắt thương hiệu, mẹ ↔ con, đổi tên, lỗi OCR). AI chỉ đề xuất + giải thích; <b>kết luận của hệ thống không đổi</b>. Chỉ gửi cặp tên — không gửi số tiền, STK, MST, thông tin KH vay.</div>'
+    + '<div class="ai-set"><input id="aiUrl" placeholder="URL cổng BeneMatch (…/exec)" value="'+esc(st.url)+'"'+(ADVISOR_CFG.proxy_url?' readonly title="Cấu hình sẵn"':'')+'>'
+    + '<input id="aiCode" type="password" placeholder="Mã truy cập" value="'+esc(st.code)+'" autocomplete="off">'
+    + '<label class="chk"><input type="checkbox" id="aiRemember"'+(st.remember?' checked':'')+'> Ghi nhớ trên máy này</label></div>'
+    + '<div class="toolbar"><button class="btn btn-primary btn-sm" id="aiAsk"'+(pend.length?'':' disabled')+'>🧭 Hỏi AI ('+pend.length+' cặp chưa hỏi)</button><span class="muted" id="aiStatus">'+(pend.length?'':'Đã có ý kiến AI cho tất cả các cặp.')+'</span></div></div>';
+}
+function bindAiCard(){
+  if(!$('aiAsk')) return;
+  $('aiAsk').addEventListener('click', askAi);
+}
+async function askAi(){
+  var url = $('aiUrl').value.trim(), code = $('aiCode').value.trim(), remember = $('aiRemember').checked;
+  // Chỉ chấp nhận Web App Apps Script (hoặc cổng giả lập trên máy khi phát triển: tools/dev/mock_proxy.mjs).
+  if(!/^(https:\/\/script\.google(usercontent)?\.com\/|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/)/.test(url)){ $('aiStatus').textContent = 'URL cổng không hợp lệ (phải là Web App Google Apps Script …/exec).'; return; }
+  if(!code){ $('aiStatus').textContent = 'Nhập mã truy cập được cấp.'; return; }
+  saveAiSettings(url, code, remember);
+  var pend = aiPending(state.result); if(!pend.length) return;
+  $('aiAsk').disabled = true;
+  var done = 0, errs = [];
+  for(var i=0; i<pend.length; i+=10){
+    var chunk = pend.slice(i, i+10);
+    $('aiStatus').textContent = 'Đang hỏi AI '+(done+1)+'–'+(done+chunk.length)+'/'+pend.length+' … (mỗi lượt ~10–40 giây)';
+    try{
+      var r = await fetch(url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: code,
+        pairs: chunk.map(function(c){ return { invoice_name: c.payload.invoice_name, payment_name: c.payload.payment_name }; }) }) });
+      var d = await r.json();
+      if(d.error){ errs.push(d.message || d.error); break; }
+      (d.advices||[]).forEach(function(x, j){
+        if(!x.advice) return;
+        var nc = BM.verifyName(chunk[j].payload.invoice_name, chunk[j].payload.payment_name, CONFIG.name);
+        state.advice[chunk[j].key] = BM.advisor.guard(x.advice, nc);   // gác lần 2 phía trình duyệt
+      });
+      done += chunk.length;
+    }catch(e){ errs.push('Không gọi được cổng AI ('+(e && e.message || e)+')'); break; }
+  }
+  var keep = { url: url, code: code, remember: remember };
+  renderResult(state.result);
+  $('aiUrl').value = keep.url; $('aiCode').value = keep.code; $('aiRemember').checked = keep.remember;
+  $('aiStatus').textContent = errs.length ? ('⚠ '+errs.join(' · ')) : ('Đã nhận ý kiến AI cho '+done+' cặp — xem dưới từng cặp tên.');
+}
+
 /* ================= XUẤT EXCEL ================= */
 function sheetData(res){
   var c = res.case||{}, s = res.summary;
@@ -2001,9 +2185,9 @@ function sheetData(res){
     ['KẾT LUẬN', DEC_LABEL[s.decision]],['Hành động', ACT_LABEL[s.action]],['Mức rủi ro', RISK_LABEL[s.risk_level]],
     ['Tổng hóa đơn', s.grand_total_invoices],['Tổng UNC', s.grand_total_transfers],['Chênh lệch (UNC − HĐ)', s.grand_diff],
     ['Số hóa đơn', s.invoice_count],['Số UNC', s.transfer_count],['Số cảnh báo', s.warning_count],[],
-    ['Engine', res.audit.engine_version],['Cấu hình', res.audit.config_version],['Dùng AI', 'Không'],['Thời điểm kiểm tra', new Date(res.audit.computed_at).toLocaleString('vi-VN')]];
-  var dc = [['Bên bán (hóa đơn)','MST bên bán','Tên người thụ hưởng (UNC)','Số tài khoản','Ngân hàng','Số tiền UNC','Nội dung','Cách ghép','Kết quả tên','Mức tương đồng (%)','Luật','Diễn giải']];
-  res.pairs.forEach(function(p){ var v=p.name_check||{}; dc.push([p.transfer && p.group_key.indexOf('UNC:')===0 ? '(không có) — gần nhất: '+(p.nearest_supplier||'') : p.supplier, p.supplier_mst, p.transfer.beneficiary_name, p.transfer.account_number, p.transfer.bank, p.transfer.amount, p.transfer.content, BY_LABEL[p.matched_by]||'', p.group_key.indexOf('UNC:')===0?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''), v.score_pct!=null?v.score_pct:'', v.reason_code||'', v.explanation||'']); });
+    ['Engine', res.audit.engine_version],['Cấu hình', res.audit.config_version],['AI trong kết luận', 'Không (AI chỉ tham khảo)'],['Số cặp có ý kiến AI', res.pairs.filter(function(p){ return p.name_check && state.advice[BM.advisor.key(p.name_check)]; }).length],['Thời điểm kiểm tra', new Date(res.audit.computed_at).toLocaleString('vi-VN')]];
+  var dc = [['Bên bán (hóa đơn)','MST bên bán','Tên người thụ hưởng (UNC)','Số tài khoản','Ngân hàng','Số tiền UNC','Nội dung','Cách ghép','Kết quả tên','Mức tương đồng (%)','Luật','Diễn giải','AI: ý kiến (tham khảo)','AI: quan hệ','AI: độ tin','AI: giải thích']];
+  res.pairs.forEach(function(p){ var v=p.name_check||{}; dc.push([p.transfer && p.group_key.indexOf('UNC:')===0 ? '(không có) — gần nhất: '+(p.nearest_supplier||'') : p.supplier, p.supplier_mst, p.transfer.beneficiary_name, p.transfer.account_number, p.transfer.bank, p.transfer.amount, p.transfer.content, BY_LABEL[p.matched_by]||'', p.group_key.indexOf('UNC:')===0?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''), v.score_pct!=null?v.score_pct:'', v.reason_code||'', v.explanation||''].concat(aiCols(v))); });
   var nh = [['Bên bán / người thụ hưởng','MST','Số HĐ','Số UNC','Tổng hóa đơn','Tổng UNC','Chênh lệch','Trạng thái tiền','Kết luận','Rủi ro']];
   res.groups.forEach(function(g){ nh.push([g.beneficiary_display, g.seller_mst, g.invoices.length, g.transfers.length, g.sum_invoices, g.sum_transfers, g.diff, AMT_LABEL[g.amount_status]||g.amount_status, DEC_LABEL[g.decision], RISK_LABEL[g.risk_level]]); });
   var hd = [['Số HĐ','Ký hiệu','Ngày','Tên bên bán','MST bên bán','Tên người mua','MST người mua','Tổng tiền','STK bên bán','Nguồn','File','Đã đối chiếu','Trùng với']];
@@ -2012,6 +2196,7 @@ function sheetData(res){
   res.warnings.forEach(function(w){ cb.push([['Ghi chú','Cần kiểm tra','Chặn'][w.severity], w.code, w.title, w.beneficiary, w.message]); });
   return { 'Tong_quan': tq, 'Doi_chieu_UNC': dc, 'Theo_ben_ban': nh, 'Hoa_don': hd, 'Canh_bao': cb };
 }
+function aiCols(v){ var a = v && v.invoice ? state.advice[BM.advisor.key(v)] : null; return a ? [a.verdict_label, a.relation_label, a.confidence, a.explanation] : ['','','','']; }
 function fileBase(){ var c = state.result.case||{}; return 'BeneMatch_'+(String(c.case_id||'hoso').replace(/[^\w.-]+/g,'_'))+'_'+new Date().toISOString().slice(0,10); }
 async function exportXlsx(){
   var data = sheetData(state.result);
@@ -2032,15 +2217,15 @@ async function exportXlsx(){
 function printSheet(){
   var res = state.result, c = res.case||{}, s = res.summary;
   var h = '<h1>PHIẾU KIỂM TRA NGƯỜI THỤ HƯỞNG &amp; CHỨNG TỪ GIẢI NGÂN</h1>'
-    + '<div class="ptop"><span>Công cụ BeneMatch · engine '+esc(res.audit.engine_version)+' · không dùng AI</span><span>In lúc '+new Date().toLocaleString('vi-VN')+'</span></div>'
+    + '<div class="ptop"><span>Công cụ BeneMatch · engine '+esc(res.audit.engine_version)+' · kết luận theo luật (AI chỉ tham khảo)</span><span>In lúc '+new Date().toLocaleString('vi-VN')+'</span></div>'
     + '<table><tr><th style="width:22%">Số GNOL / hồ sơ</th><td>'+esc(c.case_id)+'</td><th style="width:18%">ĐVKD</th><td>'+esc(c.dvkd)+'</td></tr>'
     + '<tr><th>Khách hàng vay</th><td>'+esc(c.borrower_name)+'</td><th>MST</th><td>'+esc(c.borrower_mst)+'</td></tr>'
     + '<tr><th>Mục đích</th><td colspan="3">'+esc(c.purpose)+'</td></tr>'
     + '<tr><th>Ngày giải ngân</th><td>'+esc(c.disbursement_date)+'</td><th>Số tiền giải ngân</th><td>'+(c.disbursement_amount?vnd(c.disbursement_amount)+' đ':'')+'</td></tr></table>'
     + '<div class="pverdict">KẾT LUẬN: '+DEC_LABEL[s.decision]+' — '+esc(ACT_LABEL[s.action])+' · Rủi ro: '+RISK_LABEL[s.risk_level]
     + '<div style="font-weight:400;font-size:11px;margin-top:3px">Σ hóa đơn '+vnd(s.grand_total_invoices)+' đ · Σ UNC '+vnd(s.grand_total_transfers)+' đ · chênh lệch '+vnd(s.grand_diff)+' đ · '+s.invoice_count+' hóa đơn · '+s.transfer_count+' UNC · '+s.warning_count+' cảnh báo</div></div>'
-    + '<h2>1. Đối chiếu tên người thụ hưởng từng UNC</h2><table><tr><th>#</th><th>Người thụ hưởng (UNC)</th><th>STK</th><th class="num">Số tiền</th><th>Bên bán trên hóa đơn</th><th>Kết quả tên</th><th>Tương đồng</th></tr>'
-    + res.pairs.map(function(p, i){ var v=p.name_check||{}; var orphan=p.group_key.indexOf('UNC:')===0; return '<tr><td>'+(i+1)+'</td><td>'+esc(p.transfer.beneficiary_name)+'</td><td>'+esc(p.transfer.account_number)+'</td><td class="num">'+vnd(p.transfer.amount)+'</td><td>'+(orphan?'(không có) — gần nhất: '+esc(p.nearest_supplier):esc(p.supplier))+'</td><td>'+(orphan?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''))+'</td><td>'+(v.score_pct!=null?v.score_pct+'%':'')+'</td></tr>'; }).join('')
+    + '<h2>1. Đối chiếu tên người thụ hưởng từng UNC</h2><table><tr><th>#</th><th>Người thụ hưởng (UNC)</th><th>STK</th><th class="num">Số tiền</th><th>Bên bán trên hóa đơn</th><th>Kết quả tên</th><th>Tương đồng</th><th>Ý kiến AI (tham khảo)</th></tr>'
+    + res.pairs.map(function(p, i){ var v=p.name_check||{}; var orphan=p.group_key.indexOf('UNC:')===0; return '<tr><td>'+(i+1)+'</td><td>'+esc(p.transfer.beneficiary_name)+'</td><td>'+esc(p.transfer.account_number)+'</td><td class="num">'+vnd(p.transfer.amount)+'</td><td>'+(orphan?'(không có) — gần nhất: '+esc(p.nearest_supplier):esc(p.supplier))+'</td><td>'+(orphan?'KHÔNG CÓ TRÊN HÓA ĐƠN':(NAME_LABEL[v.decision]||''))+'</td><td>'+(v.score_pct!=null?v.score_pct+'%':'')+'</td><td>'+(function(){ var a=v.invoice?state.advice[BM.advisor.key(v)]:null; return a?esc(a.verdict_label)+' ('+Math.round(a.confidence*100)+'%)':''; })()+'</td></tr>'; }).join('')
     + '</table><h2>2. Theo bên bán</h2><table><tr><th>Bên bán / người thụ hưởng</th><th>MST</th><th class="num">Σ hóa đơn</th><th class="num">Σ UNC</th><th>Tiền</th><th>Kết luận</th></tr>'
     + res.groups.map(function(g){ return '<tr><td>'+esc(g.beneficiary_display)+'</td><td>'+esc(g.seller_mst)+'</td><td class="num">'+vnd(g.sum_invoices)+'</td><td class="num">'+vnd(g.sum_transfers)+'</td><td>'+esc(AMT_LABEL[g.amount_status]||'')+'</td><td>'+DEC_LABEL[g.decision]+'</td></tr>'; }).join('')
     + '</table><h2>3. Cảnh báo &amp; ghi chú</h2><table><tr><th>Mức</th><th>Cảnh báo</th><th>Chi tiết</th><th style="width:22%">Xử lý / giải trình của cán bộ</th></tr>'
@@ -2115,7 +2300,23 @@ var qcT; ['qInv','qPay'].forEach(function(id){ $(id).addEventListener('input', f
 function qc(){
   var a=$('qInv').value, b=$('qPay').value;
   if(!a.trim() && !b.trim()){ $('qcRes').innerHTML='<p class="muted">Gõ 2 tên — kết quả cập nhật ngay.</p>'; return; }
-  $('qcRes').innerHTML = nameCheckHtml(BM.verifyName(a, b, CONFIG.name), { open:true });
+  var v = BM.verifyName(a, b, CONFIG.name);
+  $('qcRes').innerHTML = nameCheckHtml(v, { open:true })
+    + (BM.advisor.eligible(v) && !state.advice[BM.advisor.key(v)] ? '<div class="toolbar" style="margin-top:10px"><button class="btn btn-primary btn-sm" id="qcAsk">🧭 Hỏi AI cặp tên này</button><span class="muted" id="qcAiSt">Dùng URL cổng + mã truy cập đã lưu ở phần AI tư vấn (tab Kiểm tra hồ sơ).</span></div>' : '');
+  if($('qcAsk')) $('qcAsk').addEventListener('click', function(){ qcAskAi(v); });
+}
+async function qcAskAi(v){
+  var st = aiSettings();
+  if(!st.url || !st.code){ $('qcAiSt').textContent = 'Chưa có URL cổng/mã truy cập đã lưu — nhập ở thẻ AI tư vấn sau khi kiểm tra một hồ sơ (tick “Ghi nhớ”).'; return; }
+  $('qcAsk').disabled = true; $('qcAiSt').textContent = 'Đang hỏi AI … (~10–40 giây)';
+  try{
+    var r = await fetch(st.url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: st.code, pairs:[{ invoice_name: v.invoice.raw, payment_name: v.payment.raw }] }) });
+    var d = await r.json();
+    if(d.error){ $('qcAiSt').textContent = '⚠ '+(d.message||d.error); $('qcAsk').disabled=false; return; }
+    var x = (d.advices||[])[0];
+    if(x && x.advice){ state.advice[BM.advisor.key(v)] = BM.advisor.guard(x.advice, v); qc(); }
+    else $('qcAiSt').textContent = 'Cặp này không thuộc diện hỏi AI.';
+  }catch(e){ $('qcAiSt').textContent = '⚠ Không gọi được cổng AI ('+(e && e.message || e)+')'; $('qcAsk').disabled=false; }
 }
 
 /* ================= QUY TẮC ================= */
@@ -2135,7 +2336,8 @@ function qc(){
     ['8b','Phần tên riêng khác hẳn (chỉ trùng từ ngành nghề như Thương mại, Dịch vụ, Xây dựng…)','KHÔNG KHỚP','DISTINCTIVE_NAME_DIFFERENT'],
     ['9','Gần giống (tổng ≥ 82% hoặc chuỗi lõi ≥ 82% hoặc từ lõi ≥ 75%) — kể cả khác số hiệu','CẦN KIỂM TRA','NAME_SIMILAR_BUT_NOT_CONCLUSIVE · NUMBER_TOKEN_DIFFERENT'],
     ['10','Còn lại — khác biệt lớn','KHÔNG KHỚP','LOW_NAME_SIMILARITY'],
-    ['+','Khớp nhờ quy đổi tên tiếng Anh (TRADING → THƯƠNG MẠI, CO., LTD → TNHH…) không bao giờ tự KHỚP','CẦN KIỂM TRA','TRANSLATED_NAME_MATCH']
+    ['+','Khớp nhờ quy đổi tên tiếng Anh (TRADING → THƯƠNG MẠI, CO., LTD → TNHH…) không bao giờ tự KHỚP','CẦN KIỂM TRA','TRANSLATED_NAME_MATCH'],
+    ['+','Một bên là TỔNG CÔNG TY, bên kia là CÔNG TY (có thể mẹ ↔ con) không bao giờ tự KHỚP','CẦN KIỂM TRA','GROUP_TIER_DIFFERENT']
   ];
   var dc = { 'KHỚP':'MATCH', 'CẦN KIỂM TRA':'REVIEW', 'KHÔNG KHỚP':'NOT_MATCH' };
   $('rulesName').innerHTML = '<tr><th>#</th><th>Điều kiện</th><th>Kết quả</th><th>Mã</th></tr>' + NR.map(function(r){ return '<tr><td>'+r[0]+'</td><td>'+esc(r[1])+'</td><td><span class="badge b-'+dc[r[2]]+'">'+r[2]+'</span></td><td><code>'+esc(r[3])+'</code></td></tr>'; }).join('');

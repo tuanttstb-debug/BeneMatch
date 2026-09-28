@@ -1,0 +1,7 @@
+{
+  "name": "benematch-eval",
+  "private": true,
+  "type": "module",
+  "description": "Đo chất lượng engine + AI tư vấn trên dữ liệu GNOL — CHẠY TRÊN MÁY [TT], dữ liệu không vào repo",
+  "dependencies": { "xlsx": "0.18.5" }
+}

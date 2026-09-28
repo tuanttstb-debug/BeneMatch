@@ -1,13 +1,14 @@
 # ENGINE_V3_SPEC — BeneMatch Engine v3 (nguồn sự thật từ 2026-09-28)
 
 > **Thay thế** `DECISION_RULES.md` · `NORMALIZATION_SPEC.md` · `RECONCILIATION_SPEC.md` · `DIFY_*.md` cho phần logic quyết định. Tài liệu cũ giữ để tra lịch sử (Dify V2 = baseline đã port).
+> **3.1.0 (28/09 chiều):** + luật `GROUP_TIER_DIFFERENT` + lớp **AI tư vấn qua Dify** (chỉ tham khảo) — xem `ADVISOR_SPEC.md`.
 > Code: `src/engine/bm-engine.js` (1 file, chạy trình duyệt / GAS / Node). Test: `node test/engine.test.mjs`.
 
 ## 1. Bối cảnh vận hành (chốt phỏng vấn [TT] 28/09/2026)
 | Chủ đề | Quyết định |
 |---|---|
 | Môi trường | **Công cụ offline** — 1 file HTML chạy trong trình duyệt cán bộ; dữ liệu KH thật **không rời máy**, không lưu (đóng tab là xóa). Prod: https://tuanttstb-debug.github.io/BeneMatch/ |
-| Lõi check tên | **1 engine JS deterministic** dùng chung FE/GAS/Node. **Bỏ Dify/LLM khỏi đường quyết định** (không AI). |
+| Lõi check tên | **1 engine JS deterministic** dùng chung FE/GAS/Node — **quyết định không dùng AI**. (Chiều 28/09: thêm LLM **tư vấn** qua Dify, không đổi kết luận — `ADVISOR_SPEC.md`.) |
 | UNC | Chỉ có **tên + STK + ngân hàng + số tiền + nội dung**, KHÔNG có MST → ghép UNC ↔ bên bán bằng **tên** + **số HĐ trong nội dung**. |
 | Chi nhánh ↔ công ty mẹ | **CẦN KIỂM TRA** (không tự khớp). |
 | Tên UNC bị cắt cụt | **CẦN KIỂM TRA** + ghi rõ lý do (False Match = 0). |
@@ -46,6 +47,7 @@
 | 9 | name ≥ .82 / core_seq ≥ .82 / core_tok ≥ .75 | REVIEW | NAME_SIMILAR_BUT_NOT_CONCLUSIVE · NUMBER_TOKEN_DIFFERENT |
 | 10 | Còn lại | NOT_MATCH | LOW_NAME_SIMILARITY |
 | + | MATCH nhưng có quy đổi tiếng Anh | REVIEW | TRANSLATED_NAME_MATCH |
+| + | MATCH nhưng một bên là TỔNG CÔNG TY (mẹ ↔ con) | REVIEW | GROUP_TIER_DIFFERENT |
 
 Khác Dify V2: thêm chi nhánh, cắt cụt, 8a/8b (chặn khớp nhầm do trùng từ ngành), guard tên riêng + số ở luật 6, tiếng Anh, HKD/Hợp danh. Bỏ `ai_eligible`/LLM.
 

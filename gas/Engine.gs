@@ -26,7 +26,7 @@
 (function (root) {
   'use strict';
 
-  var ENGINE_VERSION = '3.0.0';
+  var ENGINE_VERSION = '3.1.0';
 
   // =====================================================================================
   // 1) CHUẨN HÓA
@@ -121,6 +121,9 @@
 
   // Cụm pháp lý bị loại khi lấy "tên lõi" (ở BẤT KỲ vị trí — hỗ trợ tên tiếng Anh hậu tố). Dài → ngắn.
   var LEGAL_PHRASES = [
+    'TONG CONG TY TNHH MOT THANH VIEN',
+    'TONG CONG TY CO PHAN',
+    'TONG CONG TY TNHH',
     'CONG TY TNHH HAI THANH VIEN TRO LEN',
     'CONG TY TNHH MOT THANH VIEN',
     'CONG TY TNHH HAI THANH VIEN',
@@ -271,6 +274,8 @@
       core: core,
       core_tokens: coreTokens,
       distinctive_tokens: distinctiveTokens(coreTokens),
+      // Cấp tập đoàn: "TỔNG CÔNG TY X" ≠ "CÔNG TY X" (thường là mẹ ↔ con = 2 pháp nhân).
+      group_tier: /\bTONG CONG TY\b/.test(br.parent) ? 'TONG_CONG_TY' : '',
     };
   }
 
@@ -425,6 +430,7 @@
     NUMBER_TOKEN_DIFFERENT: 'Tên gần giống nhưng khác số hiệu ({inv_numbers} ≠ {pay_numbers}).',
     NAME_SIMILAR_BUT_NOT_CONCLUSIVE: 'Tên gần giống nhưng chưa đủ căn cứ kết luận cùng pháp nhân.',
     TRANSLATED_NAME_MATCH: 'Khớp sau khi quy đổi tên tiếng Anh sang tiếng Việt — cần đối chiếu tên đăng ký.',
+    GROUP_TIER_DIFFERENT: 'Một bên là TỔNG CÔNG TY, bên kia là CÔNG TY — có thể là công ty mẹ ↔ công ty con (hai pháp nhân khác nhau).',
     LOW_NAME_SIMILARITY: 'Tên khác biệt lớn — không cùng pháp nhân.',
   };
 
@@ -507,6 +513,8 @@
     }
     // Tên có quy đổi tiếng Anh → không bao giờ tự MATCH.
     if (res.decision === 'MATCH' && (A.translated || B.translated)) res = mkName('REVIEW', 'TRANSLATED_NAME_MATCH');
+    // Tổng công ty ↔ công ty (mẹ ↔ con) → không bao giờ tự MATCH.
+    if (res.decision === 'MATCH' && A.group_tier !== B.group_tier) res = mkName('REVIEW', 'GROUP_TIER_DIFFERENT');
 
     var reasonCodes = [res.reason_code];
     if (f.numbers_conflict && res.reason_code !== 'NUMBER_TOKEN_DIFFERENT' && res.decision !== 'NOT_MATCH') reasonCodes.push('NUMBER_TOKEN_DIFFERENT');
@@ -548,6 +556,7 @@
     return {
       raw: P.raw, normalized: P.normalized, core: P.core, legal_type: P.legal_type, legal_family: P.legal_family,
       legal_label: FAMILY_LABEL[P.legal_family], branch: P.branch, distinctive: P.distinctive_tokens.join(' '), translated: P.translated,
+      group_tier: P.group_tier || '',
     };
   }
 
@@ -1103,6 +1112,98 @@
     return s.replace(/^[\s:.\-]+/, '').replace(/\s*(m[ãa]\s*s[ốo]\s*thu[ếe].*|tax\s*code.*|\(seller\).*)$/i, '').replace(/\s{2,}/g, ' ').trim();
   }
 
+  // =====================================================================================
+  // 6) AI TƯ VẤN (LLM qua Dify) — CHỈ THAM KHẢO, KHÔNG ĐỔI KẾT LUẬN
+  //    Chính sách (chốt [TT] 28/09/2026): LLM chỉ đề xuất + giải thích cho cán bộ; kết luận của
+  //    engine giữ nguyên. Chỉ gửi CẶP TÊN + tóm tắt engine (không số tiền/STK/MST/thông tin KH vay).
+  // =====================================================================================
+
+  var ADVISOR_VERDICTS = ['SAME_ENTITY', 'DIFFERENT_ENTITY', 'RELATED_ENTITY', 'UNCERTAIN'];
+  var ADVISOR_RELATIONS = ['IDENTICAL', 'ABBREVIATION', 'TRANSLATION', 'TRANSLITERATION', 'TRUNCATION', 'TYPO_OCR',
+    'BRANCH', 'PARENT_SUBSIDIARY', 'RENAMED', 'UNRELATED', 'UNKNOWN'];
+  var ADVISOR_LABEL = {
+    verdict: { SAME_ENTITY: 'Nhiều khả năng CÙNG pháp nhân', DIFFERENT_ENTITY: 'Nhiều khả năng KHÁC pháp nhân', RELATED_ENTITY: 'Có liên quan nhưng là pháp nhân khác', UNCERTAIN: 'Chưa đủ căn cứ' },
+    relation: { IDENTICAL: 'Cùng tên', ABBREVIATION: 'Viết tắt / tên thương hiệu', TRANSLATION: 'Tên tiếng Anh / tên giao dịch', TRANSLITERATION: 'Phiên âm / không dấu',
+      TRUNCATION: 'Tên bị cắt cụt', TYPO_OCR: 'Lỗi gõ / OCR', BRANCH: 'Chi nhánh / đơn vị phụ thuộc', PARENT_SUBSIDIARY: 'Công ty mẹ ↔ công ty con',
+      RENAMED: 'Đổi tên', UNRELATED: 'Không liên quan', UNKNOWN: 'Không xác định' },
+  };
+  // Ca được hỏi AI: REVIEW (trừ thiếu dữ liệu) + NOT_MATCH "mềm" (khác biệt chữ, có thể do dịch/viết tắt).
+  // KHÔNG hỏi: khác loại hình pháp nhân (luật cứng) · MATCH.
+  var ADVISOR_SOFT_NOT_MATCH = { LOW_NAME_SIMILARITY: 1, DISTINCTIVE_NAME_DIFFERENT: 1 };
+
+  function advisorEligible(nc) {
+    if (!nc || !nc.invoice || !nc.payment || !nc.invoice.raw || !nc.payment.raw) return false;
+    if (nc.decision === 'REVIEW') return nc.reason_code !== 'INSUFFICIENT_DATA';
+    if (nc.decision === 'NOT_MATCH') return !!ADVISOR_SOFT_NOT_MATCH[nc.reason_code];
+    return false;
+  }
+
+  function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, n); }
+
+  /** Payload gửi Dify — chỉ tên + tóm tắt engine. */
+  function advisorPayload(nc) {
+    return {
+      invoice_name: clip(nc.invoice.raw, 300), payment_name: clip(nc.payment.raw, 300),
+      engine_decision: nc.decision, engine_reason: nc.reason_code, engine_explanation: clip(nc.explanation, 400),
+      engine_score: String(nc.score_pct),
+      invoice_legal: nc.invoice.legal_family, payment_legal: nc.payment.legal_family,
+      invoice_core: clip(nc.invoice.core, 200), payment_core: clip(nc.payment.core, 200),
+    };
+  }
+
+  function advisorKey(nc) { return normalizeName(nc.invoice.raw) + '||' + normalizeName(nc.payment.raw); }
+
+  /** Danh sách cặp tên (không trùng) cần hỏi AI từ kết quả reconcileCase. */
+  function advisorCollect(result) {
+    var out = [], seen = {};
+    (result && result.pairs || []).forEach(function (p) {
+      var nc = p.name_check;
+      if (!advisorEligible(nc)) return;
+      var k = advisorKey(nc);
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push({ key: k, payload: advisorPayload(nc) });
+    });
+    return out;
+  }
+
+  /**
+   * Chuẩn hóa + gác ý kiến AI (lớp gác thứ 2, cùng logic với node Validate trên Dify).
+   * Không bao giờ đổi kết luận engine; chỉ làm sạch/hạ mức tự tin của ý kiến AI khi mâu thuẫn luật cứng.
+   */
+  function advisorGuard(raw, nc) {
+    var a = raw && typeof raw === 'object' ? raw : {};
+    var notes = [];
+    var verdict = ADVISOR_VERDICTS.indexOf(a.verdict) >= 0 ? a.verdict : 'UNCERTAIN';
+    var relation = ADVISOR_RELATIONS.indexOf(a.relation) >= 0 ? a.relation : 'UNKNOWN';
+    var conf = Number(a.confidence); conf = isFinite(conf) ? Math.max(0, Math.min(1, conf)) : 0;
+    var ok = !!raw && !a.error && ADVISOR_VERDICTS.indexOf(a.verdict) >= 0;
+    if (nc) {
+      var fi = nc.invoice.legal_family, fp = nc.payment.legal_family;
+      if (verdict === 'SAME_ENTITY' && fi !== 'UNKNOWN' && fp !== 'UNKNOWN' && fi !== fp) {
+        verdict = 'UNCERTAIN'; conf = Math.min(conf, 0.5); notes.push('Hai bên khác loại hình pháp nhân — luật cứng: không thể cùng pháp nhân.');
+      }
+      if (verdict === 'SAME_ENTITY' && (relation === 'PARENT_SUBSIDIARY')) { verdict = 'RELATED_ENTITY'; notes.push('Mẹ ↔ con là hai pháp nhân khác nhau.'); }
+      if (verdict === 'SAME_ENTITY' && nc.invoice.group_tier !== nc.payment.group_tier) {
+        verdict = 'UNCERTAIN'; notes.push('Một bên là Tổng công ty — cần xác minh không phải công ty mẹ ↔ con.');
+      }
+      if (verdict === 'SAME_ENTITY' && relation === 'RENAMED') { conf = Math.min(conf, 0.6); notes.push('AI không tra cứu được lịch sử đổi tên — cần đối chiếu ĐKKD/MST.'); }
+    }
+    var arr = function (x, n) { return (Array.isArray(x) ? x : []).map(function (s) { return clip(s, 300); }).filter(Boolean).slice(0, n); };
+    return {
+      ai_status: ok ? 'OK' : 'FALLBACK',
+      verdict: verdict, verdict_label: ADVISOR_LABEL.verdict[verdict],
+      relation: relation, relation_label: ADVISOR_LABEL.relation[relation],
+      confidence: Math.round(conf * 100) / 100,
+      explanation: clip(a.explanation || (ok ? '' : 'Không nhận được ý kiến AI hợp lệ — xử lý như ca cần kiểm tra thông thường.'), 800),
+      evidence: arr(a.evidence, 4),
+      checks_for_officer: arr(a.checks_for_officer, 3),
+      guard_notes: notes,
+      model: clip(a.model || '', 60),
+      used_for_decision: false,
+    };
+  }
+
   var BM = {
     ENGINE_VERSION: ENGINE_VERSION,
     WARN_META: WARN_META,
@@ -1122,6 +1223,8 @@
     toAmount: toAmount,
     toIsoDate: toIsoDate,
     io: { parseDelimited: parseDelimited, rowsToRecords: rowsToRecords, parseInvoiceText: parseInvoiceText, contentInvoiceRefs: contentInvoiceRefs },
+    advisor: { eligible: advisorEligible, payload: advisorPayload, key: advisorKey, collect: advisorCollect, guard: advisorGuard,
+      VERDICTS: ADVISOR_VERDICTS, RELATIONS: ADVISOR_RELATIONS, LABEL: ADVISOR_LABEL },
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = BM;

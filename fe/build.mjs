@@ -15,6 +15,7 @@ const ROOT = join(__dirname, '..');
 
 const engine = readFileSync(join(ROOT, 'src/engine/bm-engine.js'), 'utf8');
 const config = readFileSync(join(ROOT, 'src/config/thresholds.json'), 'utf8').trim();
+const advisor = readFileSync(join(ROOT, 'src/config/advisor.json'), 'utf8').trim();
 const scenarios = readFileSync(join(ROOT, 'data/synthetic/scenarios.json'), 'utf8').trim();
 // Không để chuỗi "</script" lọt vào dữ liệu nhúng.
 const safe = (s) => s.replace(/<\/script/gi, '<\\/script');
@@ -23,8 +24,9 @@ function inject(tplName) {
   let out = readFileSync(join(__dirname, tplName), 'utf8');
   out = out.replace('/*__BM_ENGINE__*/', () => safe(engine))
     .replace('/*__SCENARIOS__*/ []', () => safe(scenarios))
-    .replace('/*__CONFIG__*/ {}', () => config);
-  const leftover = ['/*__BM_ENGINE__*/', '/*__SCENARIOS__*/', '/*__CONFIG__*/'].filter((m) => out.includes(m));
+    .replace('/*__CONFIG__*/ {}', () => config)
+    .replace('/*__ADVISOR__*/ {}', () => advisor);
+  const leftover = ['/*__BM_ENGINE__*/', '/*__SCENARIOS__*/', '/*__CONFIG__*/', '/*__ADVISOR__*/'].filter((m) => out.includes(m));
   if (leftover.length) { console.error(tplName, '— còn marker chưa thay:', leftover); process.exit(1); }
   return out;
 }

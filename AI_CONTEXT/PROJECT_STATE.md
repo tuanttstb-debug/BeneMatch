@@ -1,6 +1,11 @@
 # PROJECT STATE — BeneMatch
 
-**Cập nhật:** 2026-09-28 · **Version:** 0.3.0 (engine 3.0.0) · **Prod:** https://tuanttstb-debug.github.io/BeneMatch/ · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+**Cập nhật:** 2026-09-28 · **Version:** 0.4.0 (engine 3.1.0) · **Prod:** https://tuanttstb-debug.github.io/BeneMatch/ · **Repo:** https://github.com/tuanttstb-debug/BeneMatch
+
+## Delta (2026-09-28 #2) — AI tư vấn nhận diện tên (LLM qua Dify, chỉ tham khảo) · engine 3.1.0
+[TT] phản hồi: OCR đã có trên BIZ; cần LLM vì tên KHDN phức tạp. Phỏng vấn 3 vòng chốt: **Dify Cloud + GPT-5 được phép với dữ liệu thật** · LLM **chỉ đề xuất + giải thích** · giai đoạn 1 công cụ cán bộ qua **GAS proxy + mã truy cập**, giai đoạn 2 service GNOL (BIZ→BPM) · chưa có nguồn tra cứu (tên chủ TK/ĐKKD) · dữ liệu đo = trích lịch sử GNOL (**không có cột kết luận → phải gán nhãn**).
+**Đã làm:** luật `GROUP_TIER_DIFFERENT` (vá lỗ hổng: Tổng cty ↔ cty từng có thể KHỚP) · `BM.advisor` (eligible/payload/collect/guard) · workflow Dify mới `dify/BeneMatch_Name_Advisor_v3.yml` (GPT-5, structured output, node gác Python) · GAS `advise_names` (mã truy cập, hạn mức, server tự tính lại engine, log không tên) · FE thẻ "AI tư vấn" + ý kiến dưới từng cặp + cột AI trong Excel/phiếu + nút ở Check nhanh · `tools/eval` (template → prepare → gán nhãn → score ẩn danh; chặn ghi vào repo) · `advisor_smoke` 22 ca khó giả lập · mock proxy. Test: engine **133/133** · GAS **17/17** · e2e FE + eval qua mock OK. Phát hiện 2 lỗi workflow V2 (biến prompt sai cú pháp → LLM không nhận tên; temperature với GPT-5).
+**GAS live (clasp, [TT] giao):** deployment @9 cùng URL — engine 3.1.0 + `advise_names`, smoke live 9/9 kịch bản, verify_name ≡ local; URL cổng gắn sẵn vào công cụ. **Blocker:** [TT] gắn GPT-5 + import workflow Dify + thay `DIFY_API_KEY` + chạy `taoMaTruyCap` · trích GNOL.
 
 ## Delta (2026-09-28) — ENGINE v3: tổng rà soát & nâng cấp lên mức vận hành thực tế
 **Pivot:** từ demo synthetic → **công cụ offline vận hành thật** (Prod https://tuanttstb-debug.github.io/BeneMatch/ — [TT] bật Pages 28/09). Dữ liệu KH thật xử lý trong trình duyệt, không lưu, không gửi đi. Phỏng vấn [TT] chốt 8 điểm (xem `ENGINE_V3_SPEC.md §1`).

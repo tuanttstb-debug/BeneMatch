@@ -131,5 +131,29 @@ const ocrText = 'HOA DON GIA TRI GIA TANG\nKý hiệu: 1C26TAA   Số: 00012345\
 const po = BM.io.parseInvoiceText(ocrText);
 check('OCR sai dấu ở nhãn người bán', po.seller_name === 'CONG TY TNHH ABC VIET NAM' && po.amount_total === 100000000, JSON.stringify(po));
 
+// ---- 5) Ca khó (4 nhóm [TT] chọn) + module AI tư vấn ----
+console.log('\n[5] Ca khó cho AI tư vấn');
+const HARD = JSON.parse(readFileSync(join(ROOT, 'test/golden_hard.json'), 'utf8'));
+for (const h of HARD) {
+  const r = BM.verifyName(h.inv, h.pay, CONFIG.name);
+  check(`${h.id} ${h.cat}: engine không KHỚP nhầm`, !(h.truth !== 'SAME_ENTITY' && r.decision === 'MATCH'), r.decision + '/' + r.reason_code);
+  check(`${h.id} được hỏi AI`, BM.advisor.eligible(r), r.decision + '/' + r.reason_code);
+}
+check('Tổng công ty ↔ công ty cùng tên lõi → CẦN KIỂM TRA (GROUP_TIER_DIFFERENT)',
+  BM.verifyName('TỔNG CÔNG TY CỔ PHẦN ĐIỆN LỰC AN BÌNH', 'CONG TY CO PHAN DIEN LUC AN BINH').reason_code === 'GROUP_TIER_DIFFERENT');
+check('Khác loại hình → KHÔNG hỏi AI (luật cứng)', !BM.advisor.eligible(BM.verifyName('CÔNG TY CỔ PHẦN DELTA MEKONG', 'CÔNG TY TNHH DELTA MEKONG')));
+check('KHỚP → KHÔNG hỏi AI', !BM.advisor.eligible(BM.verifyName('CÔNG TY TNHH ABC VIỆT NAM', 'CTY TNHH ABC VN')));
+const tongRes = BM.reconcileCase(SCN.find((s) => s.id === 'ho-so-tong-hop'), CONFIG);
+const col = BM.advisor.collect(tongRes);
+check('collect: chỉ gom ca cần AI (tiếng Anh + UNC mồ côi), không trùng', col.length === 2, col.map((c) => c.payload.payment_name).join(' | '));
+check('payload KHÔNG chứa số tiền/STK/MST', col.every((c) => !JSON.stringify(c.payload).match(/0123456789|1903555777|0101234565|30000000/)), JSON.stringify(col[0].payload));
+const ncConf = BM.verifyName('CÔNG TY CỔ PHẦN DELTA MEKONG', 'CÔNG TY TNHH DELTA MEKONG');
+const g1 = BM.advisor.guard({ verdict: 'SAME_ENTITY', relation: 'IDENTICAL', confidence: 0.99 }, ncConf);
+check('guard: AI nói CÙNG nhưng khác loại hình → hạ về CHƯA ĐỦ CĂN CỨ', g1.verdict === 'UNCERTAIN' && g1.confidence <= 0.5 && g1.used_for_decision === false);
+const g2 = BM.advisor.guard({ verdict: 'SAME_ENTITY', relation: 'PARENT_SUBSIDIARY', confidence: 0.9 }, BM.verifyName(HARD[7].inv, HARD[7].pay));
+check('guard: mẹ ↔ con không thể là CÙNG pháp nhân', g2.verdict === 'RELATED_ENTITY');
+const g3 = BM.advisor.guard({ verdict: 'BANANA' }, null);
+check('guard: output rác → FALLBACK/UNCERTAIN', g3.ai_status === 'FALLBACK' && g3.verdict === 'UNCERTAIN');
+
 console.log(`\n=== ${pass} pass · ${fail} fail · phân bố golden: ${JSON.stringify(byDecision)} ===`);
 process.exit(fail ? 1 : 0);

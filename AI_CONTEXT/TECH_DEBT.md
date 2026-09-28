@@ -2,6 +2,14 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-09-28 #2):** TD-BM-06 thay bằng TD-BM-10 (workflow advisor mới, bỏ temperature, sửa cú pháp biến). Nợ mới:
+
+## TD-BM-10 — AI tư vấn chưa đo trên LLM thật (2026-09-28)
+Workflow `BeneMatch_Name_Advisor_v3` + GAS proxy mới test với Dify giả lập. Chưa biết độ đúng/độ trễ của GPT-5, chưa kiểm import DSL trên workspace thật (định dạng lấy từ V2 export). **Hướng:** [TT] import + `advisor_smoke` → đo GNOL (`tools/eval`). Đóng khi đạt chỉ tiêu `ADVISOR_SPEC §5`.
+
+## TD-BM-11 — Mã truy cập & cổng GAS "Anyone" (2026-09-28)
+Cổng mở công khai, bảo vệ bằng mã truy cập (so khớp chuỗi) + hạn mức/ngày; mã có thể lọt nếu cán bộ chia sẻ. Log chỉ nhãn mã. **Hướng G2:** chuyển sang gateway nội bộ/IT; G1: đổi mã định kỳ, mỗi đơn vị 1 mã.
+
 **Trạng thái (2026-09-28) — ENGINE v3:** ✅ **Đóng do lỗi thời** TD-BM-01/02/03/04/06 (Dify/LLM không còn trên đường quyết định). 🔧 TD-BM-05 thay bằng `BM.io.parseInvoiceText` (dùng chung FE/GAS, có test) — vẫn heuristic cho PDF/ảnh, nên ưu tiên XML. Nợ mới:
 
 ## TD-BM-07 — Golden dataset tên mới là synthetic (2026-09-28)

@@ -24,6 +24,7 @@ Xem `AI_CONTEXT/PROJECT_OVERVIEW.md` + **`ENGINE_V3_SPEC.md` (nguồn chuẩn)**
 ## Nguồn sự thật (từ 2026-09-28 — engine v3)
 - **Logic duy nhất:** `src/engine/bm-engine.js` (chạy trình duyệt / GAS / Node). Spec: `AI_CONTEXT/ENGINE_V3_SPEC.md`.
 - `docs/index.html`, `fe/index.html`, `fe/present.html`, `gas/Engine.gs` là **file sinh** bởi `node fe/build.mjs` — không sửa tay.
-- Gate trước khi build/push: `node test/engine.test.mjs` (golden tên, parity Python difflib, kịch bản hồ sơ, IO) phải pass 100%; False Match = 0.
+- Gate trước khi build/push: `node test/engine.test.mjs` (golden tên, ca khó, parity Python difflib, kịch bản hồ sơ, IO, advisor) **và** `node test/gas_advisor.test.mjs` (GAS proxy) pass 100%; False Match = 0.
 - Kênh vận hành: **công cụ offline** Prod https://tuanttstb-debug.github.io/BeneMatch/ — dữ liệu KH thật chỉ xử lý trong trình duyệt, không lưu, không gửi đi. Không thêm bất kỳ network call nào mang dữ liệu hồ sơ.
-- Dify V2 (`*.yml`, `*.docx`) chỉ còn là tài liệu tham chiếu baseline — **không** trên đường quyết định, không dùng AI.
+- **AI tư vấn (LLM GPT-5 qua Dify Cloud — [TT] cho phép):** chỉ đề xuất + giải thích, KHÔNG đổi kết luận engine; chỉ gửi cặp tên qua GAS proxy có mã truy cập. Workflow sinh từ `dify/build_advisor_dsl.py`. Spec `AI_CONTEXT/ADVISOR_SPEC.md`. Workflow V2 (`*.yml` gốc, `*.docx`) chỉ còn là baseline tham chiếu.
+- Đo trên dữ liệu thật: `tools/eval/` chạy trên máy [TT]; dữ liệu GNOL/file gán nhãn KHÔNG vào repo (script tự chặn); chỉ báo cáo ẩn danh được gửi [CC].
