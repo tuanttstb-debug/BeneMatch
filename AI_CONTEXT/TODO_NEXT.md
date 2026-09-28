@@ -4,8 +4,8 @@
 
 ## ▣ Delta (2026-09-28) — ENGINE v3 (công cụ offline vận hành thật)
 
-XONG [CC] (chưa push): engine v3 hợp nhất + FE mới + GAS mới + 81/81 test — xem `ENGINE_V3_SPEC.md`. Ưu tiên tiếp:
-1. [TT] 🔴 Duyệt → [CC] commit + push `main` → kiểm Prod https://tuanttstb-debug.github.io/BeneMatch/ (hard-refresh).
+XONG [CC] (đã push `2462421`, smoke Prod OK): engine v3 hợp nhất + FE mới + GAS mới + 81/81 test — xem `ENGINE_V3_SPEC.md`. Ưu tiên tiếp:
+1. ✅ Push + smoke Prod 28/09 (9/9 kịch bản · XML/PDF/dán UNC · SheetJS). [TT] mở Prod nhớ Ctrl+F5 lần đầu.
 2. [TT] Nghiệm thu với 3–5 hồ sơ thật **trên máy** (không gửi dữ liệu thật cho em). Ca kết luận sai → báo em **mẫu tên đã ẩn danh** (vd "CTY TNHH TM [X] ↔ [X] TRADING") + mã luật hiển thị → [CC] thêm vào `test/golden_names.json` rồi chỉnh luật.
 3. [TT] Hỏi ATTT/CNTT: dùng link GitHub Pages công khai cho dữ liệu thật (xử lý local) hay phân phối **file HTML nội bộ** (mở trực tiếp; XML/dán/nhập tay chạy không cần mạng, Excel/PDF/OCR cần tải thư viện CDN lần đầu). Nếu cấm CDN → [CC] nhúng sẵn SheetJS/pdf.js (TD-BM-08).
 4. [TT] Xác nhận chính sách 2 điểm em tự chốt: UNC không khớp bên bán nào = CHẶN · tên chỉ khớp sau khi dịch tiếng Anh = CẦN KIỂM TRA.
