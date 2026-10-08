@@ -55,10 +55,11 @@ Output AI: `verdict` (SAME_ENTITY / DIFFERENT_ENTITY / RELATED_ENTITY / UNCERTAI
 **[TT] làm (Gemini gói miễn phí, chế độ thử):**
 1. Google AI Studio → **Get API key** (key đang gắn trong Dify trước đây dùng lại được).
 2. **GAS → Project Settings → Script Properties:** thêm `AI_API_KEY` = key Gemini. Giữ `AI_ALLOW_REAL_DATA` **không đặt / false**. (Tùy chọn: `AI_MODEL` nếu muốn model khác, `AI_THINKING_LEVEL` = `low` để tiết kiệm hạn mức miễn phí.) Có thể xóa `DIFY_API_URL` / `DIFY_API_KEY` (không còn đọc).
-3. GAS editor → chọn hàm **`kiemTraAI`** → Run → Execution log phải ra `ai_status:"OK"` cho cặp "SAO VIỆT / VIETSTAR". Không cần deploy lại khi đổi Script Properties.
-4. `node tools/eval/advisor_smoke.mjs --ai-url <URL cổng> --ai-code <mã>` (22 ca giả lập, tự gửi xác nhận ẩn danh) → gửi em kết quả.
-5. Cấp/thu hồi mã: hàm `taoMaTruyCap` · sửa `ACCESS_CODES`.
-6. **Khi IT tích hợp AI nội bộ:** theo `AI_INTEGRATION_CONTRACT.md §3–§7` (đổi 6–8 Script Properties, nghiệm thu, rồi bật `AI_ALLOW_REAL_DATA=true`).
+3. (Tùy chọn) Run **`danhSachModel`** → log liệt kê model Flash key được dùng. Model chính `gemini-3.8-flash` (Flash mới nhất theo Google 10/2026); quá tải 503 → tự chuyển `AI_MODEL_FALLBACKS` (mặc định `gemini-3.5-flash-lite,gemini-3.6-flash`).
+4. GAS editor → chọn hàm **`kiemTraAI`** → Run → Execution log phải ra `ai_status:"OK"` cho cặp "SAO VIỆT / VIETSTAR". Không cần deploy lại khi đổi Script Properties.
+5. `node tools/eval/advisor_smoke.mjs --ai-url <URL cổng> --ai-code <mã>` (22 ca giả lập, tự gửi xác nhận ẩn danh) → gửi em kết quả.
+6. Cấp/thu hồi mã: hàm `taoMaTruyCap` · sửa `ACCESS_CODES`.
+7. **Khi IT tích hợp AI nội bộ:** theo `AI_INTEGRATION_CONTRACT.md §3–§7` (đổi 6–8 Script Properties, nghiệm thu, rồi bật `AI_ALLOW_REAL_DATA=true`).
 
 *(Lịch sử)* **GAS — [CC] ĐÃ LÀM 2026-09-28 (clasp):** project `152L4fFoZoj3irSWt4XBHKPJWmembuOj2PR2a3hdkPaZ3DCtpVVxTkd1L` — thay `Code`, thêm `Engine`, cập nhật `OcrService`, xóa `Recon`; cập nhật deployment `AKfycbwWIUJ…MBiTNMw` @8 → **@9** (URL giữ nguyên, rollback = chọn lại version 8). Smoke live: doGet engine 3.1.0 · 9/9 kịch bản · verify_name ≡ local 8/8 · advise_names mã sai → ACCESS_DENIED. Backup bản cũ: scratchpad phiên `gas_bm_backup_20260928` + git `0915d62`. URL cổng đã gắn sẵn trong công cụ (`src/config/advisor.json`).
 

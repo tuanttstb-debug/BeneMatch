@@ -4,7 +4,8 @@
 
 ## ▣ Delta (2026-10-08) — 3 lớp: OCR tại máy · GAS logic + adapter AI · bỏ Dify
 XONG [CC]: OCR offline nhúng · engine 3.2.0 · GAS adapter gemini/openai_compat + cờ dữ liệu thật · FE tick ẩn danh · Dify → `_archive/` · `AI_INTEGRATION_CONTRACT.md` · GAS live @13 + smoke 5/5 · test 140 + 42 + UI 16.
-1. [TT] 🔴 GAS → Project Settings → Script Properties: thêm **`AI_API_KEY`** = key Gemini (AI Studio; key cũ gắn trong Dify dùng lại được) · (tùy chọn) `AI_THINKING_LEVEL=low` tiết kiệm hạn mức · xóa `DIFY_API_URL`/`DIFY_API_KEY` → editor chạy **`kiemTraAI`** → log ra `ai_status:"OK"`.
+0. ✅ [TT] đã đặt `AI_API_KEY` (08/10) — `kiemTraAI` lần 1 dính 503 Google quá tải → [CC] thêm model dự phòng (GAS @14). [TT] Run lại `kiemTraAI` (+ `danhSachModel` nếu muốn xem model).
+1. ~~[TT] GAS → Project Settings → Script Properties: thêm **`AI_API_KEY`** = key Gemini (AI Studio; key cũ gắn trong Dify dùng lại được) · (tùy chọn) `AI_THINKING_LEVEL=low` tiết kiệm hạn mức · xóa `DIFY_API_URL`/`DIFY_API_KEY` → editor chạy **`kiemTraAI`** → log ra `ai_status:"OK"`.~~
 2. [TT] `node tools/eval/advisor_smoke.mjs --ai-url <URL cổng> --ai-code <mã>` (22 ca giả lập) → gửi em kết quả → [CC] chỉnh prompt (`PROMPT_VERSION`) nếu AI nói CÙNG sai.
 3. [TT] Prod Ctrl+F5 (lần đầu tải 8,3 MB) → thử 1–2 PDF scan/ảnh hóa đơn thật trên máy (không gửi em) → báo trường đọc sai (mẫu ẩn danh). Bản gửi nội bộ: `fe/index.html` (sinh bằng `node fe/build.mjs`).
 4. [TT] Khi bàn tích hợp: gửi IT `AI_CONTEXT/AI_INTEGRATION_CONTRACT.md` → IT chọn Cách A (đổi Script Properties) / Cách B (service nội bộ) → nghiệm thu §7 → bật `AI_ALLOW_REAL_DATA=true`.

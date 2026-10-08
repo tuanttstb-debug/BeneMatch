@@ -12,6 +12,8 @@
  *   AI_PROVIDER          "gemini" (mặc định) | "openai_compat"
  *   AI_API_KEY           key của nhà cung cấp (Gemini: key AI Studio · nội bộ: token do IT cấp)
  *   AI_MODEL             mặc định "gemini-3.8-flash" (gemini); BẮT BUỘC với openai_compat
+ *   AI_MODEL_FALLBACKS   model dự phòng khi model chính quá tải (cách nhau dấu phẩy). Gemini mặc định
+ *                        "gemini-3.5-flash-lite,gemini-3.6-flash"; đặt rỗng = tắt. Xem model key dùng được: hàm danhSachModel
  *   AI_BASE_URL          gemini: mặc định https://generativelanguage.googleapis.com/v1beta
  *                        openai_compat: BẮT BUỘC, vd https://<cổng-AI-nội-bộ>/v1 (tự nối /chat/completions)
  *   AI_THINKING_LEVEL    (gemini, tùy chọn) low | medium | high — trống = mặc định của model
@@ -32,12 +34,14 @@
 
 var GEMINI_BASE_DEFAULT = 'https://generativelanguage.googleapis.com/v1beta';
 var GEMINI_MODEL_DEFAULT = 'gemini-3.8-flash';
+// Dự phòng khi model chính quá tải (503) — 2 model ổn định khác họ Flash (danh sách Google 10/2026). Xem: danhSachModel().
+var GEMINI_FALLBACKS_DEFAULT = 'gemini-3.5-flash-lite,gemini-3.6-flash';
 
 function doGet() {
   var p = PropertiesService.getScriptProperties();
   var ai = aiConfig_(p);
   return jsonOut_({ ok: true, service: 'BeneMatch', engine: BM.ENGINE_VERSION, mode: 'case-reconcile',
-    advisor: { configured: !ai.error, provider: ai.provider, model: ai.model, allow_real_data: ai.allowRealData, prompt_version: BM.advisor.PROMPT_VERSION },
+    advisor: { configured: !ai.error, provider: ai.provider, model: ai.model, fallbacks: ai.fallbacks, allow_real_data: ai.allowRealData, prompt_version: BM.advisor.PROMPT_VERSION },
     access_codes: (function () { try { return Object.keys(JSON.parse(p.getProperty('ACCESS_CODES') || '{}')).length; } catch (e) { return 0; } })() });
 }
 
@@ -94,34 +98,14 @@ function handleAdviseNames_(payload) {
   lock.releaseLock();
 
   var t0 = Date.now();
-  var mkReq = function (x) { return aiRequest_(ai, BM.advisor.prompt(BM.advisor.payload(x.nc))); };
-  // Gọi song song; lỗi TẠM THỜI (quá tải 503 / hết lượt theo phút 429 / 5xx) gọi lại tối đa ADVISOR_RETRIES lần, chờ tăng dần.
-  var retries = Number(props.getProperty('ADVISOR_RETRIES') || 2);
-  var pending = todo.slice(), attempt = 0, retried = 0, tokIn = 0, tokOut = 0;
-  while (pending.length) {
-    var resps = UrlFetchApp.fetchAll(pending.map(mkReq));
-    var again = [];
-    pending.forEach(function (x, i) {
-      var p = aiParse_(ai, resps[i]);
-      x.raw = p.raw; x.diag = p.diag;
-      tokIn += p.usage.in; tokOut += p.usage.out;
-      if (!p.raw && p.transient && attempt < retries) again.push(x);
-    });
-    if (!again.length) break;
-    attempt++; retried += again.length;
-    Utilities.sleep(2500 * attempt);
-    pending = again;
-  }
+  var run = runAi_(ai, todo, Number(props.getProperty('ADVISOR_RETRIES') || 2));
   var counts = {};
   todo.forEach(function (x) {
-    if (x.raw) x.raw.model = ai.provider + ':' + ai.model;
-    x.advice = BM.advisor.guard(x.raw, x.nc);
-    if (!x.raw) x.advice.model = ai.provider + ':' + ai.model;
-    if (x.diag) x.advice.diag = x.diag;
     counts[x.advice.ai_status + ':' + x.advice.verdict] = (counts[x.advice.ai_status + ':' + x.advice.verdict] || 0) + 1;
   });
-  if (retried) counts.retried = retried;
-  try { logAdvisor_(props, label, ai, items.length, todo.length, counts, tokIn, tokOut, Date.now() - t0); } catch (e) {}
+  if (run.retried) counts.retried = run.retried;
+  if (run.fallback) counts.fallback_model = run.fallback;
+  try { logAdvisor_(props, label, ai, items.length, todo.length, counts, run.tokIn, run.tokOut, Date.now() - t0); } catch (e) {}
 
   return {
     advices: items.map(function (x) {
@@ -133,6 +117,40 @@ function handleAdviseNames_(payload) {
   };
 }
 
+/**
+ * Gọi AI cho danh sách ca { nc } (song song). Lỗi TẠM THỜI (quá tải 503 / hết lượt theo phút 429 / 5xx) → gọi lại tối đa
+ * `retries` lần (chờ tăng dần); vẫn lỗi → chuyển lần lượt sang model dự phòng (AI_MODEL_FALLBACKS). Gán x.raw, x.diag, x.advice.
+ */
+function runAi_(ai, todo, retries) {
+  var models = [ai.model].concat(ai.fallbacks), pending = todo.slice(), retried = 0, fallback = 0, tokIn = 0, tokOut = 0;
+  for (var mi = 0; mi < models.length && pending.length; mi++) {
+    var model = models[mi], attempt = 0;
+    if (mi > 0) fallback += pending.length;
+    while (pending.length) {
+      var resps = UrlFetchApp.fetchAll(pending.map(function (x) { return aiRequest_(ai, BM.advisor.prompt(BM.advisor.payload(x.nc)), model); }));
+      var again = [];
+      pending.forEach(function (x, i) {
+        var p = aiParse_(ai, resps[i]);
+        x.raw = p.raw; x.diag = p.diag; x.model = model;
+        tokIn += p.usage.in; tokOut += p.usage.out;
+        if (!p.raw && p.transient) again.push(x);
+      });
+      pending = again;
+      if (!pending.length || attempt >= retries) break;   // hết lượt gọi lại → sang model dự phòng (nếu có)
+      attempt++; retried += pending.length;
+      Utilities.sleep(2500 * attempt);
+    }
+  }
+  todo.forEach(function (x) {
+    var label = ai.provider + ':' + (x.model || ai.model);
+    if (x.raw) x.raw.model = label;
+    x.advice = BM.advisor.guard(x.raw, x.nc);
+    if (!x.raw) x.advice.model = label;
+    if (x.diag) x.advice.diag = x.diag;
+  });
+  return { retried: retried, fallback: fallback, tokIn: tokIn, tokOut: tokOut };
+}
+
 /** Cấu hình nhà cung cấp AI từ Script Properties → { provider, model, base, key, …, error? }. */
 function aiConfig_(props) {
   var provider = String(props.getProperty('AI_PROVIDER') || 'gemini').trim().toLowerCase();
@@ -140,6 +158,8 @@ function aiConfig_(props) {
     provider: provider,
     key: props.getProperty('AI_API_KEY') || '',
     model: props.getProperty('AI_MODEL') || (provider === 'gemini' ? GEMINI_MODEL_DEFAULT : ''),
+    fallbacks: String(props.getProperty('AI_MODEL_FALLBACKS') != null ? props.getProperty('AI_MODEL_FALLBACKS') : (provider === 'gemini' ? GEMINI_FALLBACKS_DEFAULT : ''))
+      .split(',').map(function (s) { return s.trim(); }).filter(Boolean),
     base: String(props.getProperty('AI_BASE_URL') || (provider === 'gemini' ? GEMINI_BASE_DEFAULT : '')).replace(/\/+$/, ''),
     thinking: props.getProperty('AI_THINKING_LEVEL') || '',
     responseFormat: String(props.getProperty('AI_RESPONSE_FORMAT') || 'json_schema').toLowerCase(),
@@ -156,7 +176,8 @@ function aiConfig_(props) {
 }
 
 /** Dựng request UrlFetchApp cho 1 prompt { system, user, schema }. */
-function aiRequest_(ai, pr) {
+function aiRequest_(ai, pr, model) {
+  model = model || ai.model;
   var headers = {};
   Object.keys(ai.extraHeaders).forEach(function (k) { headers[k] = String(ai.extraHeaders[k]); });
   if (ai.provider === 'gemini') {
@@ -164,14 +185,14 @@ function aiRequest_(ai, pr) {
     var gen = { responseMimeType: 'application/json', responseSchema: toGeminiSchema_(pr.schema) };
     if (ai.thinking) gen.thinkingConfig = { thinkingLevel: ai.thinking };
     return {
-      url: ai.base + '/models/' + encodeURIComponent(ai.model) + ':generateContent',
+      url: ai.base + '/models/' + encodeURIComponent(model) + ':generateContent',
       method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: headers,
       payload: JSON.stringify({ systemInstruction: { parts: [{ text: pr.system }] }, contents: [{ role: 'user', parts: [{ text: pr.user }] }], generationConfig: gen }),
     };
   }
   // openai_compat — chuẩn POST /chat/completions (vLLM, Ollama, LiteLLM, Azure OpenAI qua gateway…)
   headers[ai.authHeader] = ai.authHeader.toLowerCase() === 'authorization' ? 'Bearer ' + ai.key : ai.key;
-  var body = { model: ai.model, messages: [{ role: 'system', content: pr.system }, { role: 'user', content: pr.user }] };
+  var body = { model: model, messages: [{ role: 'system', content: pr.system }, { role: 'user', content: pr.user }] };
   if (ai.responseFormat === 'json_schema') body.response_format = { type: 'json_schema', json_schema: { name: 'benematch_advice', strict: true, schema: pr.schema } };
   else if (ai.responseFormat === 'json_object') body.response_format = { type: 'json_object' };
   return {
@@ -254,12 +275,35 @@ function taoMaTruyCap() {
 function kiemTraAI() {
   var ai = aiConfig_(PropertiesService.getScriptProperties());
   if (ai.error) { Logger.log('Chưa cấu hình: ' + ai.error); return ai.error; }
-  var nc = BM.verifyName('CÔNG TY TNHH SAO VIỆT', 'VIETSTAR COMPANY LIMITED', BM.mergeConfig(null).name);
-  var req = aiRequest_(ai, BM.advisor.prompt(BM.advisor.payload(nc)));
-  var p = aiParse_(ai, UrlFetchApp.fetch(req.url, req));
-  var out = p.raw ? BM.advisor.guard(p.raw, nc) : p.diag;
-  Logger.log(ai.provider + ':' + ai.model + ' → ' + JSON.stringify(out) + ' · token in/out ' + p.usage.in + '/' + p.usage.out);
-  return out;
+  var x = { nc: BM.verifyName('CÔNG TY TNHH SAO VIỆT', 'VIETSTAR COMPANY LIMITED', BM.mergeConfig(null).name) };
+  var run = runAi_(ai, [x], 2);   // cùng đường với cán bộ: gọi lại khi quá tải + chuyển model dự phòng
+  Logger.log('Thứ tự model: ' + [ai.model].concat(ai.fallbacks).join(' → ') + ' · gọi lại ' + run.retried + ' lần · chuyển dự phòng ' + run.fallback);
+  Logger.log(x.advice.model + ' → ' + JSON.stringify(x.advice) + ' · token in/out ' + run.tokIn + '/' + run.tokOut);
+  return x.advice;
+}
+
+/**
+ * CHẠY TAY: liệt kê model mà key hiện tại được dùng (Gemini) — để chọn AI_MODEL / AI_MODEL_FALLBACKS.
+ * Chỉ in model hỗ trợ generateContent, ưu tiên họ "flash".
+ */
+function danhSachModel() {
+  var ai = aiConfig_(PropertiesService.getScriptProperties());
+  if (ai.error) { Logger.log('Chưa cấu hình: ' + ai.error); return ai.error; }
+  if (ai.provider !== 'gemini') { Logger.log('Chỉ hỗ trợ AI_PROVIDER=gemini (AI nội bộ: hỏi IT danh sách model).'); return []; }
+  var names = [], token = '';
+  do {
+    var r = UrlFetchApp.fetch(ai.base + '/models?pageSize=200' + (token ? '&pageToken=' + encodeURIComponent(token) : ''), { headers: { 'x-goog-api-key': ai.key }, muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) { Logger.log('HTTP ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 300)); return []; }
+    var d = JSON.parse(r.getContentText());
+    (d.models || []).forEach(function (m) {
+      if ((m.supportedGenerationMethods || []).indexOf('generateContent') >= 0) names.push(String(m.name).replace(/^models\//, ''));
+    });
+    token = d.nextPageToken || '';
+  } while (token);
+  var flash = names.filter(function (n) { return /flash/.test(n) && !/tts|image|audio|live/.test(n); });
+  Logger.log('Model Flash dùng được (' + flash.length + '): ' + flash.join(', '));
+  Logger.log('Đang cấu hình: ' + [ai.model].concat(ai.fallbacks).join(' → ') + ' — model không có trong danh sách trên sẽ báo 404.');
+  return flash;
 }
 
 /** Log AI tư vấn — KHÔNG ghi tên/STK: nhãn mã, nhà cung cấp, số cặp, phân bố ý kiến, token, thời gian. */

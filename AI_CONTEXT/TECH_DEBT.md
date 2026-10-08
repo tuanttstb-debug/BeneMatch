@@ -13,8 +13,8 @@ Chế độ thử dựa vào cán bộ tick; cổng không tự phân biệt tê
 ## TD-BM-15 — `src/ocr/scan_lib.js` là bản CHÉP từ công cụ ẩn danh (2026-10-08)
 Cùng bản với công cụ sao kê (AIOS `W-2610-ai-sao-ke/tool/src/scan_lib.js`). Sửa lỗi OCR phải làm ở gốc (`cong-cu-an-danh/src/app.template.html`) rồi chép lại cả 2 nơi — nếu không sẽ lệch. **Hướng (sau Pilot):** tách thành 1 module dùng chung.
 
-## TD-BM-16 — Gemini gói miễn phí: hạn mức theo phút/ngày (2026-10-08)
-Lô 10 cặp gọi song song có thể dính 429 theo phút → cổng tự gọi lại 2 lần; hết hạn mức ngày → FALLBACK (kết luận không đổi). **Hướng:** chỉ dùng thử; `AI_THINKING_LEVEL=low` giảm token; số liệu thật đo khi có AI nội bộ.
+## TD-BM-16 — Gemini gói miễn phí: hạn mức theo phút/ngày + quá tải (2026-10-08)
+Lô 10 cặp gọi song song có thể dính 429 theo phút / 503 "high demand" (gặp thật 08/10) → cổng gọi lại 2 lần rồi chuyển model dự phòng (`AI_MODEL_FALLBACKS`, GAS @14); tất cả quá tải / hết hạn mức ngày → FALLBACK (kết luận không đổi). **Hướng:** chỉ dùng thử; `AI_THINKING_LEVEL=low` giảm token; số liệu thật đo khi có AI nội bộ.
 
 **Trạng thái (2026-09-28 #2):** TD-BM-06 thay bằng TD-BM-10 (workflow advisor mới, bỏ temperature, sửa cú pháp biến). Nợ mới:
 
