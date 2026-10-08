@@ -15,6 +15,8 @@
  *      chuyển tiền (UNC KHÔNG có MST → ghép theo tên + số HĐ trong nội dung), kiểm từng UNC,
  *      tổng tiền theo từng bên bán, trùng HĐ/UNC, MST checksum, người mua = KH vay…
  *   4) io.* — đọc bảng dán từ Excel/CSV (tự nhận cột tiếng Việt), trích hóa đơn từ text PDF/OCR.
+ *   5) advisor.* — AI tư vấn (chỉ tham khảo): chọn ca, payload, PROMPT + JSON SCHEMA, đọc output, lớp gác.
+ *      Không phụ thuộc nhà cung cấp AI — GAS (gas/Code.gs) chỉ là adapter gọi model (Gemini / AI nội bộ TPB).
  *
  * Bất biến: khác loại hình pháp nhân → luôn KHÔNG KHỚP; không AI trên đường quyết định;
  * số tài khoản chỉ là tín hiệu tham khảo (không dùng để kết luận).
@@ -22,7 +24,7 @@
 (function (root) {
   'use strict';
 
-  var ENGINE_VERSION = '3.1.0';
+  var ENGINE_VERSION = '3.2.0';
 
   // =====================================================================================
   // 1) CHUẨN HÓA
@@ -1105,14 +1107,47 @@
       var head = stripAccents(s.slice(0, c)).toUpperCase();
       if (!/CONG TY|DOANH NGHIEP|HOP TAC XA|CHI NHANH/.test(head) && /(DON|VI|TEN|NGUOI|BAN|SELLER|COMPANY|MUA|BUYER)/.test(head)) s = s.slice(c + 1);
     }
-    return s.replace(/^[\s:.\-]+/, '').replace(/\s*(m[ãa]\s*s[ốo]\s*thu[ếe].*|tax\s*code.*|\(seller\).*)$/i, '').replace(/\s{2,}/g, ' ').trim();
+    // OCR hay để lại ký tự rác đầu dòng (";", "|", ",", dấu ngoặc kép) trước tên.
+    return s.replace(/^[\s:.;,|'"`\-]+/, '').replace(/\s*(m[ãa]\s*s[ốo]\s*thu[ếe].*|tax\s*code.*|\(seller\).*)$/i, '').replace(/\s{2,}/g, ' ').trim();
   }
 
   // =====================================================================================
-  // 6) AI TƯ VẤN (LLM qua Dify) — CHỈ THAM KHẢO, KHÔNG ĐỔI KẾT LUẬN
+  // 6) AI TƯ VẤN — CHỈ THAM KHẢO, KHÔNG ĐỔI KẾT LUẬN
   //    Chính sách (chốt [TT] 28/09/2026): LLM chỉ đề xuất + giải thích cho cán bộ; kết luận của
   //    engine giữ nguyên. Chỉ gửi CẶP TÊN + tóm tắt engine (không số tiền/STK/MST/thông tin KH vay).
+  //    Từ 3.2.0 (08/10/2026): bỏ Dify — prompt + schema + gác nằm ở đây (nguồn duy nhất), mọi nhà
+  //    cung cấp AI (Gemini, AI nội bộ TPB…) dùng chung; xem AI_CONTEXT/AI_INTEGRATION_CONTRACT.md.
   // =====================================================================================
+
+  var ADVISOR_PROMPT_VERSION = 'bm-advisor-prompt-1';
+
+  var ADVISOR_SYSTEM_PROMPT = [
+    'Bạn là chuyên gia thẩm định tên pháp nhân doanh nghiệp Việt Nam, hỗ trợ cán bộ ngân hàng kiểm tra NGƯỜI THỤ HƯỞNG trước khi giải ngân theo hóa đơn.',
+    'Nhiệm vụ: đánh giá TÊN BÊN BÁN trên hóa đơn và TÊN NGƯỜI THỤ HƯỞNG trên lệnh chuyển tiền (UNC) có cùng một pháp nhân hay không.',
+    '',
+    'Ý kiến của bạn CHỈ ĐỂ THAM KHẢO. Kết luận chính thức do engine luật của ngân hàng quyết định; bạn không thay đổi kết luận đó.',
+    '',
+    'Kiến thức cần áp dụng:',
+    '- Loại hình pháp nhân: Công ty TNHH (gồm TNHH MTV/2TV), Công ty cổ phần (CTCP, JSC), Doanh nghiệp tư nhân, Hợp tác xã, Công ty hợp danh, Hộ kinh doanh. KHÁC loại hình (vd TNHH ≠ Cổ phần) ⇒ LUÔN là hai pháp nhân khác nhau.',
+    '- Tên tiếng Anh/tên giao dịch có thể là bản dịch nghĩa của tên riêng (vd "Sao Việt" ↔ "Vietstar", "Ánh Dương" ↔ "Sunshine"); từ ngành nghề (Thương mại=Trading, Dịch vụ=Services, Xây dựng=Construction, Thực phẩm=Foods, Vận tải biển=Shipping…) không phải tên riêng.',
+    '- Viết tắt/tên thương hiệu thường ghép chữ cái đầu của phần tên (vd "An Phát Technical Services" → APTS). Viết tắt ≤ 3 chữ cái rất mơ hồ.',
+    '- Tổng công ty / Tập đoàn ↔ công ty con, công ty "số 3", công ty "miền Bắc"… là CÁC PHÁP NHÂN KHÁC NHAU dù tên gần giống ⇒ RELATED_ENTITY.',
+    '- Chi nhánh, văn phòng đại diện, địa điểm kinh doanh thuộc cùng pháp nhân với công ty mẹ ⇒ SAME_ENTITY, relation BRANCH.',
+    '- Hộ kinh doanh có thể nhận tiền vào tài khoản cá nhân của chủ hộ (cùng họ tên).',
+    '- Thêm/bớt một chữ trong PHẦN TÊN RIÊNG (vd "Hoàng Gia" ↔ "Hoàng Gia Phát") thường là doanh nghiệp khác. Khác số hiệu (số 1 ↔ số 7) là doanh nghiệp khác.',
+    '- Lỗi OCR hay gặp: O↔0, I/L↔1, E↔F, mất dấu; tên trên UNC thường không dấu, viết hoa, có thể bị cắt cụt.',
+    '- Bạn KHÔNG có dữ liệu đăng ký kinh doanh: không được khẳng định doanh nghiệp đã đổi tên; nếu nghi đổi tên ⇒ UNCERTAIN, relation RENAMED.',
+    '',
+    'Nguyên tắc an toàn: nhầm "cùng pháp nhân" gây chuyển tiền sai người — nghiêm trọng hơn nhiều so với báo "chưa đủ căn cứ". Chỉ trả SAME_ENTITY khi có căn cứ rõ ràng; phân vân ⇒ UNCERTAIN.',
+    '',
+    'Chỉ trả về MỘT đối tượng JSON đúng schema, không kèm chữ nào khác:',
+    '- verdict: SAME_ENTITY | DIFFERENT_ENTITY | RELATED_ENTITY | UNCERTAIN',
+    '- relation: IDENTICAL | ABBREVIATION | TRANSLATION | TRANSLITERATION | TRUNCATION | TYPO_OCR | BRANCH | PARENT_SUBSIDIARY | RENAMED | UNRELATED | UNKNOWN',
+    '- confidence: số 0..1 (mức chắc chắn của verdict)',
+    '- evidence: tối đa 4 căn cứ ngắn, cụ thể (chỉ ra từ nào tương ứng từ nào)',
+    '- explanation: 1–3 câu tiếng Việt cho cán bộ',
+    '- checks_for_officer: tối đa 3 việc cán bộ cần kiểm tra thêm (vd đối chiếu tên chủ tài khoản, MST, giấy ĐKKD)',
+  ].join('\n');
 
   var ADVISOR_VERDICTS = ['SAME_ENTITY', 'DIFFERENT_ENTITY', 'RELATED_ENTITY', 'UNCERTAIN'];
   var ADVISOR_RELATIONS = ['IDENTICAL', 'ABBREVIATION', 'TRANSLATION', 'TRANSLITERATION', 'TRUNCATION', 'TYPO_OCR',
@@ -1136,7 +1171,7 @@
 
   function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, n); }
 
-  /** Payload gửi Dify — chỉ tên + tóm tắt engine. */
+  /** Payload gửi AI — chỉ tên + tóm tắt engine (không số tiền/STK/MST/KH vay). */
   function advisorPayload(nc) {
     return {
       invoice_name: clip(nc.invoice.raw, 300), payment_name: clip(nc.payment.raw, 300),
@@ -1145,6 +1180,51 @@
       invoice_legal: nc.invoice.legal_family, payment_legal: nc.payment.legal_family,
       invoice_core: clip(nc.invoice.core, 200), payment_core: clip(nc.payment.core, 200),
     };
+  }
+
+  /** Lời nhắn user cho LLM (dòng 1–2 cố định định dạng — bộ test/giả lập đọc lại tên từ đây). */
+  function advisorUserPrompt(p) {
+    return [
+      'Tên bên bán trên HÓA ĐƠN: ' + p.invoice_name,
+      'Tên người thụ hưởng trên UNC: ' + p.payment_name,
+      '',
+      'Kết quả engine luật (tham khảo): ' + p.engine_decision + ' — mã ' + p.engine_reason + ' — độ tương đồng kỹ thuật ' + p.engine_score + '%',
+      'Diễn giải engine: ' + p.engine_explanation,
+      'Loại hình (họ): hóa đơn = ' + p.invoice_legal + '; UNC = ' + p.payment_legal,
+      'Tên lõi sau chuẩn hóa: hóa đơn = ' + p.invoice_core + '; UNC = ' + p.payment_core,
+      '',
+      'Đánh giá hai tên và trả JSON theo schema.',
+    ].join('\n');
+  }
+
+  /** JSON Schema chuẩn (draft 2020-12 tập con) của output AI. Adapter tự chuyển sang dạng nhà cung cấp cần. */
+  function advisorSchema() {
+    return {
+      type: 'object', additionalProperties: false,
+      required: ['verdict', 'relation', 'confidence', 'evidence', 'explanation', 'checks_for_officer'],
+      properties: {
+        verdict: { type: 'string', enum: ADVISOR_VERDICTS.slice() },
+        relation: { type: 'string', enum: ADVISOR_RELATIONS.slice() },
+        confidence: { type: 'number' },
+        evidence: { type: 'array', items: { type: 'string' }, maxItems: 4 },
+        explanation: { type: 'string' },
+        checks_for_officer: { type: 'array', items: { type: 'string' }, maxItems: 3 },
+      },
+    };
+  }
+
+  /** Gói prompt đầy đủ cho 1 cặp: { system, user, schema, prompt_version }. */
+  function advisorPrompt(payload) {
+    return { system: ADVISOR_SYSTEM_PROMPT, user: advisorUserPrompt(payload), schema: advisorSchema(), prompt_version: ADVISOR_PROMPT_VERSION };
+  }
+
+  /** Đọc output AI (object hoặc chuỗi có thể kèm ```json / chữ thừa) → object | null. */
+  function advisorParse(out) {
+    if (out && typeof out === 'object') return out.verdict ? out : null;
+    var t = String(out == null ? '' : out).trim();
+    var a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a < 0 || b <= a) return null;
+    try { var o = JSON.parse(t.slice(a, b + 1)); return o && typeof o === 'object' && o.verdict ? o : null; } catch (e) { return null; }
   }
 
   function advisorKey(nc) { return normalizeName(nc.invoice.raw) + '||' + normalizeName(nc.payment.raw); }
@@ -1164,7 +1244,7 @@
   }
 
   /**
-   * Chuẩn hóa + gác ý kiến AI (lớp gác thứ 2, cùng logic với node Validate trên Dify).
+   * Chuẩn hóa + gác ý kiến AI (chạy ở GAS sau khi gọi model, và lần 2 ở trình duyệt).
    * Không bao giờ đổi kết luận engine; chỉ làm sạch/hạ mức tự tin của ý kiến AI khi mâu thuẫn luật cứng.
    */
   function advisorGuard(raw, nc) {
@@ -1220,6 +1300,8 @@
     toIsoDate: toIsoDate,
     io: { parseDelimited: parseDelimited, rowsToRecords: rowsToRecords, parseInvoiceText: parseInvoiceText, contentInvoiceRefs: contentInvoiceRefs },
     advisor: { eligible: advisorEligible, payload: advisorPayload, key: advisorKey, collect: advisorCollect, guard: advisorGuard,
+      prompt: advisorPrompt, userPrompt: advisorUserPrompt, schema: advisorSchema, parse: advisorParse,
+      SYSTEM_PROMPT: ADVISOR_SYSTEM_PROMPT, PROMPT_VERSION: ADVISOR_PROMPT_VERSION,
       VERDICTS: ADVISOR_VERDICTS, RELATIONS: ADVISOR_RELATIONS, LABEL: ADVISOR_LABEL },
   };
 

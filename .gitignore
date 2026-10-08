@@ -35,3 +35,9 @@ test/live/*_response.json
 !test/live/invoice_synth_01.png
 # Fixtures hóa đơn GIẢ LẬP cho test đọc PDF — cho phép commit
 !test/fixtures/hddt_synth.pdf
+
+# Bản 1 file offline (~8 MB, nhúng OCR) — sinh bởi fe/build.mjs, gửi nội bộ; không commit
+fe/index.html
+!test/fixtures/hddt_synth_scan.pdf
+!test/fixtures/hddt_synth_scan_xoay90.pdf
+!test/fixtures/hddt_synth_scan.png

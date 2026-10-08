@@ -67,7 +67,7 @@ const md = `# BeneMatch — Đánh giá trên dữ liệu GNOL (${today()})
 | Cùng pháp nhân nhưng engine không cho KHỚP | ${eMissedSame.length} / ${lab.filter((x) => x.label === 'SAME').length} (${pct(eMissedSame.length, lab.filter((x) => x.label === 'SAME').length)}) | Việc tay của cán bộ — AI giúp giảm |
 | ...trong đó engine CHẶN | ${eBlockSame.length} | Ca AI nên gỡ nhiều nhất (tiếng Anh, viết tắt) |
 
-## AI tư vấn (Dify · GPT-5)
+## AI tư vấn (qua cổng GAS — Gemini / AI nội bộ TPB)
 | Chỉ số | Giá trị |
 |---|---|
 | Ca đã hỏi AI (có nhãn) | ${asked.length} |

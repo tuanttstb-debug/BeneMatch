@@ -1,5 +1,7 @@
 # OCR_SPEC — BeneMatch (Invoice ingestion, hybrid)
 
+> ⚠️ **HIỆN HÀNH (2026-10-08):** OCR **chỉ chạy tại máy** (trình duyệt) — `src/ocr/scan_lib.js` chép từ công cụ ẩn danh v3.6 (AIOS `08_Work/P-aius001…/cong-cu-an-danh`): pdf.js + tesseract.js + mô hình tiếng Việt **nhúng sẵn** (không CDN), tự nhận hướng/xoay trang, xoá đường kẻ, độ tin thấp → thử xoay 180°; PDF scan đọc tối đa 2 trang (dừng khi trang 1 đủ trường). Bóc trường: `BM.io.parseInvoiceText` (engine). **Đường OCR GAS (Drive/Vision, `OcrService.gs`, `USE_OCR`) đã GỠ** — GAS trả `OCR_LOCAL_ONLY` nếu nhận file. Giai đoạn 2: nhận output OCR của BIZ. Kiểm: `tools/dev/ui_smoke.mjs`. Phần dưới là thiết kế lịch sử.
+
 Bóc dữ liệu hóa đơn từ file đính kèm. **Kiến trúc hybrid** (chốt 2026-08-22): đường **OCR thật** (GAS + Google Vision) + đường **synthetic fixtures** cùng schema — chuyển bằng cờ `USE_OCR`, để demo chạy được ngay cả khi chưa có API key.
 
 ## 1. Nguyên tắc

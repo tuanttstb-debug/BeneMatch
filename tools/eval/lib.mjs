@@ -49,12 +49,15 @@ export function writeBook(file, sheets, widths = {}) {
   XLSX.writeFile(wb, file);
 }
 
-/** Gọi cổng AI (GAS proxy) theo lô 10 cặp. */
-export async function askProxy(url, code, pairs, onProgress) {
+/**
+ * Gọi cổng AI (GAS) theo lô 10 cặp. opts.attest = true → gửi data_attest:"ANONYMIZED" (chỉ dùng cho tên GIẢ LẬP/đã ẩn danh;
+ * cổng ở chế độ thử — Gemini miễn phí — từ chối tên thật khi không có xác nhận này).
+ */
+export async function askProxy(url, code, pairs, onProgress, opts = {}) {
   const out = [];
   for (let i = 0; i < pairs.length; i += 10) {
     const chunk = pairs.slice(i, i + 10);
-    const r = await fetch(url, { method: 'POST', body: JSON.stringify({ action: 'advise_names', access_code: code, pairs: chunk }), redirect: 'follow' });
+    const r = await fetch(url, { method: 'POST', body: JSON.stringify({ action: 'advise_names', access_code: code, data_attest: opts.attest ? 'ANONYMIZED' : undefined, pairs: chunk }), redirect: 'follow' });
     const d = await r.json();
     if (d.error) throw new Error(d.message || d.error);
     out.push(...d.advices);

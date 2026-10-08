@@ -1,5 +1,7 @@
 # INTEGRATION_MAP — BeneMatch trong luồng tín dụng TPBank
 
+> ⚠️ **Cập nhật 2026-10-08:** AI tư vấn không còn qua Dify — GAS gọi model trực tiếp qua adapter; khi tích hợp, IT chỉ thay model bằng AI nội bộ TPBank theo `AI_INTEGRATION_CONTRACT.md` (Cách A: đổi Script Properties · Cách B: service nội bộ G2). OCR ở máy cán bộ / BIZ, không qua cloud.
+
 **Mục đích:** phục vụ tuyến demo "bản đồ tích hợp — nhận diện rủi ro sớm khi tích hợp rộng hơn". Tham chiếu hạ tầng: `SYS-TPBANK` (không phải nguyên tắc nghiệp vụ riêng). Nhãn: **[FACT]** tài liệu · **[INFERRED]** suy luận · **[OPEN]** cần xác nhận.
 
 ## Vị trí: chốt kiểm trong luồng giải ngân theo hóa đơn (SHTD)

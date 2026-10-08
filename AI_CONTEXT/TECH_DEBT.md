@@ -2,6 +2,20 @@
 
 Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `TD-BM-nn`.
 
+**Trạng thái (2026-10-08) — 3 lớp, bỏ Dify:** ✅ **Đóng TD-BM-08** (thư viện nhúng, 0 CDN). 🔁 **TD-BM-12 chuyển thành kiểm soát**: [TT] cho dùng Gemini gói miễn phí **chỉ với tên giả lập/đã ẩn danh** — cổng chặn bằng `AI_ALLOW_REAL_DATA` (mặc định tắt) + FE bắt tick; đóng hẳn khi AI nội bộ TPB thay. ✅ Đóng TD-BM-09 (test/live cũ cho API OCR GAS — đường này đã gỡ). TD-BM-10 (chưa đo LLM thật) còn mở — chờ key. Nợ mới:
+
+## TD-BM-13 — SheetJS 0.18.5 (bản cuối trên npm) có lỗ hổng đã công bố (2026-10-08)
+Prototype pollution (CVE-2023-30533) + ReDoS khi đọc file Excel do người khác gửi. Rủi ro thấp (chạy trong trình duyệt cán bộ, file nội bộ, không có server), trước đây vẫn dùng bản này qua CDN. **Hướng:** nâng SheetJS ≥ 0.20.x từ tarball `cdn.sheetjs.com` vào `package.json` khi ATTT yêu cầu.
+
+## TD-BM-14 — Xác nhận "tên đã ẩn danh" là tự khai (2026-10-08)
+Chế độ thử dựa vào cán bộ tick; cổng không tự phân biệt tên thật/giả. **Hướng:** chỉ cấp mã truy cập cho team Số hóa trong giai đoạn thử; khi AI nội bộ TPB sẵn sàng → bật `AI_ALLOW_REAL_DATA`, bỏ chế độ thử.
+
+## TD-BM-15 — `src/ocr/scan_lib.js` là bản CHÉP từ công cụ ẩn danh (2026-10-08)
+Cùng bản với công cụ sao kê (AIOS `W-2610-ai-sao-ke/tool/src/scan_lib.js`). Sửa lỗi OCR phải làm ở gốc (`cong-cu-an-danh/src/app.template.html`) rồi chép lại cả 2 nơi — nếu không sẽ lệch. **Hướng (sau Pilot):** tách thành 1 module dùng chung.
+
+## TD-BM-16 — Gemini gói miễn phí: hạn mức theo phút/ngày (2026-10-08)
+Lô 10 cặp gọi song song có thể dính 429 theo phút → cổng tự gọi lại 2 lần; hết hạn mức ngày → FALLBACK (kết luận không đổi). **Hướng:** chỉ dùng thử; `AI_THINKING_LEVEL=low` giảm token; số liệu thật đo khi có AI nội bộ.
+
 **Trạng thái (2026-09-28 #2):** TD-BM-06 thay bằng TD-BM-10 (workflow advisor mới, bỏ temperature, sửa cú pháp biến). Nợ mới:
 
 ## TD-BM-12 — 🔴 Key Gemini trên Dify là GÓI MIỄN PHÍ (2026-09-28)

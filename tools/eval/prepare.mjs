@@ -1,7 +1,7 @@
 /**
  * prepare.mjs — từ file trích GNOL → file GÁN NHÃN (chạy trên máy [TT]).
  *   node tools/eval/prepare.mjs --in "D:\Công việc\BeneMatch_eval\GNOL_2026Q3.xlsx" --out "D:\Công việc\BeneMatch_eval"
- *        [--ai-url https://script.google.com/macros/s/…/exec --ai-code <mã>]   # hỏi AI (gửi CẶP TÊN tới Dify — anh đã duyệt)
+ *        [--ai-url https://script.google.com/macros/s/…/exec --ai-code <mã>]   # hỏi AI qua cổng GAS (chỉ CẶP TÊN). Tên KH thật: chỉ khi cổng đã bật AI_ALLOW_REAL_DATA (AI nội bộ TPB / key trả phí)
  *        [--match-sample 0.1]                                                  # tỉ lệ ca KHỚP lấy mẫu để kiểm (mặc định 10%, tối thiểu 30)
  * Kết quả: BeneMatch_gan_nhan_<ngày>.xlsx — cán bộ điền cột NHÃN cho từng cặp tên.
  */

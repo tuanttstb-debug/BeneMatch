@@ -1,5 +1,7 @@
 # SYSTEM ARCHITECTURE — BeneMatch (demo)
 
+> ⚠️ **HIỆN HÀNH (2026-10-08, engine 3.2.0) — kiến trúc 3 lớp, bỏ Dify:** (1) **LOCAL** — trình duyệt: XML/PDF chữ/PDF scan/ảnh → OCR offline (`src/ocr/scan_lib.js`, pdf.js + tesseract nhúng, tự xoay, xoá kẻ) → engine `bm-engine.js` ra kết luận, dữ liệu không rời máy · (2) **LOGIC** — GAS `gas/Code.gs`: mã truy cập, hạn mức, tự tính lại engine, prompt/schema/gác `BM.advisor`, adapter AI, log không tên · (3) **AI** — `AI_PROVIDER=gemini` (hiện tại, gói miễn phí, chỉ tên giả lập/ẩn danh) → `openai_compat` (AI nội bộ TPB). Chi tiết: `ADVISOR_SPEC.md` + `AI_INTEGRATION_CONTRACT.md`. Phần dưới là thiết kế lịch sử (Dify/OCR GAS — không còn dùng).
+
 **Cập nhật:** 2026-08-22 · Kiến trúc mirror `PRJ-SG`. Configuration-driven.
 
 > **v0.2 — thêm tầng Batch Reconciliation** (đa hóa đơn ↔ đa lệnh CT). Luồng verify 1 cặp tên (bên dưới) **giữ nguyên** làm lõi; tầng recon gọi lại lõi này cho từng nhóm người thụ hưởng. Xem `RECONCILIATION_SPEC.md` + `OCR_SPEC.md`.

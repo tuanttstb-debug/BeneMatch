@@ -155,5 +155,15 @@ check('guard: mẹ ↔ con không thể là CÙNG pháp nhân', g2.verdict === '
 const g3 = BM.advisor.guard({ verdict: 'BANANA' }, null);
 check('guard: output rác → FALLBACK/UNCERTAIN', g3.ai_status === 'FALLBACK' && g3.verdict === 'UNCERTAIN');
 
+console.log('\n[6] Prompt + schema AI (nguồn duy nhất, không phụ thuộc nhà cung cấp)');
+const pr = BM.advisor.prompt(col[0].payload);
+check('prompt: có system + user + schema + version', pr.system === BM.advisor.SYSTEM_PROMPT && pr.user && pr.schema && /^bm-advisor-prompt-/.test(pr.prompt_version));
+check('prompt user: 2 dòng đầu là 2 tên (định dạng cố định)', pr.user.split('\n')[0] === 'Tên bên bán trên HÓA ĐƠN: ' + col[0].payload.invoice_name && pr.user.split('\n')[1] === 'Tên người thụ hưởng trên UNC: ' + col[0].payload.payment_name);
+check('prompt KHÔNG chứa số tiền/STK/MST', !/0123456789|1903555777|0101234565|30000000/.test(pr.system + pr.user));
+check('schema: enum verdict/relation khớp lớp gác, cấm trường thừa', JSON.stringify(pr.schema.properties.verdict.enum) === JSON.stringify(BM.advisor.VERDICTS) && pr.schema.properties.relation.enum.length === BM.advisor.RELATIONS.length && pr.schema.additionalProperties === false);
+check('schema: trả bản mới mỗi lần (adapter sửa không ảnh hưởng)', BM.advisor.schema() !== BM.advisor.schema());
+check('parse: object / chuỗi JSON / JSON kèm ```json và chữ thừa', BM.advisor.parse({ verdict: 'UNCERTAIN' }).verdict === 'UNCERTAIN' && BM.advisor.parse('{"verdict":"SAME_ENTITY"}').verdict === 'SAME_ENTITY' && BM.advisor.parse('Kết quả:\n```json\n{"verdict":"DIFFERENT_ENTITY"}\n```').verdict === 'DIFFERENT_ENTITY');
+check('parse: chữ thường / JSON hỏng / thiếu verdict → null', BM.advisor.parse('không biết') === null && BM.advisor.parse('{"verdict":') === null && BM.advisor.parse('{"a":1}') === null && BM.advisor.parse(null) === null);
+
 console.log(`\n=== ${pass} pass · ${fail} fail · phân bố golden: ${JSON.stringify(byDecision)} ===`);
 process.exit(fail ? 1 : 0);

@@ -1,4 +1,4 @@
 {
   "proxy_url": "https://script.google.com/macros/s/AKfycbwWIUJV77Zigj7WiwyFYMm3FUU6V5RFRuuw9C6ltsFqvT5g-BwXzOFYH0rv-MBiTNMw/exec",
-  "note": "Web App GAS project 152L4fFo…Tkd1L, deployment @9 (2026-09-28, engine 3.1.0 + advise_names). URL không phải bí mật — mã truy cập mới là bí mật (tạo bằng hàm taoMaTruyCap trong editor)."
+  "note": "Cổng GAS project 152L4fFo…Tkd1L, deployment @13 (2026-10-08, engine 3.2.0 — bỏ Dify, GAS gọi AI trực tiếp: AI_PROVIDER gemini | openai_compat). URL không phải bí mật — mã truy cập mới là bí mật (hàm taoMaTruyCap)."
 }

@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- CSP: chỉ được kết nối tới cổng GAS (AI tư vấn, tùy chọn) + cổng giả lập trên máy khi phát triển. Mọi thư viện/OCR nhúng sẵn. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src blob: data: https://script.google.com https://script.googleusercontent.com http://127.0.0.1:* http://localhost:*; form-action 'none'; base-uri 'none'">
 <title>BeneMatch — Kiểm tra người thụ hưởng</title>
 <meta name="description" content="Công cụ offline kiểm tra tên người thụ hưởng và chứng từ trước giải ngân: đối chiếu hóa đơn ↔ lệnh chuyển tiền, deterministic, dữ liệu không rời máy.">
 <style>
@@ -161,6 +163,8 @@
   .ai-set{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0} @media(min-width:760px){ .ai-set{grid-template-columns:2fr 1fr auto} }
   .ai-set label.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
   .ai-set label.chk input{width:auto}
+  .ai-warn{border:1px solid var(--amber-line);background:var(--amber-bg);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:12.5px;margin:0 0 10px}
+  .ai-warn label.chk{display:flex;align-items:center;gap:6px;font-weight:600} .ai-warn label.chk input{width:auto}
   .advice{margin-top:8px;border:1px dashed var(--purple);border-radius:10px;padding:8px 11px;background:var(--purple-soft)}
   .advice .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px}
   .advice .hd b{color:var(--purple-ink)}
@@ -196,7 +200,7 @@
     <span class="tag" id="verTag">Engine v3 · Offline</span>
   </header>
 
-  <div class="privacy"><span>🔒</span><span>Mọi xử lý chạy <b>ngay trên trình duyệt của máy này</b> — hóa đơn, lệnh chuyển tiền, thông tin khách hàng <b>không được gửi đi đâu</b> và không được lưu lại; đóng tab là xóa. Thư viện đọc Excel/PDF/ảnh chỉ được tải khi cần (không gửi file lên mạng). <b>AI tư vấn là tùy chọn</b>: chỉ khi cán bộ bấm “Hỏi AI”, riêng <b>cặp tên</b> của ca cần kiểm tra được gửi qua cổng BeneMatch tới Dify (không gửi số tiền, STK, MST, thông tin KH vay).</span></div>
+  <div class="privacy"><span>🔒</span><span>Mọi xử lý chạy <b>ngay trên trình duyệt của máy này</b> — hóa đơn, lệnh chuyển tiền, thông tin khách hàng <b>không được gửi đi đâu</b> và không được lưu lại; đóng tab là xóa. Thư viện đọc Excel/PDF/ảnh (OCR) <b>nhúng sẵn trong trang</b> — đọc file ngay trên máy, không cần Internet, không gửi file lên mạng. <b>AI tư vấn là tùy chọn</b>: chỉ khi cán bộ bấm “Hỏi AI”, riêng <b>cặp tên</b> của ca cần kiểm tra được gửi qua cổng BeneMatch (GAS) tới mô hình AI (không gửi số tiền, STK, MST, thông tin KH vay).</span></div>
 
   <nav class="tabs" role="tablist">
     <button class="on" data-tab="case">① Kiểm tra hồ sơ</button>
@@ -295,7 +299,7 @@
         <li><b>Lệnh chuyển tiền</b>: dán danh sách UNC (tên người thụ hưởng, STK, ngân hàng, số tiền, nội dung). UNC không cần MST — hệ thống tự ghép với bên bán theo <b>tên</b> và <b>số hóa đơn trong nội dung</b>.</li>
         <li>Bấm <b>Kiểm tra hồ sơ</b> → xem kết luận, xử lý từng cảnh báo → <b>In phiếu / Xuất Excel</b> lưu hồ sơ, <b>Email ĐVKD</b> nếu cần bổ sung.</li>
       </ol>
-      <p class="muted" style="margin-top:10px">Kết luận hồ sơ = mức nặng nhất trong các cảnh báo: <span class="badge b-MATCH">KHỚP</span> cho qua · <span class="badge b-REVIEW">CẦN KIỂM TRA</span> kiểm soát, hoàn thiện hồ sơ trước khi chi · <span class="badge b-NOT_MATCH">KHÔNG KHỚP</span> dừng giải ngân. <b>Không có AI trên đường quyết định</b> — mọi kết luận theo luật cố định, tái lập được. <b>AI tư vấn</b> (tùy chọn, Gemini 3.8 Flash qua Dify) chỉ đưa ý kiến tham khảo cho ca tên khó (tên tiếng Anh, viết tắt, mẹ ↔ con, đổi tên, lỗi OCR); kết luận không đổi.</p>
+      <p class="muted" style="margin-top:10px">Kết luận hồ sơ = mức nặng nhất trong các cảnh báo: <span class="badge b-MATCH">KHỚP</span> cho qua · <span class="badge b-REVIEW">CẦN KIỂM TRA</span> kiểm soát, hoàn thiện hồ sơ trước khi chi · <span class="badge b-NOT_MATCH">KHÔNG KHỚP</span> dừng giải ngân. <b>Không có AI trên đường quyết định</b> — mọi kết luận theo luật cố định, tái lập được. <b>Đọc PDF/ảnh (OCR) chạy ngay trên máy</b> — thư viện nhúng sẵn, file không gửi đi đâu. <b>AI tư vấn</b> (tùy chọn, qua cổng GAS của ngân hàng; hiện dùng Gemini, khi tích hợp thay bằng AI nội bộ TPBank) chỉ đưa ý kiến tham khảo cho ca tên khó (tên tiếng Anh, viết tắt, mẹ ↔ con, đổi tên, lỗi OCR); kết luận không đổi.</p>
     </div>
     <div class="card">
       <div class="card-hd"><h2>Luật khớp tên (xét từ trên xuống, trúng luật nào dừng ở luật đó)</h2></div>
@@ -317,6 +321,11 @@
 <div id="printArea"></div>
 <div class="toast" id="toast"></div>
 
+<!--__VENDOR__-->
+<script>
+/* ====== OCR OFFLINE (src/ocr/scan_lib.js — chép từ công cụ ẩn danh v3.6: pdf.js + tesseract nhúng, tự xoay trang, xoá kẻ) ====== */
+/*__SCANLIB__*/
+</script>
 <script>
 /* ====== ENGINE (nạp từ src/engine/bm-engine.js qua fe/build.mjs — nguồn logic duy nhất) ====== */
 /*__BM_ENGINE__*/
@@ -328,12 +337,8 @@ var SCENARIOS = /*__SCENARIOS__*/ [];
 var CONFIG = /*__CONFIG__*/ {};
 var ADVISOR_CFG = /*__ADVISOR__*/ {};
 var FEEDBACK_EMAIL = "tuantt.stb@gmail.com";
-var CDN = {
-  xlsx: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
-  pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
-  pdfWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
-  tesseract: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'
-};
+/* Thư viện (pdf.js, tesseract + mô hình tiếng Việt, SheetJS) nhúng sẵn qua fe/build.mjs — không tải từ Internet. */
+function needLib(ok, name){ if(!ok) throw new Error('Thiếu thư viện '+name+' trong bản build này — dùng bản đầy đủ (fe/build.mjs).'); }
 
 var DEC_LABEL = { MATCH:'KHỚP', REVIEW:'CẦN KIỂM TRA', NOT_MATCH:'KHÔNG KHỚP' };
 var NAME_LABEL = { MATCH:'Cùng pháp nhân', REVIEW:'Cần kiểm tra', NOT_MATCH:'Khác pháp nhân' };
@@ -354,17 +359,6 @@ var rid = 0; function newId(p){ rid++; return p + rid; }
 
 function toast(msg, ms){ var t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); if(ms!==0) toast._t=setTimeout(function(){ t.classList.remove('on'); }, ms||3200); }
 
-/* ---------- lazy load thư viện ---------- */
-var loaded = {};
-function loadScript(url){
-  if(loaded[url]) return loaded[url];
-  loaded[url] = new Promise(function(res, rej){
-    var s=document.createElement('script'); s.src=url; s.async=true;
-    s.onload=function(){ res(); }; s.onerror=function(){ delete loaded[url]; rej(new Error('Không tải được thư viện (cần Internet lần đầu): '+url)); };
-    document.head.appendChild(s);
-  });
-  return loaded[url];
-}
 
 /* ================= TABS ================= */
 Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
@@ -522,7 +516,7 @@ async function handleTrFile(f){
 async function readSheetRows(f){
   var ext = extOf(f);
   if(ext==='csv' || ext==='txt') return BM.io.parseDelimited(await readText(f));
-  await loadScript(CDN.xlsx);
+  needLib(typeof XLSX!=='undefined', 'SheetJS (đọc Excel)');
   var wb = XLSX.read(await readBuf(f), { type:'array', cellDates:true });
   var ws = wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(ws, { header:1, raw:false, dateNF:'yyyy-mm-dd', defval:'' });
@@ -554,35 +548,53 @@ function parseInvoiceXml(text){
   return o;
 }
 
+/* PDF: có lớp chữ → đọc chữ; PDF scan → OCR offline tối đa OCR_MAX_PAGES trang (tự xoay + xoá kẻ). */
+var OCR_MAX_PAGES = 2, OCR_SCALE = 2.2;
 async function readPdfInvoice(f){
-  await loadScript(CDN.pdf);
-  var lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = CDN.pdfWorker;
-  var pdf = await lib.getDocument({ data: new Uint8Array(await readBuf(f)) }).promise;
+  needLib(typeof hasOcrLibs==='function' && hasOcrLibs(), 'pdf.js/OCR');
+  initPdfJs();
+  var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await readBuf(f)) }).promise;
   var text = '';
-  for(var p=1; p<=Math.min(pdf.numPages, 3); p++){
-    var page = await pdf.getPage(p), tc = await page.getTextContent(), lastY=null;
-    tc.items.forEach(function(it){ var y = it.transform ? Math.round(it.transform[5]) : null; if(lastY!==null && y!==null && Math.abs(y-lastY)>3) text+='\n'; else if(text && !/\s$/.test(text)) text+=' '; text+=it.str; lastY=y; });
-    text += '\n';
-  }
-  if(text.replace(/\s/g,'').length < 60){                      // PDF scan → OCR trang 1
-    var pg = await pdf.getPage(1), vp = pg.getViewport({ scale: 2.2 }), cv = document.createElement('canvas');
-    cv.width=vp.width; cv.height=vp.height; await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-    return ocrImageInvoice(cv, 'PDF scan', f.name);
-  }
-  var x = BM.io.parseInvoiceText(text);
-  x.source='OCR'; x.source_detail='PDF'; x.source_file=f.name; x.ocr_confidence = x.missing.length ? 0.6 : 0.9;
-  return x;
-}
-async function ocrImageInvoice(img, detail, fname){
-  await loadScript(CDN.tesseract);
-  toast('Đang nhận dạng chữ (OCR tiếng Việt) — lần đầu tải dữ liệu ngôn ngữ ~10MB…', 0);
-  var worker = await Tesseract.createWorker('vie');
-  try{
-    var r = await worker.recognize(img);
-    var x = BM.io.parseInvoiceText(r.data.text);
-    x.source='OCR'; x.source_detail=detail; x.source_file=fname || img.name || ''; x.ocr_confidence = Math.max(0, Math.min(1, (r.data.confidence||0)/100));
+  for(var p=1; p<=Math.min(pdf.numPages, 3); p++) text += (await textLayer(pdf, p)) + '\n';
+  if(text.replace(/\s/g,'').length >= 60){
+    var x = BM.io.parseInvoiceText(text);
+    x.source='OCR'; x.source_detail='PDF'; x.source_file=f.name; x.ocr_confidence = x.missing.length ? 0.6 : 0.9;
     return x;
-  } finally { await worker.terminate(); }
+  }
+  var n = Math.min(pdf.numPages, OCR_MAX_PAGES), texts = [], confs = [], hint = null;
+  for(var q=1; q<=n; q++){
+    toast('OCR trên máy: '+f.name+' — trang '+q+'/'+n+' …', 0);
+    var c = await renderPage(pdf, q, OCR_SCALE, hint);
+    if(c._orient && c._orient.vertical) hint = c._orient.rot;
+    var r = await ocrCanvas(c);
+    texts.push(r.text); confs.push(r.conf);
+    if(q===1){ var x1 = BM.io.parseInvoiceText(r.text); if(!x1.missing.length) break; }   // trang 1 đủ trường → thôi
+  }
+  return ocrResult(texts.join('\n'), confs, 'PDF scan', f.name);
+}
+async function ocrImageInvoice(file, detail){
+  needLib(typeof hasOcrLibs==='function' && hasOcrLibs(), 'OCR');
+  toast('OCR trên máy: '+file.name+' …', 0);
+  var r = await ocrCanvas(await imageToCanvas(file, null));
+  return ocrResult(r.text, [r.conf], detail, file.name);
+}
+/* 1 trang → {text, conf}. Độ tin thấp → thử chiều ngược lại (180°) và giữ bản tốt hơn (như công cụ ẩn danh). */
+async function ocrCanvas(c){
+  var sched = await initTesseract(1, function(m){ toast(m, 0); });
+  var r = await sched.addJob('recognize', c), best = { text: r.data.text, conf: r.data.confidence||0 };
+  if(best.conf < 55){
+    var f2 = flip180(c), r2 = await sched.addJob('recognize', f2);
+    if((r2.data.confidence||0) > best.conf + 5) best = { text: r2.data.text, conf: r2.data.confidence||0 };
+    f2.width = f2.height = 0;
+  }
+  c.width = c.height = 0;
+  return best;
+}
+function ocrResult(text, confs, detail, fname){
+  var x = BM.io.parseInvoiceText(text);
+  var avg = confs.reduce(function(s,v){ return s+v; }, 0) / Math.max(1, confs.length);
+  x.source='OCR'; x.source_detail=detail; x.source_file=fname||''; x.ocr_confidence = Math.max(0, Math.min(1, avg/100));
+  return x;
 }
 
 /* ================= FILE MẪU ================= */
@@ -745,7 +757,7 @@ function groupHtml(g){
   return h + '</div>';
 }
 
-/* ================= AI TƯ VẤN (Dify qua GAS proxy) ================= */
+/* ================= AI TƯ VẤN (cổng GAS → Gemini / AI nội bộ TPB) ================= */
 var LS_AI = 'bm_ai_settings';
 function aiSettings(){ var o={ url: ADVISOR_CFG.proxy_url||'', code:'', remember:false }; try{ var x=JSON.parse(localStorage.getItem(LS_AI)||'null'); if(x){ o.url = x.url||o.url; o.code = x.code||''; o.remember = !!x.code; } }catch(e){} return o; }
 function saveAiSettings(url, code, remember){ try{ if(remember) localStorage.setItem(LS_AI, JSON.stringify({ url:url, code:code })); else localStorage.setItem(LS_AI, JSON.stringify({ url:url })); }catch(e){} }
@@ -758,17 +770,35 @@ function aiCardHtml(res){
     + '<div class="ai-set"><input id="aiUrl" placeholder="URL cổng BeneMatch (…/exec)" value="'+esc(st.url)+'"'+(ADVISOR_CFG.proxy_url?' readonly title="Cấu hình sẵn"':'')+'>'
     + '<input id="aiCode" type="password" placeholder="Mã truy cập" value="'+esc(st.code)+'" autocomplete="off">'
     + '<label class="chk"><input type="checkbox" id="aiRemember"'+(st.remember?' checked':'')+'> Ghi nhớ trên máy này</label></div>'
+    + aiModeHtml()
     + '<div class="toolbar"><button class="btn btn-primary btn-sm" id="aiAsk"'+(pend.length?'':' disabled')+'>🧭 Hỏi AI ('+pend.length+' cặp chưa hỏi)</button><span class="muted" id="aiStatus">'+(pend.length?'':'Đã có ý kiến AI cho tất cả các cặp.')+'</span></div></div>';
+}
+/* Chế độ cổng AI (doGet): allow_real_data=false (Gemini gói miễn phí) → chỉ gửi tên giả lập/đã ẩn danh, cán bộ phải xác nhận. */
+var aiInfo = null;
+function aiModeHtml(){
+  if(aiInfo && aiInfo.allow_real_data) return '<div class="muted" id="aiMode">Mô hình: '+esc(aiInfo.provider+' · '+aiInfo.model)+' — đã được phép dùng với dữ liệu thật.</div>';
+  return '<div class="ai-warn" id="aiMode">⚠ <b>Cổng AI đang chạy thử</b>'+(aiInfo?' ('+esc(aiInfo.provider+' · '+aiInfo.model)+')':'')+' bằng gói AI <b>miễn phí</b> — nhà cung cấp có thể dùng dữ liệu gửi lên. <b>Chỉ hỏi AI với tên giả lập hoặc đã ẩn danh</b>; tên KH thật chờ AI nội bộ TPBank.'
+    + '<label class="chk" style="margin-top:6px"><input type="checkbox" id="aiAttest"> Tôi xác nhận các tên gửi đi là tên giả lập / đã ẩn danh</label></div>';
 }
 function bindAiCard(){
   if(!$('aiAsk')) return;
   $('aiAsk').addEventListener('click', askAi);
+  var url = $('aiUrl').value.trim();
+  if(!aiInfo && /^https:\/\/script\.google\.com\/|^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(url)){
+    fetch(url).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.advisor || typeof d.advisor!=='object') return;
+      aiInfo = d.advisor;
+      var m = $('aiMode'); if(m){ var w=document.createElement('div'); w.innerHTML=aiModeHtml(); m.replaceWith(w.firstChild); }
+    }).catch(function(){});
+  }
 }
 async function askAi(){
   var url = $('aiUrl').value.trim(), code = $('aiCode').value.trim(), remember = $('aiRemember').checked;
   // Chỉ chấp nhận Web App Apps Script (hoặc cổng giả lập trên máy khi phát triển: tools/dev/mock_proxy.mjs).
   if(!/^(https:\/\/script\.google(usercontent)?\.com\/|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/)/.test(url)){ $('aiStatus').textContent = 'URL cổng không hợp lệ (phải là Web App Google Apps Script …/exec).'; return; }
   if(!code){ $('aiStatus').textContent = 'Nhập mã truy cập được cấp.'; return; }
+  var attest = $('aiAttest') && $('aiAttest').checked;
+  if(!(aiInfo && aiInfo.allow_real_data) && !attest){ $('aiStatus').textContent = 'Cổng AI đang chạy thử: tick xác nhận tên giả lập / đã ẩn danh trước khi hỏi.'; return; }
   saveAiSettings(url, code, remember);
   var pend = aiPending(state.result); if(!pend.length) return;
   $('aiAsk').disabled = true;
@@ -777,7 +807,7 @@ async function askAi(){
     var chunk = pend.slice(i, i+10);
     $('aiStatus').textContent = 'Đang hỏi AI '+(done+1)+'–'+(done+chunk.length)+'/'+pend.length+' … (mỗi lượt ~10–40 giây)';
     try{
-      var r = await fetch(url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: code,
+      var r = await fetch(url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: code, data_attest: attest ? 'ANONYMIZED' : undefined,
         pairs: chunk.map(function(c){ return { invoice_name: c.payload.invoice_name, payment_name: c.payload.payment_name }; }) }) });
       var d = await r.json();
       if(d.error){ errs.push(d.message || d.error); break; }
@@ -791,7 +821,7 @@ async function askAi(){
   }
   var keep = { url: url, code: code, remember: remember };
   renderResult(state.result);
-  $('aiUrl').value = keep.url; $('aiCode').value = keep.code; $('aiRemember').checked = keep.remember;
+  $('aiUrl').value = keep.url; $('aiCode').value = keep.code; $('aiRemember').checked = keep.remember; if($('aiAttest')) $('aiAttest').checked = attest;
   $('aiStatus').textContent = errs.length ? ('⚠ '+errs.join(' · ')) : ('Đã nhận ý kiến AI cho '+done+' cặp — xem dưới từng cặp tên.');
 }
 
@@ -820,15 +850,15 @@ function fileBase(){ var c = state.result.case||{}; return 'BeneMatch_'+(String(
 async function exportXlsx(){
   var data = sheetData(state.result);
   try{
-    await loadScript(CDN.xlsx);
+    needLib(typeof XLSX!=='undefined', 'SheetJS');
     var wb = XLSX.utils.book_new();
     Object.keys(data).forEach(function(n){ var ws = XLSX.utils.aoa_to_sheet(data[n]); ws['!cols'] = data[n][0].map(function(_,i){ return { wch: n==='Tong_quan' ? (i?60:26) : 22 }; }); XLSX.utils.book_append_sheet(wb, ws, n); });
     XLSX.writeFile(wb, fileBase()+'.xlsx');
   }catch(e){
-    // Không có mạng → xuất CSV (mở được bằng Excel).
+    // Bản build thiếu SheetJS → xuất CSV (mở được bằng Excel).
     var rows = []; Object.keys(data).forEach(function(n){ rows.push(['### '+n]); data[n].forEach(function(r){ rows.push(r); }); rows.push([]); });
     downloadBlob(fileBase()+'.csv', '﻿'+rows.map(csvLine).join('\r\n'), 'text/csv;charset=utf-8');
-    toast('Không tải được thư viện Excel — đã xuất CSV thay thế.', 5000);
+    toast('Không tạo được file Excel — đã xuất CSV thay thế.', 5000);
   }
 }
 

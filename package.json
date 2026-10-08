@@ -1,0 +1,15 @@
+{
+  "name": "benematch",
+  "private": true,
+  "description": "Thư viện nhúng offline cho công cụ BeneMatch (OCR PDF scan/ảnh + Excel). Chuẩn bị: npm ci · build: node fe/build.mjs",
+  "dependencies": {
+    "@tesseract.js-data/vie": "1.0.0",
+    "pdfjs-dist": "3.11.174",
+    "tesseract.js": "5.1.1",
+    "tesseract.js-core": "5.1.1",
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}
