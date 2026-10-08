@@ -7,7 +7,8 @@
 - **Files changed:** `gas/Code.gs` · `test/gas_advisor.test.mjs` (49/49) · `AI_CONTEXT/{AI_INTEGRATION_CONTRACT.md, ADVISOR_SPEC.md}` + 4 file lõi. GAS live @13 → **@14** (smoke 5/5, `configured:true`).
 - **Decision made:** giữ 3.8 Flash làm chính; dự phòng 3.5 Flash-Lite trước (Google khuyến nghị, nhẹ, ít tải hơn) rồi 3.6 Flash. Chỉ chuyển dự phòng với lỗi tạm thời (429/5xx), không với lỗi cấu hình (400/404).
 - **Blocker:** không (Google quá tải là ngoài tầm — có dự phòng).
-- **Next step:** [TT] Run lại `kiemTraAI` (log in thứ tự model + model trả lời) → (tùy chọn) `danhSachModel` → `advisor_smoke` 22 ca → gửi em.
+- **Kết quả test LIVE:** **Test LIVE 08/10 chiều (GAS @14, key Gemini miễn phí, chỉ tên giả lập):** `kiemTraAI` OK (3.8 Flash 503 → chuyển 3.5 Flash-Lite) · `advisor_smoke` 22 ca khó: **chấp nhận 20/22 · đúng tuyệt đối 15/22 · AI nói CÙNG sai = 0 · FALLBACK = 0** · 127 giây (≈ 42 giây/lô 10 — chủ yếu do 2 lượt gọi lại 3.8 Flash quá tải) · 2 ca chưa đạt (H04 Ánh Dương ↔ Sunshine Trading, H13 Nhựa Phú An ↔ Tập đoàn Phú An) đều là AI nói KHÁC quá chắc ở ca nên UNCERTAIN — lệch về phía an toàn · Prod (Pages) + GAS live: thẻ AI hiện cảnh báo chạy thử, chặn khi chưa tick, tick → 2 ý kiến trong 12 giây, kết luận hồ sơ không đổi, 0 request lạ, 0 lỗi JS.
+- **Next step:** [TT] (khuyến nghị) đặt `AI_MODEL=gemini-3.5-flash-lite` khi 3.8 Flash còn quá tải (bỏ ~7,5 giây gọi lại mỗi lô) · [TT] thu hồi mã test nếu không dùng tiếp · [TT] thử PDF scan thật trên Prod · [CC] (tùy chọn) siết prompt cho ca dịch tên + đổi tên → UNCERTAIN (H04/H13) khi có số đo GNOL.
 - **Regression risk:** Thấp — chỉ đường gọi AI; engine/kết luận không đổi (140/140, live 9/9). Ca xấu nhất: 3 model đều quá tải ≈ 3×3 lượt gọi + chờ ~22 giây/lô rồi FALLBACK.
 
 ## Delta phiên (2026-10-08 — Kiến trúc 3 lớp: OCR tại máy (bộ OCR công cụ ẩn danh v3.6) · GAS logic + adapter AI · gỡ Dify, Claude Code)
