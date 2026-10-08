@@ -19,7 +19,7 @@
                                      (BM.advisor.prompt) · ADAPTER · đọc output (BM.advisor.parse) · LỚP GÁC (BM.advisor.guard) · log không tên
             │  AI_PROVIDER = gemini | openai_compat
             ▼
-[AI — thay được]                     Hiện tại: Gemini API (gemini-3.5-flash-lite → dự phòng 3.6 / 3.8 Flash) · Tích hợp: AI nội bộ TPBank (chuẩn /chat/completions)
+[AI — thay được]                     Hiện tại: Gemini API (gemini-3.5-flash-lite → dự phòng 3.5 Flash) · Tích hợp: AI nội bộ TPBank (chuẩn /chat/completions)
 ```
 Nguồn duy nhất của prompt + schema + gác: `src/engine/bm-engine.js` mục 6 (`BM.advisor.*`) — JS thuần, chạy được trên trình duyệt, GAS và Node.
 
@@ -33,7 +33,7 @@ Apps Script → Project Settings → Script Properties:
 | `AI_PROVIDER` | `openai_compat` |
 | `AI_BASE_URL` | URL cổng AI nội bộ, vd `https://<ai-gateway>/v1` (tự nối `/chat/completions`; hoặc ghi URL đầy đủ kết thúc `/chat/completions`) |
 | `AI_MODEL` | tên model nội bộ |
-| `AI_MODEL_FALLBACKS` | (tùy chọn) model dự phòng khi model chính quá tải, cách nhau dấu phẩy — Gemini mặc định `gemini-3.6-flash,gemini-3.8-flash`; nội bộ mặc định không có |
+| `AI_MODEL_FALLBACKS` | (tùy chọn) model dự phòng khi model chính quá tải, cách nhau dấu phẩy — Gemini mặc định `gemini-3.5-flash`; nội bộ mặc định không có |
 | `AI_API_KEY` | token do IT cấp |
 | `AI_AUTH_HEADER` | mặc định `Authorization` (gửi `Bearer <token>`); tên khác (vd `api-key`) → gửi token thô |
 | `AI_EXTRA_HEADERS` | (tùy chọn) JSON header phụ, vd `{"X-App-Id":"benematch"}` |
@@ -64,8 +64,8 @@ Authorization: Bearer <AI_API_KEY>
 | Tiêu chí | Yêu cầu |
 |---|---|
 | Ngôn ngữ | Hiểu tiếng Việt có dấu/không dấu + tên tiếng Anh doanh nghiệp |
-| Độ trễ | ≤ 40 giây / lô 10 cặp gọi **song song** (GAS `fetchAll`, 10 request đồng thời) |
-| Lỗi tạm thời | trả HTTP 429/5xx → GAS tự gọi lại tối đa 2 lần (chờ 2,5 s · 5 s), vẫn lỗi → chuyển model trong `AI_MODEL_FALLBACKS` |
+| Độ trễ | **Mục tiêu [TT] 08/10: cán bộ nhận ý kiến < 10 giây / lô 10 cặp** gọi **song song** (`fetchAll`, 10 request đồng thời) ⇒ endpoint nên trả ≤ 5 giây/request (p95). GAS có ngân sách `AI_TIME_BUDGET_MS` = 8000; giao diện ngừng chờ ở 10 giây (`client_timeout_ms`). **Lưu ý:** GAS không đặt được timeout cho 1 request — endpoint treo lâu sẽ giữ cả lô → nên trả lỗi nhanh (429/503) thay vì xếp hàng. |
+| Lỗi tạm thời | trả HTTP 429/5xx → GAS chuyển **ngay** sang model kế tiếp trong `AI_MODEL_FALLBACKS` (không ngủ chờ), còn thời gian thì vòng 2; hết ngân sách → FALLBACK |
 | Lưu trữ | Không lưu/huấn luyện trên nội dung request (tên KH) — xác nhận bằng văn bản trước khi bật `AI_ALLOW_REAL_DATA` |
 | Tham số | Không bắt buộc temperature; nếu model hỗ trợ, để thấp/mặc định |
 

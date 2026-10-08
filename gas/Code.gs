@@ -13,16 +13,17 @@
  *   AI_API_KEY           key của nhà cung cấp (Gemini: key AI Studio · nội bộ: token do IT cấp)
  *   AI_MODEL             mặc định "gemini-3.5-flash-lite" (gemini — [TT] chốt 08/10: 3.8 Flash quá tải liên tục); BẮT BUỘC với openai_compat
  *   AI_MODEL_FALLBACKS   model dự phòng khi model chính quá tải (cách nhau dấu phẩy). Gemini mặc định
- *                        "gemini-3.6-flash,gemini-3.8-flash"; đặt rỗng = tắt. Xem model key dùng được: hàm danhSachModel
+ *                        "gemini-3.5-flash"; đặt rỗng = tắt. ⚠ Không thêm model hay treo lâu (vd 3.8 Flash miễn phí). Xem model key dùng được: hàm danhSachModel
  *   AI_BASE_URL          gemini: mặc định https://generativelanguage.googleapis.com/v1beta
  *                        openai_compat: BẮT BUỘC, vd https://<cổng-AI-nội-bộ>/v1 (tự nối /chat/completions)
- *   AI_THINKING_LEVEL    (gemini, tùy chọn) low | medium | high — trống = mặc định của model
+ *   AI_THINKING_LEVEL    (gemini, tùy chọn) minimal | low | medium | high cho mọi model — trống = mức thấp nhất từng model (GEMINI_THINKING_DEFAULT)
  *   AI_RESPONSE_FORMAT   (openai_compat) json_schema (mặc định) | json_object | none — tùy model nội bộ hỗ trợ
  *   AI_AUTH_HEADER       (openai_compat) mặc định "Authorization" (gửi "Bearer <key>"); tên khác (vd "api-key") → gửi key thô
  *   AI_EXTRA_HEADERS     JSON header bổ sung (vd mã ứng dụng cổng API nội bộ)
  *   AI_ALLOW_REAL_DATA   "true" = cho phép tên KH thật. MẶC ĐỊNH TẮT: Gemini gói miễn phí → chỉ tên giả lập/đã ẩn danh
  *                        (request phải kèm data_attest:"ANONYMIZED"). Bật khi dùng AI nội bộ TPB hoặc key trả phí.
- *   ACCESS_CODES (JSON {"mã":"nhãn"}, tạo bằng taoMaTruyCap) · ADVISOR_DAILY_LIMIT (200) · ADVISOR_MAX_PAIRS (10) · ADVISOR_RETRIES (2)
+ *   AI_TIME_BUDGET_MS    ngân sách thời gian gọi AI mỗi lô (mặc định 8000) — quá tải thì chuyển model ngay, hết giờ → FALLBACK
+ *   ACCESS_CODES (JSON {"mã":"nhãn"}, tạo bằng taoMaTruyCap) · ADVISOR_DAILY_LIMIT (200) · ADVISOR_MAX_PAIRS (10)
  * Script Properties — khác (tùy chọn):
  *   SHEET_ID, LOG_SHEET_NAME — log 1 dòng/hồ sơ (KHÔNG ghi tên/STK — chỉ kết luận & số lượng) · THRESHOLDS_JSON
  *
@@ -33,10 +34,17 @@
  */
 
 var GEMINI_BASE_DEFAULT = 'https://generativelanguage.googleapis.com/v1beta';
-// [TT] chốt 08/10: chính = 3.5 Flash-Lite (Google khuyến nghị cho dự án mới, ít quá tải; test LIVE 20/22, CÙNG sai 0).
-// 3.8 Flash (mạnh nhất) bị 503 "high demand" liên tục với key miễn phí → xuống dự phòng cuối. Xem: danhSachModel().
+// [TT] chốt 08/10: chính = 3.5 Flash-Lite (Google khuyến nghị cho dự án mới; test LIVE 18–20/22, CÙNG sai 0).
+// Dự phòng = 3.5 Flash (đo LIVE 08/10: 3 ca / 6,2 giây). KHÔNG dùng với key miễn phí: 3.8 Flash (giữ request tới 235 giây
+// rồi mới trả 503 — GAS không đặt được timeout) · 3.6 Flash (429 hết hạn mức) · 3.1 Flash-Lite (chạy được nhưng ~15 giây).
 var GEMINI_MODEL_DEFAULT = 'gemini-3.5-flash-lite';
-var GEMINI_FALLBACKS_DEFAULT = 'gemini-3.6-flash,gemini-3.8-flash';
+var GEMINI_FALLBACKS_DEFAULT = 'gemini-3.5-flash';
+// Mức suy nghĩ thấp nhất mỗi model hỗ trợ (bảng thinking của Google 10/2026) — để trả lời nhanh. 3.5 Flash-Lite mặc định đã là minimal.
+// AI_THINKING_LEVEL (Script Property) ghi đè cho mọi model.
+var GEMINI_THINKING_DEFAULT = { 'gemini-3.6-flash': 'minimal', 'gemini-3.5-flash': 'minimal', 'gemini-3.7-flash': 'low', 'gemini-3.8-flash': 'low' };
+// Mục tiêu [TT] 08/10: cán bộ nhận ý kiến AI < 10 giây/lô (GAS + mạng ~1–2 giây) → ngân sách gọi AI 8 giây.
+var AI_TIME_BUDGET_DEFAULT = 8000;
+var AI_MIN_CALL_MS = 2500;   // còn ít hơn mức này thì không gọi thêm lượt nữa
 
 function doGet() {
   var p = PropertiesService.getScriptProperties();
@@ -99,13 +107,14 @@ function handleAdviseNames_(payload) {
   lock.releaseLock();
 
   var t0 = Date.now();
-  var run = runAi_(ai, todo, Number(props.getProperty('ADVISOR_RETRIES') || 2));
+  var run = runAi_(ai, todo, ai.budgetMs);
   var counts = {};
   todo.forEach(function (x) {
     counts[x.advice.ai_status + ':' + x.advice.verdict] = (counts[x.advice.ai_status + ':' + x.advice.verdict] || 0) + 1;
   });
   if (run.retried) counts.retried = run.retried;
   if (run.fallback) counts.fallback_model = run.fallback;
+  if (run.timedOut) counts.timed_out = run.timedOut;
   try { logAdvisor_(props, label, ai, items.length, todo.length, counts, run.tokIn, run.tokOut, Date.now() - t0); } catch (e) {}
 
   return {
@@ -119,28 +128,30 @@ function handleAdviseNames_(payload) {
 }
 
 /**
- * Gọi AI cho danh sách ca { nc } (song song). Lỗi TẠM THỜI (quá tải 503 / hết lượt theo phút 429 / 5xx) → gọi lại tối đa
- * `retries` lần (chờ tăng dần); vẫn lỗi → chuyển lần lượt sang model dự phòng (AI_MODEL_FALLBACKS). Gán x.raw, x.diag, x.advice.
+ * Gọi AI cho danh sách ca { nc } (song song) trong NGÂN SÁCH THỜI GIAN (AI_TIME_BUDGET_MS, mặc định 8 giây — mục tiêu
+ * [TT] 08/10: phản hồi < 10 giây cho cán bộ). Lỗi TẠM THỜI (503 quá tải / 429 / 5xx) → chuyển NGAY sang model kế tiếp
+ * (không ngủ chờ): chính → dự phòng 1 → dự phòng 2 → (còn thời gian) vòng 2. Hết ngân sách → FALLBACK (kết luận không đổi).
+ * Gán x.raw, x.diag, x.model, x.advice.
  */
-function runAi_(ai, todo, retries) {
-  var models = [ai.model].concat(ai.fallbacks), pending = todo.slice(), retried = 0, fallback = 0, tokIn = 0, tokOut = 0;
-  for (var mi = 0; mi < models.length && pending.length; mi++) {
-    var model = models[mi], attempt = 0;
-    if (mi > 0) fallback += pending.length;
-    while (pending.length) {
-      var resps = UrlFetchApp.fetchAll(pending.map(function (x) { return aiRequest_(ai, BM.advisor.prompt(BM.advisor.payload(x.nc)), model); }));
-      var again = [];
-      pending.forEach(function (x, i) {
-        var p = aiParse_(ai, resps[i]);
-        x.raw = p.raw; x.diag = p.diag; x.model = model;
-        tokIn += p.usage.in; tokOut += p.usage.out;
-        if (!p.raw && p.transient) again.push(x);
-      });
-      pending = again;
-      if (!pending.length || attempt >= retries) break;   // hết lượt gọi lại → sang model dự phòng (nếu có)
-      attempt++; retried += pending.length;
-      Utilities.sleep(2500 * attempt);
+function runAi_(ai, todo, budgetMs) {
+  var t0 = Date.now(), models = [ai.model].concat(ai.fallbacks), plan = models.concat(models);
+  var pending = todo.slice(), retried = 0, fallback = 0, timedOut = 0, tokIn = 0, tokOut = 0;
+  for (var k = 0; k < plan.length && pending.length; k++) {
+    if (k > 0) {
+      var left = budgetMs - (Date.now() - t0);
+      if (left < AI_MIN_CALL_MS) { timedOut = pending.length; break; }   // không đủ thời gian cho 1 lượt nữa
+      if (k < models.length) fallback += pending.length; else retried += pending.length;
     }
+    var model = plan[k];
+    var resps = UrlFetchApp.fetchAll(pending.map(function (x) { return aiRequest_(ai, BM.advisor.prompt(BM.advisor.payload(x.nc)), model); }));
+    var again = [];
+    pending.forEach(function (x, i) {
+      var p = aiParse_(ai, resps[i]);
+      x.raw = p.raw; x.diag = p.diag; x.model = model;
+      tokIn += p.usage.in; tokOut += p.usage.out;
+      if (!p.raw && p.transient) again.push(x);
+    });
+    pending = again;
   }
   todo.forEach(function (x) {
     var label = ai.provider + ':' + (x.model || ai.model);
@@ -149,7 +160,7 @@ function runAi_(ai, todo, retries) {
     if (!x.raw) x.advice.model = label;
     if (x.diag) x.advice.diag = x.diag;
   });
-  return { retried: retried, fallback: fallback, tokIn: tokIn, tokOut: tokOut };
+  return { retried: retried, fallback: fallback, timedOut: timedOut, tokIn: tokIn, tokOut: tokOut, ms: Date.now() - t0 };
 }
 
 /** Cấu hình nhà cung cấp AI từ Script Properties → { provider, model, base, key, …, error? }. */
@@ -163,6 +174,7 @@ function aiConfig_(props) {
       .split(',').map(function (s) { return s.trim(); }).filter(Boolean),
     base: String(props.getProperty('AI_BASE_URL') || (provider === 'gemini' ? GEMINI_BASE_DEFAULT : '')).replace(/\/+$/, ''),
     thinking: props.getProperty('AI_THINKING_LEVEL') || '',
+    budgetMs: Number(props.getProperty('AI_TIME_BUDGET_MS') || AI_TIME_BUDGET_DEFAULT),
     responseFormat: String(props.getProperty('AI_RESPONSE_FORMAT') || 'json_schema').toLowerCase(),
     authHeader: props.getProperty('AI_AUTH_HEADER') || 'Authorization',
     extraHeaders: {},
@@ -184,7 +196,8 @@ function aiRequest_(ai, pr, model) {
   if (ai.provider === 'gemini') {
     headers['x-goog-api-key'] = ai.key;
     var gen = { responseMimeType: 'application/json', responseSchema: toGeminiSchema_(pr.schema) };
-    if (ai.thinking) gen.thinkingConfig = { thinkingLevel: ai.thinking };
+    var level = ai.thinking || GEMINI_THINKING_DEFAULT[model] || '';
+    if (level) gen.thinkingConfig = { thinkingLevel: level };
     return {
       url: ai.base + '/models/' + encodeURIComponent(model) + ':generateContent',
       method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: headers,
@@ -277,8 +290,8 @@ function kiemTraAI() {
   var ai = aiConfig_(PropertiesService.getScriptProperties());
   if (ai.error) { Logger.log('Chưa cấu hình: ' + ai.error); return ai.error; }
   var x = { nc: BM.verifyName('CÔNG TY TNHH SAO VIỆT', 'VIETSTAR COMPANY LIMITED', BM.mergeConfig(null).name) };
-  var run = runAi_(ai, [x], 2);   // cùng đường với cán bộ: gọi lại khi quá tải + chuyển model dự phòng
-  Logger.log('Thứ tự model: ' + [ai.model].concat(ai.fallbacks).join(' → ') + ' · gọi lại ' + run.retried + ' lần · chuyển dự phòng ' + run.fallback);
+  var run = runAi_(ai, [x], ai.budgetMs);   // cùng đường với cán bộ: quá tải → chuyển model, trong ngân sách thời gian
+  Logger.log('Thứ tự model: ' + [ai.model].concat(ai.fallbacks).join(' → ') + ' · chuyển dự phòng ' + run.fallback + ' · vòng 2 ' + run.retried + ' · ' + run.ms + ' ms (ngân sách ' + ai.budgetMs + ')');
   Logger.log(x.advice.model + ' → ' + JSON.stringify(x.advice) + ' · token in/out ' + run.tokIn + '/' + run.tokOut);
   return x.advice;
 }

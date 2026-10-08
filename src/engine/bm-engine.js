@@ -1119,7 +1119,9 @@
   //    cung cấp AI (Gemini, AI nội bộ TPB…) dùng chung; xem AI_CONTEXT/AI_INTEGRATION_CONTRACT.md.
   // =====================================================================================
 
-  var ADVISOR_PROMPT_VERSION = 'bm-advisor-prompt-1';
+  // prompt-2 (08/10/2026): quy định rõ khi nào được trả DIFFERENT_ENTITY; dịch tên / viết tắt ≤ 3 chữ / nghi đổi tên
+  // → UNCERTAIN (test LIVE prompt-1: AI nói KHÁC 0,95 ở H04/H07/H13); trả lời ngắn hơn để giảm thời gian sinh.
+  var ADVISOR_PROMPT_VERSION = 'bm-advisor-prompt-2';
 
   var ADVISOR_SYSTEM_PROMPT = [
     'Bạn là chuyên gia thẩm định tên pháp nhân doanh nghiệp Việt Nam, hỗ trợ cán bộ ngân hàng kiểm tra NGƯỜI THỤ HƯỞNG trước khi giải ngân theo hóa đơn.',
@@ -1140,13 +1142,23 @@
     '',
     'Nguyên tắc an toàn: nhầm "cùng pháp nhân" gây chuyển tiền sai người — nghiêm trọng hơn nhiều so với báo "chưa đủ căn cứ". Chỉ trả SAME_ENTITY khi có căn cứ rõ ràng; phân vân ⇒ UNCERTAIN.',
     '',
-    'Chỉ trả về MỘT đối tượng JSON đúng schema, không kèm chữ nào khác:',
+    'Khi nào được trả DIFFERENT_ENTITY — CHỈ khi có ít nhất một căn cứ khác rõ ràng:',
+    '- khác loại hình pháp nhân;',
+    '- người nhận là cá nhân trong khi bên bán là doanh nghiệp (trừ hộ kinh doanh cùng họ tên chủ hộ);',
+    '- thêm/bớt chữ trong phần tên riêng, hoặc khác số hiệu;',
+    '- phần tên riêng khác hẳn nhau và KHÔNG thể là bản dịch, phiên âm hay viết tắt của nhau.',
+    'Phải trả UNCERTAIN (KHÔNG trả DIFFERENT_ENTITY) khi:',
+    '- một tên CÓ THỂ là bản dịch nghĩa / tên giao dịch tiếng Anh của tên kia nhưng không khớp trọn (vd "Ánh Dương" ↔ "Sunshine Trading") ⇒ relation TRANSLATION;',
+    '- tên là viết tắt ≤ 3 chữ cái khớp chữ cái đầu phần tên của tên kia (vd "Đầu tư An Phát" ↔ "APT") ⇒ relation ABBREVIATION;',
+    '- cùng phần tên riêng nhưng khác từ ngành nghề / quy mô (vd "Nhựa Phú An" ↔ "Tập đoàn Phú An") — có thể đổi tên, tái cấu trúc ⇒ relation RENAMED (nếu một bên là Tập đoàn/Tổng công ty có thể trả RELATED_ENTITY).',
+    '',
+    'Chỉ trả về MỘT đối tượng JSON đúng schema, không kèm chữ nào khác. Viết NGẮN GỌN:',
     '- verdict: SAME_ENTITY | DIFFERENT_ENTITY | RELATED_ENTITY | UNCERTAIN',
     '- relation: IDENTICAL | ABBREVIATION | TRANSLATION | TRANSLITERATION | TRUNCATION | TYPO_OCR | BRANCH | PARENT_SUBSIDIARY | RENAMED | UNRELATED | UNKNOWN',
     '- confidence: số 0..1 (mức chắc chắn của verdict)',
-    '- evidence: tối đa 4 căn cứ ngắn, cụ thể (chỉ ra từ nào tương ứng từ nào)',
-    '- explanation: 1–3 câu tiếng Việt cho cán bộ',
-    '- checks_for_officer: tối đa 3 việc cán bộ cần kiểm tra thêm (vd đối chiếu tên chủ tài khoản, MST, giấy ĐKKD)',
+    '- evidence: tối đa 3 căn cứ ngắn, cụ thể (chỉ ra từ nào tương ứng từ nào)',
+    '- explanation: 1–2 câu tiếng Việt ngắn cho cán bộ',
+    '- checks_for_officer: tối đa 2 việc cán bộ cần kiểm tra thêm (vd đối chiếu tên chủ tài khoản, MST, giấy ĐKKD)',
   ].join('\n');
 
   var ADVISOR_VERDICTS = ['SAME_ENTITY', 'DIFFERENT_ENTITY', 'RELATED_ENTITY', 'UNCERTAIN'];

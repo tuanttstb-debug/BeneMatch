@@ -9,6 +9,7 @@ import { makeGas, fakeLlm } from '../../test/gas_harness.mjs';
 
 const port = Number(process.argv[2] || 8790);
 const real = process.argv.includes('real');
+const slow = process.argv.includes('slow');   // giả lập AI treo (vd Gemini 3.8 miễn phí) → kiểm FE báo bận sau 10 giây
 const gas = makeGas({
   props: Object.assign({ AI_API_KEY: 'mock', ACCESS_CODES: JSON.stringify({ 'DEV-LOCAL': 'dev' }), ADVISOR_DAILY_LIMIT: '1000' },
     real ? { AI_PROVIDER: 'openai_compat', AI_BASE_URL: 'https://ai-noi-bo.mock/v1', AI_MODEL: 'tpb-llm-mock', AI_ALLOW_REAL_DATA: 'true' } : {}),
@@ -20,6 +21,6 @@ http.createServer((req, res) => {
   let body = '';
   req.on('data', (c) => { body += c; });
   req.on('end', () => {
-    setTimeout(() => { res.setHeader('Content-Type', 'application/json'); res.end(gas.ctx.doPost({ postData: { contents: body } }).text); }, 400);
+    setTimeout(() => { res.setHeader('Content-Type', 'application/json'); res.end(gas.ctx.doPost({ postData: { contents: body } }).text); }, slow ? 14000 : 400);
   });
 }).listen(port, '127.0.0.1', () => console.log(`mock proxy: http://127.0.0.1:${port}/exec  (mã: DEV-LOCAL · ${real ? 'AI nội bộ giả lập, cho dữ liệu thật' : 'Gemini giả lập, chế độ thử'})`));

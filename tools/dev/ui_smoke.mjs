@@ -21,7 +21,7 @@ const check = (n, ok, d) => { ok ? pass++ : fail++; console.log((ok ? '  ✓ ' :
 // Server tĩnh cho bản Pages (docs/)
 const srv = http.createServer((q, r) => { const p = join(ROOT, 'docs', q.url === '/' ? 'index.html' : q.url.split('?')[0]);
   try { const b = readFileSync(p); r.setHeader('Content-Type', p.endsWith('.js') ? 'text/javascript' : 'text/html; charset=utf-8'); r.end(b); } catch { r.statusCode = 404; r.end(); } }).listen(8799);
-const mocks = [spawn('node', [ROOT + '/tools/dev/mock_proxy.mjs', '8790']), spawn('node', [ROOT + '/tools/dev/mock_proxy.mjs', '8791', 'real'])];
+const mocks = [spawn('node', [ROOT + '/tools/dev/mock_proxy.mjs', '8790']), spawn('node', [ROOT + '/tools/dev/mock_proxy.mjs', '8791', 'real']), spawn('node', [ROOT + '/tools/dev/mock_proxy.mjs', '8793', 'slow'])];
 await new Promise((r) => setTimeout(r, 1200));
 
 const b = await puppeteer.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', defaultViewport: { width: 1300, height: 1400 } });
@@ -30,7 +30,7 @@ async function open(url, ls) {
   const page = await b.newPage();
   if (ls) await page.evaluateOnNewDocument((v) => localStorage.setItem('bm_ai_settings', v), JSON.stringify(ls));
   const ext = [], errs = [];
-  page.on('request', (rq) => { const u = rq.url(); if (!/^(file:|data:|blob:|http:\/\/127\.0\.0\.1:(8799|8790|8791)\/)/.test(u)) ext.push(u); });
+  page.on('request', (rq) => { const u = rq.url(); if (!/^(file:|data:|blob:|http:\/\/127\.0\.0\.1:(8799|8790|8791|8793)\/)/.test(u)) ext.push(u); });
   page.on('pageerror', (e) => errs.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
   await page.goto(url, { waitUntil: 'load' });
@@ -99,6 +99,39 @@ check('Không cảnh báo, ghi model nội bộ', !/ai-warn/.test(m2.cls) && /op
 await page.click('#aiAsk');
 await page.waitForFunction(() => /Đã nhận ý kiến AI|⚠/.test(document.getElementById('aiStatus').textContent), { timeout: 20000 });
 check('Hỏi AI không cần tick xác nhận', /Đã nhận ý kiến AI cho 2 cặp/.test(await page.$eval('#aiStatus', (e) => e.textContent)));
+check('0 lỗi JS', errs.length === 0, errs.join(' | '));
+
+await page.close();
+
+console.log('\n[5] AI chậm (treo 14 giây) → giao diện báo bận sau 10 giây');
+({ page, ext, errs } = await open('http://127.0.0.1:8799/', { url: 'http://127.0.0.1:8793/exec', code: 'DEV-LOCAL' }));
+await page.select('#scnSel', '8');
+await page.click('#btnRun');
+await page.waitForSelector('#aiAttest', { timeout: 10000 });
+await page.click('#aiAttest');
+const ts = Date.now();
+await page.click('#aiAsk');
+await page.waitForFunction(() => /Đã nhận ý kiến AI|⚠/.test(document.getElementById('aiStatus').textContent), { timeout: 30000 });
+const sl = await page.$eval('#aiStatus', (e) => e.textContent), secs = (Date.now() - ts) / 1000;
+check('Báo "AI đang bận" trong ~10 giây, không treo giao diện', /AI đang bận/.test(sl) && secs < 11.5, secs.toFixed(1) + ' giây · ' + sl);
+
+console.log('\n[6] Check nhanh tên — chế độ thử bắt tick xác nhận');
+await page.click('button[data-tab="quick"]');
+await page.evaluate(() => { const i = document.getElementById('qInv'), p = document.getElementById('qPay'); i.value = 'CÔNG TY TNHH SAO VIỆT'; p.value = 'VIETSTAR COMPANY LIMITED'; p.dispatchEvent(new Event('input')); });
+await page.waitForSelector('#qcAsk', { timeout: 5000 });
+check('Có ô tick xác nhận cạnh nút Hỏi AI', !!(await page.$('#qcAttest')));
+await page.click('#qcAsk');
+check('Chưa tick → không gửi', /tick xác nhận/.test(await page.$eval('#qcAiSt', (e) => e.textContent)));
+await page.close();
+({ page, ext, errs } = await open('http://127.0.0.1:8799/', { url: 'http://127.0.0.1:8790/exec', code: 'DEV-LOCAL' }));
+await page.click('button[data-tab="quick"]');
+await page.evaluate(() => { const i = document.getElementById('qInv'), p = document.getElementById('qPay'); i.value = 'CÔNG TY TNHH SAO VIỆT'; p.value = 'VIETSTAR COMPANY LIMITED'; p.dispatchEvent(new Event('input')); });
+await page.waitForSelector('#qcAttest', { timeout: 5000 });
+await page.click('#qcAttest');
+await page.click('#qcAsk');
+await page.waitForFunction(() => !document.getElementById('qcAsk') || /⚠/.test((document.getElementById('qcAiSt') || {}).textContent || ''), { timeout: 15000 }).catch(() => {});
+const qres = await page.$eval('#qcRes', (e) => e.innerText);
+check('Tick → nhận ý kiến AI ở Check nhanh', /pháp nhân/i.test(qres) && !(await page.$('#qcAsk')), qres.replace(/\s+/g, ' ').slice(-140));
 check('0 lỗi JS', errs.length === 0, errs.join(' | '));
 
 await b.close(); srv.close(); mocks.forEach((m) => m.kill());

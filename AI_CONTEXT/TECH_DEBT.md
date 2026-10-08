@@ -4,6 +4,9 @@ Nợ kỹ thuật & hiện tượng lặp lại. Mới nhất trên cùng. ID: `
 
 **Trạng thái (2026-10-08) — 3 lớp, bỏ Dify:** ✅ **Đóng TD-BM-08** (thư viện nhúng, 0 CDN). 🔁 **TD-BM-12 chuyển thành kiểm soát**: [TT] cho dùng Gemini gói miễn phí **chỉ với tên giả lập/đã ẩn danh** — cổng chặn bằng `AI_ALLOW_REAL_DATA` (mặc định tắt) + FE bắt tick; đóng hẳn khi AI nội bộ TPB thay. ✅ Đóng TD-BM-09 (test/live cũ cho API OCR GAS — đường này đã gỡ). TD-BM-10 (chưa đo LLM thật) — **một phần**: 08/10 đo LIVE 22 ca giả lập (20/22, CÙNG sai 0, 3.5 Flash-Lite); còn đo trên lịch sử GNOL đã gán nhãn (cần AI cho phép dữ liệu thật). Nợ mới:
 
+## TD-BM-17 — Độ trễ GAS + Gemini miễn phí không bảo đảm < 10 giây (2026-10-08)
+(1) `UrlFetchApp` không có timeout: model treo (3.8 Flash miễn phí: 235 giây) giữ cả lô — đã bỏ khỏi chuỗi, nhưng model nào cũng có thể treo. (2) Web App trả kết quả qua redirect googleusercontent — chiều 08/10 mất 5–61 giây, có lúc 404. Giao diện ngừng chờ ở 10 giây (báo bận) nên cán bộ không bị treo, nhưng mất ý kiến AI lần đó. **Hướng:** khi lên thật dùng cổng nội bộ + AI nội bộ (hợp đồng Cách B) hoặc Gemini trả phí; đo p95 trước khi cam kết SLA.
+
 ## TD-BM-13 — SheetJS 0.18.5 (bản cuối trên npm) có lỗ hổng đã công bố (2026-10-08)
 Prototype pollution (CVE-2023-30533) + ReDoS khi đọc file Excel do người khác gửi. Rủi ro thấp (chạy trong trình duyệt cán bộ, file nội bộ, không có server), trước đây vẫn dùng bản này qua CDN. **Hướng:** nâng SheetJS ≥ 0.20.x từ tarball `cdn.sheetjs.com` vào `package.json` khi ATTT yêu cầu.
 

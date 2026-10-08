@@ -773,6 +773,7 @@ function aiCardHtml(res){
     + aiModeHtml()
     + '<div class="toolbar"><button class="btn btn-primary btn-sm" id="aiAsk"'+(pend.length?'':' disabled')+'>🧭 Hỏi AI ('+pend.length+' cặp chưa hỏi)</button><span class="muted" id="aiStatus">'+(pend.length?'':'Đã có ý kiến AI cho tất cả các cặp.')+'</span></div></div>';
 }
+function abortAfter(ms){ if(typeof AbortSignal!=='undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms); var c=new AbortController(); setTimeout(function(){ c.abort(); }, ms); return c.signal; }
 /* Chế độ cổng AI (doGet): allow_real_data=false (Gemini gói miễn phí) → chỉ gửi tên giả lập/đã ẩn danh, cán bộ phải xác nhận. */
 var aiInfo = null;
 function aiModeHtml(){
@@ -805,9 +806,10 @@ async function askAi(){
   var done = 0, errs = [];
   for(var i=0; i<pend.length; i+=10){
     var chunk = pend.slice(i, i+10);
-    $('aiStatus').textContent = 'Đang hỏi AI '+(done+1)+'–'+(done+chunk.length)+'/'+pend.length+' … (mỗi lượt ~10–40 giây)';
+    $('aiStatus').textContent = 'Đang hỏi AI '+(done+1)+'–'+(done+chunk.length)+'/'+pend.length+' … (thường dưới 10 giây)';
     try{
-      var r = await fetch(url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: code, data_attest: attest ? 'ANONYMIZED' : undefined,
+      // Mục tiêu [TT] 08/10: cán bộ không chờ AI quá AI_CLIENT_TIMEOUT_MS (mặc định 10 giây/lô) — quá hạn thì báo bận.
+      var r = await fetch(url, { method:'POST', signal: abortAfter(ADVISOR_CFG.client_timeout_ms || 10000), body: JSON.stringify({ action:'advise_names', access_code: code, data_attest: attest ? 'ANONYMIZED' : undefined,
         pairs: chunk.map(function(c){ return { invoice_name: c.payload.invoice_name, payment_name: c.payload.payment_name }; }) }) });
       var d = await r.json();
       if(d.error){ errs.push(d.message || d.error); break; }
@@ -817,7 +819,7 @@ async function askAi(){
         state.advice[chunk[j].key] = BM.advisor.guard(x.advice, nc);   // gác lần 2 phía trình duyệt
       });
       done += chunk.length;
-    }catch(e){ errs.push('Không gọi được cổng AI ('+(e && e.message || e)+')'); break; }
+    }catch(e){ errs.push(e && (e.name==='TimeoutError' || e.name==='AbortError') ? 'AI đang bận (quá '+Math.round((ADVISOR_CFG.client_timeout_ms||10000)/1000)+' giây) — thử lại sau ít phút; kết luận hồ sơ không đổi' : 'Không gọi được cổng AI ('+(e && e.message || e)+')'); break; }
   }
   var keep = { url: url, code: code, remember: remember };
   renderResult(state.result);
@@ -952,20 +954,25 @@ function qc(){
   var v = BM.verifyName(a, b, CONFIG.name);
   $('qcRes').innerHTML = nameCheckHtml(v, { open:true })
     + (BM.advisor.eligible(v) && !state.advice[BM.advisor.key(v)] ? '<div class="toolbar" style="margin-top:10px"><button class="btn btn-primary btn-sm" id="qcAsk">🧭 Hỏi AI cặp tên này</button><span class="muted" id="qcAiSt">Dùng URL cổng + mã truy cập đã lưu ở phần AI tư vấn (tab Kiểm tra hồ sơ).</span></div>' : '');
-  if($('qcAsk')) $('qcAsk').addEventListener('click', function(){ qcAskAi(v); });
+  if($('qcAsk')){
+    $('qcAsk').addEventListener('click', function(){ qcAskAi(v); });
+    if(!(aiInfo && aiInfo.allow_real_data)) $('qcAsk').insertAdjacentHTML('afterend', '<label class="chk" style="display:inline-flex;gap:6px;align-items:center;font-size:12px"><input type="checkbox" id="qcAttest" style="width:auto"> Tên giả lập / đã ẩn danh (cổng AI đang chạy thử)</label>');
+  }
 }
 async function qcAskAi(v){
   var st = aiSettings();
   if(!st.url || !st.code){ $('qcAiSt').textContent = 'Chưa có URL cổng/mã truy cập đã lưu — nhập ở thẻ AI tư vấn sau khi kiểm tra một hồ sơ (tick “Ghi nhớ”).'; return; }
-  $('qcAsk').disabled = true; $('qcAiSt').textContent = 'Đang hỏi AI … (~10–40 giây)';
+  var attest = $('qcAttest') && $('qcAttest').checked;
+  if(!(aiInfo && aiInfo.allow_real_data) && !attest){ $('qcAiSt').textContent = 'Cổng AI đang chạy thử: tick xác nhận tên giả lập / đã ẩn danh trước khi hỏi.'; return; }
+  $('qcAsk').disabled = true; $('qcAiSt').textContent = 'Đang hỏi AI … (thường dưới 10 giây)';
   try{
-    var r = await fetch(st.url, { method:'POST', body: JSON.stringify({ action:'advise_names', access_code: st.code, pairs:[{ invoice_name: v.invoice.raw, payment_name: v.payment.raw }] }) });
+    var r = await fetch(st.url, { method:'POST', signal: abortAfter(ADVISOR_CFG.client_timeout_ms || 10000), body: JSON.stringify({ action:'advise_names', access_code: st.code, data_attest: attest ? 'ANONYMIZED' : undefined, pairs:[{ invoice_name: v.invoice.raw, payment_name: v.payment.raw }] }) });
     var d = await r.json();
     if(d.error){ $('qcAiSt').textContent = '⚠ '+(d.message||d.error); $('qcAsk').disabled=false; return; }
     var x = (d.advices||[])[0];
     if(x && x.advice){ state.advice[BM.advisor.key(v)] = BM.advisor.guard(x.advice, v); qc(); }
     else $('qcAiSt').textContent = 'Cặp này không thuộc diện hỏi AI.';
-  }catch(e){ $('qcAiSt').textContent = '⚠ Không gọi được cổng AI ('+(e && e.message || e)+')'; $('qcAsk').disabled=false; }
+  }catch(e){ $('qcAiSt').textContent = '⚠ '+(e && (e.name==='TimeoutError' || e.name==='AbortError') ? 'AI đang bận (quá '+Math.round((ADVISOR_CFG.client_timeout_ms||10000)/1000)+' giây) — thử lại sau ít phút' : 'Không gọi được cổng AI ('+(e && e.message || e)+')'); $('qcAsk').disabled=false; }
 }
 
 /* ================= QUY TẮC ================= */
