@@ -11,9 +11,9 @@
  * Script Properties — AI:
  *   AI_PROVIDER          "gemini" (mặc định) | "openai_compat"
  *   AI_API_KEY           key của nhà cung cấp (Gemini: key AI Studio · nội bộ: token do IT cấp)
- *   AI_MODEL             mặc định "gemini-3.8-flash" (gemini); BẮT BUỘC với openai_compat
+ *   AI_MODEL             mặc định "gemini-3.5-flash-lite" (gemini — [TT] chốt 08/10: 3.8 Flash quá tải liên tục); BẮT BUỘC với openai_compat
  *   AI_MODEL_FALLBACKS   model dự phòng khi model chính quá tải (cách nhau dấu phẩy). Gemini mặc định
- *                        "gemini-3.5-flash-lite,gemini-3.6-flash"; đặt rỗng = tắt. Xem model key dùng được: hàm danhSachModel
+ *                        "gemini-3.6-flash,gemini-3.8-flash"; đặt rỗng = tắt. Xem model key dùng được: hàm danhSachModel
  *   AI_BASE_URL          gemini: mặc định https://generativelanguage.googleapis.com/v1beta
  *                        openai_compat: BẮT BUỘC, vd https://<cổng-AI-nội-bộ>/v1 (tự nối /chat/completions)
  *   AI_THINKING_LEVEL    (gemini, tùy chọn) low | medium | high — trống = mặc định của model
@@ -33,9 +33,10 @@
  */
 
 var GEMINI_BASE_DEFAULT = 'https://generativelanguage.googleapis.com/v1beta';
-var GEMINI_MODEL_DEFAULT = 'gemini-3.8-flash';
-// Dự phòng khi model chính quá tải (503) — 2 model ổn định khác họ Flash (danh sách Google 10/2026). Xem: danhSachModel().
-var GEMINI_FALLBACKS_DEFAULT = 'gemini-3.5-flash-lite,gemini-3.6-flash';
+// [TT] chốt 08/10: chính = 3.5 Flash-Lite (Google khuyến nghị cho dự án mới, ít quá tải; test LIVE 20/22, CÙNG sai 0).
+// 3.8 Flash (mạnh nhất) bị 503 "high demand" liên tục với key miễn phí → xuống dự phòng cuối. Xem: danhSachModel().
+var GEMINI_MODEL_DEFAULT = 'gemini-3.5-flash-lite';
+var GEMINI_FALLBACKS_DEFAULT = 'gemini-3.6-flash,gemini-3.8-flash';
 
 function doGet() {
   var p = PropertiesService.getScriptProperties();

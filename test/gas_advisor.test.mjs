@@ -21,7 +21,7 @@ const pairs = [
 console.log('\n[GAS] advise_names — Gemini (mặc định)');
 let g = makeGas({ props: PROPS, aiResponder: fakeLlm });
 const info = JSON.parse(g.ctx.doGet().text);
-check('doGet: gemini/gemini-3.8-flash, đã cấu hình, CHƯA cho dữ liệu thật', info.advisor.configured && info.advisor.provider === 'gemini' && info.advisor.model === 'gemini-3.8-flash' && info.advisor.allow_real_data === false && info.engine === '3.2.0', JSON.stringify(info.advisor));
+check('doGet: gemini/gemini-3.5-flash-lite (mặc định 08/10), đã cấu hình, CHƯA cho dữ liệu thật', info.advisor.configured && info.advisor.provider === 'gemini' && info.advisor.model === 'gemini-3.5-flash-lite' && info.advisor.allow_real_data === false && info.engine === '3.2.0', JSON.stringify(info.advisor));
 check('Sai mã → ACCESS_DENIED', g.post({ action: 'advise_names', access_code: 'SAI', data_attest: ANON, pairs: [{ invoice_name: 'A', payment_name: 'B' }] }).error === 'ACCESS_DENIED');
 check('Không mã → ACCESS_DENIED', g.post({ action: 'advise_names', pairs: [] }).error === 'ACCESS_DENIED');
 const rNo = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', pairs });
@@ -31,7 +31,7 @@ const r = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', data_attest: 
 check('Trả 5 kết quả, 3 được hỏi AI', r.advices.length === 5 && r.advices.filter((x) => x.eligible).length === 3, JSON.stringify(r.advices.map((x) => x.eligible)));
 check('AI chỉ bị gọi 3 lần', g.aiCalls.length === 3, String(g.aiCalls.length));
 const c0 = g.aiCalls[0];
-check('Gọi đúng endpoint Gemini generateContent + header x-goog-api-key', c0.url === 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent' && c0.headers['x-goog-api-key'] === 'AIza-test', c0.url);
+check('Gọi đúng endpoint Gemini generateContent + header x-goog-api-key', c0.url === 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent' && c0.headers['x-goog-api-key'] === 'AIza-test', c0.url);
 const gc = c0.body.generationConfig;
 check('Gemini: JSON mode + schema dạng Gemini (TYPE viết hoa, không additionalProperties)', gc.responseMimeType === 'application/json' && gc.responseSchema.type === 'OBJECT' && gc.responseSchema.properties.verdict.type === 'STRING' && !('additionalProperties' in gc.responseSchema) && gc.responseSchema.properties.evidence.items.type === 'STRING');
 check('Gemini: không đặt thinkingConfig khi chưa cấu hình', !gc.thinkingConfig);
@@ -41,7 +41,7 @@ check('Payload gửi AI KHÔNG có số tiền/STK', !/50000000|0111222333/.test
 check('Prompt do server tự tính (có mã luật engine)', g.aiCalls.every((c) => /— mã [A-Z_]+ —/.test(c.prompt.user)));
 check('Bỏ phần "thought" của Gemini khi đọc output', r.advices[0].advice.ai_status === 'OK' && r.advices[0].advice.verdict === 'SAME_ENTITY');
 check('Gác: LLM nói CÙNG cho Tổng cty ↔ cty → RELATED', r.advices[3].advice.verdict === 'RELATED_ENTITY', r.advices[3].advice.verdict);
-check('Ý kiến AI không dùng cho quyết định + ghi model', r.advices.filter((x) => x.advice).every((x) => x.advice.used_for_decision === false && x.advice.model === 'gemini:gemini-3.8-flash'));
+check('Ý kiến AI không dùng cho quyết định + ghi model', r.advices.filter((x) => x.advice).every((x) => x.advice.used_for_decision === false && x.advice.model === 'gemini:gemini-3.5-flash-lite'));
 check('Kết luận engine giữ nguyên trong response', r.advices[0].engine.decision === 'REVIEW');
 check('Response báo nhà cung cấp + chế độ', r.ai.provider === 'gemini' && r.ai.allow_real_data === false && r.ai.prompt_version);
 check('Hạn mức đã trừ 3/5', r.quota.used === 3 && r.quota.limit === 5);
@@ -76,7 +76,11 @@ check('503 kéo dài, tắt dự phòng → 3 lần gọi rồi FALLBACK + diag'
 console.log('\n[GAS] model dự phòng khi quá tải (503 high demand)');
 const busy = (nm, n, call) => (/gemini-3\.8-flash:/.test(call.url) ? { __http: 503, __status: 'UNAVAILABLE', __msg: 'This model is currently experiencing high demand.' } : fakeLlm(nm));
 g = makeGas({ props: PROPS, aiResponder: busy });
-check('doGet báo thứ tự dự phòng mặc định', JSON.stringify(JSON.parse(g.ctx.doGet().text).advisor.fallbacks) === '["gemini-3.5-flash-lite","gemini-3.6-flash"]');
+check('Mặc định: chính 3.5-flash-lite, dự phòng 3.6 → 3.8', JSON.stringify(JSON.parse(g.ctx.doGet().text).advisor.fallbacks) === '["gemini-3.6-flash","gemini-3.8-flash"]');
+const rdef = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', data_attest: ANON, pairs: pairs.slice(0, 1) });
+check('Mặc định: 1 lượt gọi thẳng 3.5-flash-lite, không chờ 3.8', g.aiCalls.length === 1 && /gemini-3\.5-flash-lite:/.test(g.aiCalls[0].url) && rdef.advices[0].advice.ai_status === 'OK');
+const P38 = Object.assign({}, PROPS, { AI_MODEL: 'gemini-3.8-flash', AI_MODEL_FALLBACKS: 'gemini-3.5-flash-lite,gemini-3.6-flash' });
+g = makeGas({ props: P38, aiResponder: busy });
 const rfb = g.post({ action: 'advise_names', access_code: 'BM-7Q2X', data_attest: ANON, pairs });
 const urls = g.aiCalls.map((c) => c.url.replace(/.*models\/|:generateContent/g, ''));
 check('3.8 quá tải → gọi lại 2 lần → chuyển 3.5-flash-lite → OK', rfb.advices.filter((x) => x.advice).every((x) => x.advice.ai_status === 'OK' && x.advice.model === 'gemini:gemini-3.5-flash-lite') && urls.filter((u) => u === 'gemini-3.8-flash').length === 9 && urls.filter((u) => u === 'gemini-3.5-flash-lite').length === 3, urls.join(','));
@@ -88,7 +92,7 @@ check('Mọi model đều quá tải → 3+3 lần gọi rồi FALLBACK (kết l
 g = makeGas({ props: PROPS, aiResponder: () => null });
 g.post({ action: 'advise_names', access_code: 'BM-7Q2X', data_attest: ANON, pairs: pairs.slice(0, 1) });
 check('Lỗi không tạm thời (400 key sai) → KHÔNG chuyển dự phòng', g.aiCalls.length === 1);
-g = makeGas({ props: PROPS, aiResponder: busy });
+g = makeGas({ props: P38, aiResponder: busy });
 const kt2 = g.ctx.kiemTraAI();
 check('kiemTraAI dùng cùng đường dự phòng', kt2.ai_status === 'OK' && kt2.model === 'gemini:gemini-3.5-flash-lite');
 

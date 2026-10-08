@@ -6,7 +6,7 @@
 | Chủ đề | Quyết định |
 |---|---|
 | Vì sao cần LLM | Tên KHDN phức tạp; luật không hiểu **nghĩa**: tên tiếng Anh/giao dịch, viết tắt thương hiệu, tổng cty ↔ cty con/CN, đổi tên / tên dài / lỗi OCR (cả 4 nhóm [TT] chọn). |
-| Nền tảng | **(08/10)** GAS gọi **Gemini API trực tiếp** (`gemini-3.8-flash`, structured output) — **không qua Dify**. Key Gemini **gói miễn phí** ⇒ `AI_ALLOW_REAL_DATA` TẮT: chỉ tên giả lập/đã ẩn danh, FE bắt tick xác nhận (gói miễn phí: Google được dùng dữ liệu + người duyệt đọc). Dữ liệu thật: chờ **AI nội bộ TPBank** (`AI_PROVIDER=openai_compat`) hoặc key trả phí. *(28/09: Dify Cloud + Gemini trả phí — đã thay.)* |
+| Nền tảng | **(08/10)** GAS gọi **Gemini API trực tiếp** (structured output) — model chính **`gemini-3.5-flash-lite`** ([TT] chốt 08/10 vì 3.8 Flash quá tải liên tục), dự phòng `gemini-3.6-flash → gemini-3.8-flash` — **không qua Dify**. Key Gemini **gói miễn phí** ⇒ `AI_ALLOW_REAL_DATA` TẮT: chỉ tên giả lập/đã ẩn danh, FE bắt tick xác nhận (gói miễn phí: Google được dùng dữ liệu + người duyệt đọc). Dữ liệu thật: chờ **AI nội bộ TPBank** (`AI_PROVIDER=openai_compat`) hoặc key trả phí. *(28/09: Dify Cloud + Gemini trả phí — đã thay.)* |
 | Quyền của LLM | **Chỉ đề xuất + giải thích.** Kết luận engine giữ nguyên (`used_for_decision=false`). |
 | Đường gọi (giai đoạn 1) | Công cụ cán bộ → **GAS** (giữ key AI, tự tính lại engine, dựng prompt, gác) → model. Xác thực bằng **mã truy cập cấp riêng** (thu hồi được, hạn mức/ngày). |
 | Lộ trình | G1: công cụ cán bộ + đo chất lượng trên lịch sử GNOL · G2: service trong luồng GNOL (BIZ → BPM) do IT xây theo spec. OCR đã có trên BIZ → G2 nhận output OCR của BIZ. |
@@ -55,7 +55,7 @@ Output AI: `verdict` (SAME_ENTITY / DIFFERENT_ENTITY / RELATED_ENTITY / UNCERTAI
 **[TT] làm (Gemini gói miễn phí, chế độ thử):**
 1. Google AI Studio → **Get API key** (key đang gắn trong Dify trước đây dùng lại được).
 2. **GAS → Project Settings → Script Properties:** thêm `AI_API_KEY` = key Gemini. Giữ `AI_ALLOW_REAL_DATA` **không đặt / false**. (Tùy chọn: `AI_MODEL` nếu muốn model khác, `AI_THINKING_LEVEL` = `low` để tiết kiệm hạn mức miễn phí.) Có thể xóa `DIFY_API_URL` / `DIFY_API_KEY` (không còn đọc).
-3. (Tùy chọn) Run **`danhSachModel`** → log liệt kê model Flash key được dùng. Model chính `gemini-3.8-flash` (Flash mới nhất theo Google 10/2026); quá tải 503 → tự chuyển `AI_MODEL_FALLBACKS` (mặc định `gemini-3.5-flash-lite,gemini-3.6-flash`).
+3. (Tùy chọn) Run **`danhSachModel`** → log liệt kê model Flash key được dùng. Model chính `gemini-3.5-flash-lite` (từ GAS @15); quá tải 503 → tự chuyển `AI_MODEL_FALLBACKS` (mặc định `gemini-3.6-flash,gemini-3.8-flash`). Muốn đổi: đặt `AI_MODEL` trong Script Properties (không cần deploy).
 4. GAS editor → chọn hàm **`kiemTraAI`** → Run → Execution log phải ra `ai_status:"OK"` cho cặp "SAO VIỆT / VIETSTAR". Không cần deploy lại khi đổi Script Properties.
 5. `node tools/eval/advisor_smoke.mjs --ai-url <URL cổng> --ai-code <mã>` (22 ca giả lập, tự gửi xác nhận ẩn danh) → gửi em kết quả.
 6. Cấp/thu hồi mã: hàm `taoMaTruyCap` · sửa `ACCESS_CODES`.

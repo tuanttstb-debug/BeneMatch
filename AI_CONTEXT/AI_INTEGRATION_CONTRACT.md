@@ -19,7 +19,7 @@
                                      (BM.advisor.prompt) · ADAPTER · đọc output (BM.advisor.parse) · LỚP GÁC (BM.advisor.guard) · log không tên
             │  AI_PROVIDER = gemini | openai_compat
             ▼
-[AI — thay được]                     Hiện tại: Gemini API (gemini-3.8-flash) · Tích hợp: AI nội bộ TPBank (chuẩn /chat/completions)
+[AI — thay được]                     Hiện tại: Gemini API (gemini-3.5-flash-lite → dự phòng 3.6 / 3.8 Flash) · Tích hợp: AI nội bộ TPBank (chuẩn /chat/completions)
 ```
 Nguồn duy nhất của prompt + schema + gác: `src/engine/bm-engine.js` mục 6 (`BM.advisor.*`) — JS thuần, chạy được trên trình duyệt, GAS và Node.
 
@@ -33,7 +33,7 @@ Apps Script → Project Settings → Script Properties:
 | `AI_PROVIDER` | `openai_compat` |
 | `AI_BASE_URL` | URL cổng AI nội bộ, vd `https://<ai-gateway>/v1` (tự nối `/chat/completions`; hoặc ghi URL đầy đủ kết thúc `/chat/completions`) |
 | `AI_MODEL` | tên model nội bộ |
-| `AI_MODEL_FALLBACKS` | (tùy chọn) model dự phòng khi model chính quá tải, cách nhau dấu phẩy — Gemini mặc định `gemini-3.5-flash-lite,gemini-3.6-flash`; nội bộ mặc định không có |
+| `AI_MODEL_FALLBACKS` | (tùy chọn) model dự phòng khi model chính quá tải, cách nhau dấu phẩy — Gemini mặc định `gemini-3.6-flash,gemini-3.8-flash`; nội bộ mặc định không có |
 | `AI_API_KEY` | token do IT cấp |
 | `AI_AUTH_HEADER` | mặc định `Authorization` (gửi `Bearer <token>`); tên khác (vd `api-key`) → gửi token thô |
 | `AI_EXTRA_HEADERS` | (tùy chọn) JSON header phụ, vd `{"X-App-Id":"benematch"}` |
